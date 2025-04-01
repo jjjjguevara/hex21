@@ -1,0 +1,111 @@
+---
+title: Metadata Guidelines
+author: Hex21 CMS Team
+date: 2024-04-01
+tags: [documentation, guide, metadata]
+description: Comprehensive guidelines for using metadata in the Hex21 CMS, including supported fields and best practices.
+---
+
+# Metadata Guidelines for Content
+
+This guide explains how to use metadata in your DITA maps and topics to control content visibility and organization in the CMS.
+
+## Currently Implemented Metadata Fields
+
+These fields are fully supported and functional in the current version of the CMS:
+
+| Field | Type | Required | Description | Example |
+|-------|------|----------|-------------|---------|
+| title | string | Yes | The title of the content | "The Physics of Sound" |
+| slug | string | Yes | URL-friendly identifier | "physics-of-sound" |
+| features.featured | boolean | No | Shows content in featured section | true |
+| publish | boolean | Yes | Controls content visibility | true |
+| date | string | No | Publication date (YYYY-MM-DD) | "2024-11-30" |
+| lastEdited | string | No | Last modification date | "2024-12-04T15:45:00" |
+| categories | string[] | No | Content categories | ["Physics", "Acoustics"] |
+| authors | Author[] | No | Content authors with optional conref | [{ "conref": "shared-authors.dita#professors/mary-jones" }] |
+| editor | string | No | Content editor | "Dr. Hex" |
+| reviewer | string | No | Content reviewer | "Prof. Poly" |
+| keywords | string[] | No | Search keywords | ["sound waves", "frequency"] |
+| audience | string[] | No | Target audience | ["Undergraduate Students"] |
+| language | string | No | Content language code | "en-US" |
+| version | string | No | Content version | "1.2" |
+
+## Pending Implementation
+
+These fields are defined in our content but not yet implemented in the CMS:
+
+| Field | Type | Priority | Description | Example |
+|-------|------|----------|-------------|---------|
+| content-type | string | High | Type of content | "learning-material" |
+| media | object | High | Associated media files | { "pdf-download": "file.pdf" } |
+| accessibility-compliant | string | Medium | Accessibility standard | "WCAG 2.1 AA" |
+| delivery | object | Medium | Delivery channels | { "channel-web": true } |
+| analytics | object | Low | Analytics settings | { "engagement-tracking": "enabled" } |
+| revision-history | string | Low | Change log | "2024-11-28: Initial draft" |
+| region | string | Low | Geographic region | "Global" |
+
+## Example DITA Map with Required Fields
+
+```yaml
+---
+title: "Your Article Title"
+slug: your-article-slug
+publish: true
+features:
+  featured: true  # Required for featured section visibility
+categories:
+  - Category One
+  - Category Two
+authors:
+  - conref: shared-authors.dita#professors/author-name
+date: "2024-04-01"
+---
+```
+
+## Content Visibility Rules
+
+1. **Articles Index (`/articles`)**
+   - Requires: `publish: true`
+   - Shows: title, categories, authors, date
+
+2. **Featured Section (`/featured`)**
+   - Requires: `publish: true` AND `features.featured: true`
+   - Shows: title, categories, authors, date
+
+3. **Search Results**
+   - Indexes: title, keywords, categories, content
+   - Only includes: `publish: true` content
+
+## Best Practices
+
+1. **Dates and Times**
+   - Use ISO 8601 format for dates: `YYYY-MM-DD`
+   - Use ISO 8601 format for timestamps: `YYYY-MM-DDThh:mm:ss`
+
+2. **Categories and Keywords**
+   - Use consistent casing (preferably Title Case for categories)
+   - Keep keywords lowercase for better search matching
+
+3. **Authors and Contributors**
+   - Use conrefs for consistent author information
+   - Store author details in `shared-authors.dita`
+
+## Future Enhancements
+
+We plan to implement these features in upcoming releases:
+
+1. **Access Control**
+   - Subscription-based content visibility
+   - Role-based access control
+   - Geographic region restrictions
+
+2. **Media Management**
+   - Automated PDF generation
+   - Interactive media embedding
+   - Video transcoding and hosting
+
+3. **Analytics Integration**
+   - Content engagement tracking
+   - User behavior analysis
+   - A/B testing support 

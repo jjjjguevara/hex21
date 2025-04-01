@@ -1,0 +1,61 @@
+---
+id: introduction
+title: Introduction to Sound Physics
+author: Dr. Mary Jones
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Introduction to Sound Physics
+
+Sound is a fundamental part of our daily experience, from the music we enjoy to the conversations we share. But what exactly is sound, and how does it work?
+
+## What is Sound?
+
+Sound is a form of energy that travels through matter in the form of waves. These waves are created by vibrating objects and propagate through a medium (usually air) by causing the particles of that medium to oscillate.
+
+## The Importance of Understanding Sound
+
+Understanding the physics of sound is crucial for many fields:
+
+1. Music and acoustics
+2. Audio engineering
+3. Medical ultrasound
+4. Environmental noise control
+5. Communication technology
+
+## Basic Concepts
+
+Before we dive deeper into specific aspects of sound, let's consider a simple example. When you pluck a guitar string, you can:
+
+- See the string vibrate
+- Feel the vibrations through the guitar body
+- Hear the musical note produced
+
+This simple action demonstrates three key aspects of sound:
+
+1. Mechanical vibration (the string)
+2. Wave propagation (through air)
+3. Human perception (through our ears)
+
+## Mathematical Description
+
+The basic wave equation for sound is:
+
+\[
+v = f\lambda
+\]
+
+Where:
+- $v$ is the speed of sound
+- $f$ is the frequency
+- $\lambda$ is the wavelength
+
+For example, at room temperature, the speed of sound in air is approximately:
+
+\[
+v \approx 343 \text{ m/s}
+\] 

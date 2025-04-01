@@ -1,0 +1,67 @@
+---
+title: The Physics of Sound
+author: Dr. Hex
+publish: true
+content-type: article
+publication-date: 2024-03-15
+last-edited: 2024-03-28
+categories:
+  - Physics
+  - Acoustics
+authors:
+  - name: Dr. Hex
+    affiliation: Harvard University
+    email: j@hex21.com
+editor: Dr. Hex
+reviewer: Prof. Poly
+keywords:
+  - acoustics
+  - sound waves
+  - frequency
+  - amplitude
+  - harmonics
+audience: undergraduate
+media:
+  - type: image
+    path: /media/sound-waves.png
+    caption: Sound wave visualization
+  - type: video
+    path: /media/harmonic-motion.mp4
+    caption: Simple harmonic motion demonstration
+region: global
+language: en-US
+accessibility-compliant: true
+delivery:
+  - web
+  - pdf
+  - epub
+version: 1.0.0
+revision-history:
+  - version: 1.0.0
+    date: 2024-03-15
+    author: Dr. Hex
+    changes: Initial release
+analytics:
+  tracking-id: UA-12345-6
+features:
+  subscription-required: yes
+  featured: true
+shortdesc: An in-depth exploration of sound physics, covering wave properties, frequency, amplitude, and harmonics, with practical applications in acoustics and music theory.
+---
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <title>The Physics of Sound: Exploring Acoustics in Everyday Life</title>
+  
+  <topicref href="../topics/introduction.mdita" format="mdita"/>
+  
+  <topicref href="../topics/sound-wave-basics.mdita" format="mdita">
+    <topicref href="../topics/frequency-wavelength.mdita" format="mdita"/>
+    <topicref href="../topics/amplitude-intensity.mdita" format="mdita"/>
+  </topicref>
+  
+  <topicref href="../topics/interactive-simulations.mdita" format="mdita"/>
+  <topicref href="../topics/supplementary-materials.mdita" format="mdita"/>
+</map> 
+

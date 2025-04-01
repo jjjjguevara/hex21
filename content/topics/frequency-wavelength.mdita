@@ -1,0 +1,80 @@
+---
+id: frequency-wavelength
+title: Frequency and Wavelength
+author: Dr. Mary Jones
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Frequency and Wavelength
+
+Frequency and wavelength are fundamental properties of sound waves that determine pitch and affect how sound interacts with its environment.
+
+## Frequency
+
+Frequency ($f$) is measured in Hertz (Hz) and represents the number of wave cycles per second. In sound:
+
+- Higher frequency = higher pitch
+- Lower frequency = lower pitch
+
+The human hearing range is approximately:
+
+\[
+20 \text{ Hz} \leq f \leq 20,000 \text{ Hz}
+\]
+
+## Wavelength
+
+Wavelength ($\lambda$) is the distance between two consecutive:
+- Compressions
+- Rarefactions
+- Any two equivalent points on the wave
+
+## The Relationship
+
+The relationship between frequency and wavelength is:
+
+\[
+\lambda = \frac{v}{f}
+\]
+
+Where:
+- $v$ is the speed of sound
+- $f$ is the frequency
+- $\lambda$ is the wavelength
+
+## Examples
+
+1. For a concert A note (440 Hz) in air:
+   \[
+   \lambda = \frac{343 \text{ m/s}}{440 \text{ Hz}} \approx 0.78 \text{ m}
+   \]
+
+2. For middle C (262 Hz):
+   \[
+   \lambda = \frac{343 \text{ m/s}}{262 \text{ Hz}} \approx 1.31 \text{ m}
+   \]
+
+## Interactive Frequency Explorer
+
+<div class="interactive-component" data-component="frequency-explorer">
+{
+  "type": "frequency-visualization",
+  "params": {
+    "minFreq": 20,
+    "maxFreq": 20000,
+    "initialFreq": 440
+  }
+}
+</div>
+
+## Applications
+
+Understanding frequency and wavelength is crucial for:
+- Musical instrument design
+- Room acoustics
+- Sound insulation
+- Audio equipment specifications 

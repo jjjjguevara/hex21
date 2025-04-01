@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <title>Sound Physics Collection</title>
+  <topicmeta>
+    <author>Dr. Hex</author>
+    <category>Physics</category>
+    <audience>Undergraduate Students</audience>
+    <data name="publish" value="true"/>
+    <data name="access_level" value="public"/>
+    <data name="tags" value="physics,sound,waves"/>
+  </topicmeta>
+
+  <topicref href="../topics/introduction.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Introduction to Sound Physics</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/amplitude-intensity.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Amplitude and Intensity</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/frequency-wavelength.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Frequency and Wavelength</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/sound-wave-basics.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Sound Wave Basics</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/interactive-simulations.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Interactive Sound Simulations</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/supplementary-materials.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Supplementary Materials</navtitle>
+    </topicmeta>
+  </topicref>
+</map>

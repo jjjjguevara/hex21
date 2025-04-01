@@ -1,0 +1,66 @@
+---
+id: wave-particle
+title: Wave-Particle Duality
+author: Dr. Richard Quantum
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: [quantum, physics, waves, particles]
+---
+
+# Wave-Particle Duality
+
+Wave-particle duality is one of the most fascinating aspects of quantum mechanics. It states that all matter and energy exhibits both wave-like and particle-like properties. This principle challenges our classical intuition about the nature of reality.
+
+## The Double-Slit Experiment
+
+The double-slit experiment beautifully demonstrates wave-particle duality:
+
+1. When single particles (electrons, photons) are fired at a screen with two slits
+2. Each particle appears to go through both slits simultaneously
+3. Over time, an interference pattern forms on the detector screen
+4. This pattern is characteristic of waves, yet we're firing particles
+
+## De Broglie Wavelength
+
+Louis de Broglie proposed that the wavelength \(\lambda\) of a particle is related to its momentum \(p\) by:
+
+\[
+\lambda = \frac{h}{p}
+\]
+
+where:
+- \(h\) is Planck's constant
+- \(p = mv\) for a particle of mass \(m\) moving at velocity \(v\)
+
+## Mathematical Description
+
+The wave function \(\psi(x,t)\) for a free particle can be written as:
+
+\[
+\psi(x,t) = A e^{i(kx - \omega t)}
+\]
+
+where:
+- \(k\) is the wave number
+- \(\omega\) is the angular frequency
+- \(A\) is the amplitude
+
+## Experimental Evidence
+
+Wave-particle duality has been demonstrated for:
+
+- Light (photons)
+- Electrons
+- Atoms
+- Even large molecules like buckyballs (C₆₀)
+
+## Implications
+
+The wave-particle duality has profound implications:
+
+1. Reality is fundamentally probabilistic
+2. The act of measurement affects the system
+3. Classical concepts of "particle" and "wave" are incomplete
+4. Our everyday intuition about physics breaks down at quantum scales 

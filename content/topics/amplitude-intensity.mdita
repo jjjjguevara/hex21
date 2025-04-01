@@ -1,0 +1,79 @@
+---
+id: amplitude-intensity
+title: Amplitude and Intensity
+author: Dr. Alan Smith
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Amplitude and Intensity
+
+Amplitude and intensity determine how loud a sound is and how much energy it carries.
+
+## Amplitude
+
+Amplitude is the maximum displacement of particles from their equilibrium position. In sound waves:
+
+- Larger amplitude = louder sound
+- Smaller amplitude = quieter sound
+
+The amplitude can be measured in:
+- Displacement (meters)
+- Pressure variation (pascals)
+
+## Sound Intensity
+
+Sound intensity ($I$) is the power per unit area:
+
+\[
+I = \frac{P}{A}
+\]
+
+Where:
+- $P$ is the power in watts
+- $A$ is the area in square meters
+
+## Sound Intensity Level
+
+The sound intensity level ($\beta$) in decibels (dB) is:
+
+\[
+\beta = 10 \log_{10}\left(\frac{I}{I_0}\right)
+\]
+
+Where:
+- $I_0 = 10^{-12} \text{ W/m}^2$ (threshold of hearing)
+
+## Common Sound Levels
+
+| Source | Intensity Level (dB) |
+|--------|---------------------|
+| Whisper | 20 |
+| Normal conversation | 60 |
+| City traffic | 80 |
+| Rock concert | 110 |
+| Pain threshold | 130 |
+
+## Interactive Sound Level Meter
+
+<div class="interactive-component" data-component="sound-level">
+{
+  "type": "sound-level-meter",
+  "params": {
+    "minDB": 0,
+    "maxDB": 130,
+    "showWaveform": true
+  }
+}
+</div>
+
+## Health and Safety
+
+Understanding sound intensity is crucial for:
+- Hearing protection
+- Noise regulations
+- Sound system design
+- Environmental impact assessment 

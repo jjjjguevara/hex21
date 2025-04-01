@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <title>Introduction to Quantum Mechanics</title>
+  <topicmeta>
+    <author>Dr. Hex</author>
+    <category>Physics</category>
+    <audience>Undergraduate Students</audience>
+    <data name="publish" value="true"/>
+    <data name="featured" value="true"/>
+    <data name="access_level" value="public"/>
+    <data name="tags" value="physics,quantum,mechanics"/>
+  </topicmeta>
+
+  <topicref href="../topics/quantum-intro.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Introduction to Quantum Mechanics</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/wave-particle.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Wave-Particle Duality</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="../topics/uncertainty.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Heisenberg's Uncertainty Principle</navtitle>
+    </topicmeta>
+  </topicref>
+</map> 

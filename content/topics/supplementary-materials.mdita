@@ -1,0 +1,91 @@
+---
+id: supplementary-materials
+title: Supplementary Materials
+author: Dr. Alan Smith
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Supplementary Materials
+
+Additional resources to enhance your understanding of sound physics.
+
+## Video Lectures
+
+Watch our comprehensive video series:
+
+<div class="video-embed">
+{
+  "type": "video",
+  "src": "https://eduplatform.com/media/sound-waves-intro.mp4",
+  "title": "Introduction to Sound Waves",
+  "duration": "10:15",
+  "transcript": true
+}
+</div>
+
+## Practice Problems
+
+Download our problem sets:
+
+1. [Basic Wave Properties (PDF)](/assets/pdfs/wave-properties-problems.pdf)
+2. [Frequency and Wavelength (PDF)](/assets/pdfs/frequency-problems.pdf)
+3. [Sound Intensity (PDF)](/assets/pdfs/intensity-problems.pdf)
+
+## Laboratory Exercises
+
+Virtual lab experiments:
+
+<div class="interactive-component" data-component="virtual-lab">
+{
+  "type": "virtual-lab",
+  "experiments": [
+    "wave-properties-lab",
+    "resonance-lab",
+    "interference-lab"
+  ]
+}
+</div>
+
+## Further Reading
+
+Recommended textbooks and articles:
+
+1. "Fundamentals of Acoustics" by Kinsler et al.
+2. "The Science of Sound" by Rossing
+3. "Acoustics: An Introduction" by Heinrich Kuttruff
+
+## Online Resources
+
+Useful websites and tools:
+
+1. [PhET Sound Simulations](https://phet.colorado.edu/sound)
+2. [Acoustical Society of America](https://acousticalsociety.org)
+3. [NIST Sound Resources](https://www.nist.gov/sound)
+
+## Assessment Materials
+
+Self-assessment quizzes:
+
+<div class="interactive-component" data-component="quiz">
+{
+  "type": "quiz",
+  "topics": [
+    "wave-basics",
+    "frequency",
+    "intensity"
+  ],
+  "randomize": true
+}
+</div>
+
+## Contact Information
+
+For questions and support:
+
+- Email: physics.support@university.edu
+- Office Hours: Mon-Fri, 9:00-17:00
+- Discussion Forum: [Sound Physics Forum](https://forum.university.edu/sound-physics) 

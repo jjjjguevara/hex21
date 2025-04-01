@@ -1,0 +1,90 @@
+---
+id: interactive-simulations
+title: Interactive Sound Simulations
+author: Dr. Mary Jones
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Interactive Sound Simulations
+
+Explore sound physics through these interactive simulations.
+
+## Wave Generator
+
+Experiment with different wave properties:
+
+<div class="interactive-component" data-component="wave-generator">
+{
+  "type": "wave-generator",
+  "params": {
+    "controls": ["frequency", "amplitude", "waveform"],
+    "presets": ["sine", "square", "sawtooth"],
+    "showSpectrum": true
+  }
+}
+</div>
+
+## Standing Waves
+
+Observe standing waves in different media:
+
+<div class="interactive-component" data-component="standing-waves">
+{
+  "type": "standing-wave-sim",
+  "params": {
+    "modes": [1, 2, 3, 4],
+    "mediumTypes": ["string", "air-column"],
+    "showNodes": true
+  }
+}
+</div>
+
+## Doppler Effect
+
+See how motion affects sound frequency:
+
+<div class="interactive-component" data-component="doppler-effect">
+{
+  "type": "doppler-simulation",
+  "params": {
+    "sourceFreq": 440,
+    "sourceVelocity": 0,
+    "observerVelocity": 0,
+    "showFrequencyShift": true
+  }
+}
+</div>
+
+## Room Acoustics
+
+Experiment with different room shapes and materials:
+
+<div class="interactive-component" data-component="room-acoustics">
+{
+  "type": "acoustics-simulator",
+  "params": {
+    "roomShapes": ["rectangular", "circular", "custom"],
+    "materials": ["wood", "concrete", "carpet"],
+    "showReflections": true
+  }
+}
+</div>
+
+## Instructions
+
+1. Use the controls to adjust parameters
+2. Observe the changes in real-time
+3. Try the suggested experiments
+4. Record your observations
+
+## Learning Objectives
+
+Through these simulations, you will:
+- Visualize wave properties
+- Understand sound behavior
+- Explore acoustic phenomena
+- Develop intuition for sound physics 
