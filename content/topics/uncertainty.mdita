@@ -1,0 +1,72 @@
+---
+id: uncertainty
+title: Heisenberg's Uncertainty Principle
+author: Dr. Richard Quantum
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: [quantum, physics, uncertainty]
+---
+
+# Heisenberg's Uncertainty Principle
+
+The Heisenberg uncertainty principle is a fundamental principle of quantum mechanics that sets limits on our ability to simultaneously know certain pairs of physical properties of a particle with arbitrary precision.
+
+## The Principle
+
+The uncertainty principle states that there is a fundamental limit to the precision with which complementary variables can be known. The most famous form relates position and momentum:
+
+\[
+\Delta x \Delta p \geq \frac{\hbar}{2}
+\]
+
+where:
+- \(\Delta x\) is the uncertainty in position
+- \(\Delta p\) is the uncertainty in momentum
+- \(\hbar\) is the reduced Planck constant (\(h/2\pi\))
+
+## Other Uncertainty Relations
+
+The principle applies to other pairs of complementary variables:
+
+1. Energy and time:
+\[
+\Delta E \Delta t \geq \frac{\hbar}{2}
+\]
+
+2. Angular momentum components:
+\[
+\Delta L_x \Delta L_y \geq \frac{\hbar}{2}|L_z|
+\]
+
+## Physical Interpretation
+
+The uncertainty principle is not about measurement limitations but rather about the fundamental nature of quantum systems:
+
+1. It's not about observer interference
+2. It's not about technological limitations
+3. It's a fundamental property of wave-like systems
+4. It arises from the wave nature of matter
+
+## Mathematical Foundation
+
+The uncertainty principle can be derived from the properties of Fourier transforms. For wave functions:
+
+\[
+\sigma_x \sigma_p = \int_{-\infty}^{\infty} x^2|\psi(x)|^2 dx \int_{-\infty}^{\infty} p^2|\tilde{\psi}(p)|^2 dp \geq \frac{\hbar^2}{4}
+\]
+
+## Practical Implications
+
+The uncertainty principle has many practical implications:
+
+1. Limits on measurement precision
+2. Quantum tunneling
+3. Stability of atoms
+4. Zero-point energy
+5. Quantum computing challenges
+
+## Historical Context
+
+Werner Heisenberg formulated the uncertainty principle in 1927 while working at Niels Bohr's institute in Copenhagen. The principle became one of the cornerstones of the Copenhagen interpretation of quantum mechanics. 

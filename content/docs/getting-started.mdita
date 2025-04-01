@@ -1,0 +1,66 @@
+---
+title: Getting Started
+description: Learn how to use the Hex21 CMS for scientific content
+author: Hex21 Team
+date: 2024-04-01
+order: 1
+tags: [guide, introduction]
+publish: true
+---
+
+# Getting Started with Hex21 CMS
+
+Welcome to Hex21 CMS, a powerful content management system designed specifically for scientific and technical content. This guide will help you understand the basics of using our platform.
+
+## What is Hex21 CMS?
+
+Hex21 CMS is a DITA-powered content management system that enables you to:
+- Create and manage scientific articles
+- Include mathematical equations using LaTeX
+- Organize content with rich metadata
+- Generate multiple output formats
+
+## Key Features
+
+### 1. DITA Integration
+Our CMS uses Lightweight DITA (LwDITA) for content structuring, allowing you to:
+- Write in Markdown with DITA semantics
+- Reuse content efficiently
+- Maintain consistent structure
+
+### 2. LaTeX Support
+Write mathematical equations with ease:
+\[ E = mc^2 \]
+\[ F = ma \]
+
+### 3. Rich Metadata
+Every article can include:
+- Title and author information
+- Publication date
+- Categories and tags
+- Access levels
+- Custom metadata fields
+
+## Getting Started
+
+1. **Create Your First Article**
+   - Navigate to the content directory
+   - Create a new `.mdita` file
+   - Add YAML frontmatter with metadata
+   - Write your content using Markdown and LaTeX
+
+2. **Preview Your Content**
+   - Use the built-in preview feature
+   - Check how equations render
+   - Verify metadata display
+
+3. **Publish Your Work**
+   - Set `publish: true` in frontmatter
+   - Commit your changes
+   - Watch the automated build process
+
+## Next Steps
+
+- Read about [Advanced Features](advanced-features)
+- Learn about [Content Structure](content-structure)
+- Explore [LaTeX Guidelines](latex-guidelines) 

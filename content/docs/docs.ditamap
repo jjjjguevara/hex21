@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <title>Hex21 CMS Documentation</title>
+  
+  <topicref href="getting-started.mdita" format="mdita">
+    <topicmeta>
+      <navtitle>Getting Started</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <!-- Placeholder for future topics -->
+  <topicref href="content-structure.mdita" format="mdita" processing-role="resource-only">
+    <topicmeta>
+      <navtitle>Content Structure</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="advanced-features.mdita" format="mdita" processing-role="resource-only">
+    <topicmeta>
+      <navtitle>Advanced Features</navtitle>
+    </topicmeta>
+  </topicref>
+  
+  <topicref href="latex-guidelines.mdita" format="mdita" processing-role="resource-only">
+    <topicmeta>
+      <navtitle>LaTeX Guidelines</navtitle>
+    </topicmeta>
+  </topicref>
+</map> 

@@ -1,0 +1,67 @@
+---
+id: sound-wave-basics
+title: Sound Wave Basics
+author: Dr. Alan Smith
+audience: Undergraduate Students
+category: Physics
+conditional:
+  access_level: public
+tags: []
+---
+
+# Sound Wave Basics
+
+Sound waves are longitudinal waves that propagate through a medium by creating alternating regions of compression and rarefaction.
+
+## Wave Properties
+
+The main properties of sound waves include:
+
+1. Frequency (pitch)
+2. Wavelength
+3. Amplitude (loudness)
+4. Speed
+5. Direction of propagation
+
+## Wave Motion
+
+In a sound wave, particles of the medium move back and forth parallel to the direction of wave propagation. This creates:
+
+- Compressions: regions where particles are closer together
+- Rarefactions: regions where particles are farther apart
+
+## Wave Equation
+
+The general wave equation in one dimension is:
+
+\[
+\frac{\partial^2 y}{\partial t^2} = c^2 \frac{\partial^2 y}{\partial x^2}
+\]
+
+Where:
+- $y$ is the displacement
+- $t$ is time
+- $x$ is position
+- $c$ is the wave speed
+
+## Interactive Demonstration
+
+<div class="interactive-component" data-component="wave-simulator">
+{
+  "type": "wave-simulation",
+  "params": {
+    "frequency": 440,
+    "amplitude": 1,
+    "speed": 343
+  }
+}
+</div>
+
+## Key Concepts
+
+Understanding these basics is essential for:
+
+- Analyzing musical instruments
+- Designing concert halls
+- Developing sound equipment
+- Studying noise pollution 

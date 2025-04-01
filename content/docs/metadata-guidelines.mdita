@@ -1,0 +1,106 @@
+---
+title: Metadata Guidelines
+description: Guidelines for using metadata in DITA maps and topics
+author: Hex21 Team
+date: 2024-04-01
+order: 2
+tags: [guide, metadata]
+publish: true
+---
+
+# Metadata Guidelines for Content
+
+This guide explains how to use metadata in your DITA maps and topics to control content visibility and organization in the CMS.
+
+## DITA Map Metadata
+
+DITA maps must include the following metadata elements to be properly indexed and displayed:
+
+### Required Metadata
+
+```xml
+<topicmeta>
+  <title>Your Title</title>
+  <author>Author Name</author>
+  <category>Category Name</category>
+  <metadata>
+    <data name="publish" value="true|false"/>
+    <data name="access_level" value="public|restricted|private"/>
+  </metadata>
+</topicmeta>
+```
+
+| Field | Description | Required | Values |
+|-------|-------------|----------|---------|
+| title | The title of the collection | Yes | String |
+| author | The author's name | Yes | String |
+| category | Primary category | Yes | String |
+| publish | Publication status | Yes | true/false |
+| access_level | Access control | Yes | public/restricted/private |
+
+### Optional Metadata
+
+```xml
+<topicmeta>
+  <audience>Target Audience</audience>
+  <metadata>
+    <data name="tags">tag1, tag2, tag3</data>
+    <data name="publish_date">YYYY-MM-DD</data>
+  </metadata>
+</topicmeta>
+```
+
+| Field | Description | Required | Values |
+|-------|-------------|----------|---------|
+| audience | Target audience | No | String |
+| tags | Related topics | No | Comma-separated list |
+| publish_date | Future publish date | No | YYYY-MM-DD |
+
+## Article Indexing Criteria
+
+For an article to appear in the articles index page, its DITA map must meet these criteria:
+
+1. **Required Fields**: All required metadata fields must be present
+2. **Publication Status**: `publish` must be set to `true`
+3. **Access Level**: Must be appropriate for the current user
+4. **Publication Date**: If `publish_date` is set, it must be in the past
+
+### Example DITA Map
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <title>Your Collection Title</title>
+  <topicmeta>
+    <author>Your Name</author>
+    <category>Your Category</category>
+    <audience>Target Audience</audience>
+    <metadata>
+      <data name="publish" value="true"/>
+      <data name="access_level" value="public"/>
+      <data name="tags">tag1, tag2, tag3</data>
+    </metadata>
+  </topicmeta>
+  
+  <topicref href="../topics/your-topic.mdita" format="mdita">
+    <topicmeta><navtitle>Topic Title</navtitle></topicmeta>
+  </topicref>
+</map>
+```
+
+## Topic Metadata
+
+Topics should include their own metadata in YAML frontmatter:
+
+```yaml
+---
+title: Topic Title
+author: Author Name
+date: YYYY-MM-DD
+description: Brief description
+tags: [tag1, tag2]
+---
+```
+
+This metadata is used for topic-level display and search functionality, while the DITA map metadata controls collection-level visibility and organization. 

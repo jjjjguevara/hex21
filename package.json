@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/build-search-index.mjs && next build",
     "start": "next start",
     "lint": "next lint"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
     "lunr": "^2.3.9",
+    "marked": "^15.0.7",
     "mathjax": "^3.2.2",
     "next": "^14.2.26",
     "react": "^18.2.0",
@@ -18,8 +19,8 @@
   },
   "devDependencies": {
     "@svgr/webpack": "^8.1.0",
-    "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/typography": "^0.5.10",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/lunr": "^2.3.7",
     "@types/node": "^20.11.25",
     "@types/react": "^18.2.64",

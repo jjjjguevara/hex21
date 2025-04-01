@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Layout from "@/components/Layout";
@@ -5,9 +6,9 @@ import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Hex21 CMS",
-  description: "A lightweight CMS for scientific content",
+  description: "A DITA-powered CMS for scientific content",
 };
 
 export default function RootLayout({

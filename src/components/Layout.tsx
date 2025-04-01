@@ -1,10 +1,19 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface LayoutProps {
   children: React.ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    return pathname === path ? 'nav-link-active' : 'nav-link';
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm">
@@ -15,10 +24,28 @@ export default function Layout({ children }: LayoutProps) {
                 <span className="text-xl font-bold text-gray-800">Hex21 CMS</span>
               </Link>
               <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link href="/articles" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900">
+                <Link 
+                  href="/featured" 
+                  className={isActive('/featured')}
+                >
+                  Featured
+                </Link>
+                <Link 
+                  href="/articles" 
+                  className={isActive('/articles')}
+                >
                   Articles
                 </Link>
-                <Link href="/search" className="inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-900">
+                <Link 
+                  href="/docs" 
+                  className={isActive('/docs')}
+                >
+                  Documentation
+                </Link>
+                <Link 
+                  href="/search" 
+                  className={isActive('/search')}
+                >
                   Search
                 </Link>
               </div>
