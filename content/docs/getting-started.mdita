@@ -1,11 +1,9 @@
 ---
-title: Getting Started
-description: Learn how to use the Hex21 CMS for scientific content
-author: Hex21 Team
+title: Getting Started with Hex21 CMS
+author: Hex21 CMS Team
 date: 2024-04-01
-order: 1
-tags: [guide, introduction]
-publish: true
+tags: [documentation, guide, getting-started]
+description: Learn how to get started with the Hex21 CMS, including installation, configuration, and basic usage.
 ---
 
 # Getting Started with Hex21 CMS

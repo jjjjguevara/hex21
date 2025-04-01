@@ -2,29 +2,56 @@
 <!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
 <map>
   <title>Hex21 CMS Documentation</title>
-  
-  <topicref href="getting-started.mdita" format="mdita">
+  <topicmeta>
+    <author>Hex21 Team</author>
+    <category>Documentation</category>
+    <audience>all</audience>
+    <publish>true</publish>
+    <access_level>public</access_level>
+    <tags>
+      <tag>documentation</tag>
+      <tag>guide</tag>
+    </tags>
+  </topicmeta>
+
+  <!-- Getting Started -->
+  <topicgroup>
     <topicmeta>
       <navtitle>Getting Started</navtitle>
     </topicmeta>
-  </topicref>
-  
-  <!-- Placeholder for future topics -->
-  <topicref href="content-structure.mdita" format="mdita" processing-role="resource-only">
+    <topicref href="getting-started/introduction.mdita"/>
+    <topicref href="getting-started/installation.mdita"/>
+    <topicref href="getting-started/configuration.mdita"/>
+  </topicgroup>
+
+  <!-- Content Creation -->
+  <topicgroup>
     <topicmeta>
-      <navtitle>Content Structure</navtitle>
+      <navtitle>Content Management</navtitle>
     </topicmeta>
-  </topicref>
-  
-  <topicref href="advanced-features.mdita" format="mdita" processing-role="resource-only">
+    <topicref href="content/article-creation.mdita"/>
+    <topicref href="content/metadata-guidelines.mdita"/>
+    <topicref href="content/dita-maps.mdita"/>
+  </topicgroup>
+
+  <!-- API Reference -->
+  <topicgroup>
     <topicmeta>
-      <navtitle>Advanced Features</navtitle>
+      <navtitle>API Reference</navtitle>
     </topicmeta>
-  </topicref>
-  
-  <topicref href="latex-guidelines.mdita" format="mdita" processing-role="resource-only">
+    <topicref href="api/overview.mdita"/>
+    <topicref href="api/articles.mdita"/>
+    <topicref href="api/documentation.mdita"/>
+    <topicref href="api/errors.mdita"/>
+  </topicgroup>
+
+  <!-- Advanced Topics -->
+  <topicgroup>
     <topicmeta>
-      <navtitle>LaTeX Guidelines</navtitle>
+      <navtitle>Advanced Topics</navtitle>
     </topicmeta>
-  </topicref>
+    <topicref href="advanced/customization.mdita"/>
+    <topicref href="advanced/security.mdita"/>
+    <topicref href="advanced/performance.mdita"/>
+  </topicgroup>
 </map> 

@@ -2,10 +2,11 @@ export interface BaseMetadata {
   title: string;
   author?: string;
   date?: string;
-  audience?: 'beginner' | 'intermediate' | 'expert' | 'Undergraduate Students';
+  audience?: string | string[];
   tags?: string[];
   category?: string;
   region?: string;
+  shortdesc?: string;
 }
 
 export interface TopicMetadata extends BaseMetadata {
@@ -23,6 +24,10 @@ export interface MapMetadata extends BaseMetadata {
   category: string;  // Required for maps
   access_level: 'public' | 'restricted' | 'classified';
   publish_date?: string;
+  features?: {
+    featured?: boolean;
+    [key: string]: any;  // Other feature flags
+  };
 }
 
 export interface Article {

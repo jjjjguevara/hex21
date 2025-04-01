@@ -1,0 +1,150 @@
+---
+title: List Articles
+author: Hex21 Team
+date: 2024-03-21
+description: API endpoint for listing articles
+publish: true
+audience: developer
+tags: [api, articles, endpoints]
+---
+
+# List Articles
+
+Retrieve a paginated list of published articles.
+
+## Endpoint
+
+```http
+GET /api/articles
+```
+
+## Query Parameters
+
+| Parameter | Type    | Default | Description                                      |
+|-----------|---------|---------|--------------------------------------------------|
+| page      | integer | 1       | Page number for pagination                       |
+| limit     | integer | 10      | Number of articles per page (max 100)           |
+| category  | string  | null    | Filter articles by category                      |
+| tag       | string  | null    | Filter articles by tag                          |
+| audience  | string  | null    | Filter articles by audience level               |
+| search    | string  | null    | Full-text search query                          |
+| sort      | string  | "date"  | Sort field ("date", "title", "author")          |
+| order     | string  | "desc"  | Sort order ("asc" or "desc")                    |
+
+## Response
+
+### Success Response (200)
+
+```json
+{
+  "data": [
+    {
+      "slug": "quantum-mechanics",
+      "metadata": {
+        "title": "Introduction to Quantum Mechanics",
+        "author": "Dr. Hex",
+        "date": "2024-03-21",
+        "category": "Physics",
+        "tags": ["quantum", "physics", "tutorial"],
+        "audience": "intermediate",
+        "description": "A comprehensive introduction to quantum mechanics"
+      }
+    }
+  ],
+  "metadata": {
+    "page": 1,
+    "limit": 10,
+    "total": 42,
+    "total_pages": 5
+  }
+}
+```
+
+### Error Responses
+
+#### Invalid Parameters (400)
+
+```json
+{
+  "error": {
+    "code": "INVALID_PARAMETERS",
+    "message": "Invalid page number: must be a positive integer"
+  }
+}
+```
+
+#### Rate Limit Exceeded (429)
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests. Please try again in 60 seconds."
+  }
+}
+```
+
+## Example Requests
+
+### Basic Request
+
+```http
+GET /api/articles?page=1&limit=10
+```
+
+### Filtered Request
+
+```http
+GET /api/articles?category=Physics&audience=intermediate&sort=date&order=desc
+```
+
+### Search Request
+
+```http
+GET /api/articles?search=quantum+mechanics&tag=physics
+```
+
+## Code Examples
+
+### JavaScript/TypeScript
+
+```typescript
+async function getArticles(params = {}) {
+  const queryString = new URLSearchParams(params).toString();
+  const response = await fetch(`/api/articles?${queryString}`);
+  if (!response.ok) throw new Error('Failed to fetch articles');
+  return response.json();
+}
+
+// Usage
+const articles = await getArticles({
+  category: 'Physics',
+  page: 1,
+  limit: 10
+});
+```
+
+### Python
+
+```python
+import requests
+
+def get_articles(params=None):
+    response = requests.get('https://your-domain.com/api/articles', params=params)
+    response.raise_for_status()
+    return response.json()
+
+# Usage
+articles = get_articles({
+    'category': 'Physics',
+    'page': 1,
+    'limit': 10
+})
+```
+
+## Notes
+
+- Results are cached for 5 minutes
+- Unpublished articles are not included in the response
+- The maximum page size (limit) is 100 items
+- Search queries use fuzzy matching for better results 

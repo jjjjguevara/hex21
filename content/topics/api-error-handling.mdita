@@ -1,0 +1,181 @@
+---
+title: API Error Handling
+author: Hex21 Team
+date: 2024-03-21
+description: Common error handling patterns in the Hex21 CMS API
+publish: true
+audience: developer
+tags: [api, errors, reference]
+---
+
+# API Error Handling
+
+This topic describes the standard error handling patterns used across all Hex21 CMS API endpoints.
+
+## Error Response Format
+
+All API errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {
+      // Optional additional error details
+    }
+  }
+}
+```
+
+## Standard Error Codes
+
+### Authentication Errors
+
+| HTTP Code | Error Code | Description |
+|-----------|------------|-------------|
+| 401 | UNAUTHORIZED | Missing or invalid API key |
+| 403 | FORBIDDEN | Valid API key but insufficient permissions |
+
+### Request Errors
+
+| HTTP Code | Error Code | Description |
+|-----------|------------|-------------|
+| 400 | INVALID_PARAMETERS | Invalid request parameters |
+| 400 | VALIDATION_ERROR | Request body validation failed |
+| 404 | NOT_FOUND | Requested resource not found |
+| 405 | METHOD_NOT_ALLOWED | HTTP method not supported |
+| 409 | CONFLICT | Resource conflict (e.g., duplicate slug) |
+
+### Rate Limiting
+
+| HTTP Code | Error Code | Description |
+|-----------|------------|-------------|
+| 429 | RATE_LIMIT_EXCEEDED | Too many requests |
+
+### Server Errors
+
+| HTTP Code | Error Code | Description |
+|-----------|------------|-------------|
+| 500 | INTERNAL_ERROR | Unexpected server error |
+| 502 | BAD_GATEWAY | Upstream service error |
+| 503 | SERVICE_UNAVAILABLE | Service temporarily unavailable |
+
+## Error Handling Best Practices
+
+### Client-Side Error Handling
+
+```typescript
+async function makeApiRequest(endpoint: string, options = {}) {
+  try {
+    const response = await fetch(endpoint, options);
+    if (!response.ok) {
+      const error = await response.json();
+      throw new ApiError(error.error.code, error.error.message);
+    }
+    return response.json();
+  } catch (error) {
+    if (error instanceof ApiError) {
+      // Handle known API errors
+      handleApiError(error);
+    } else {
+      // Handle network or other errors
+      console.error('Network error:', error);
+    }
+  }
+}
+
+class ApiError extends Error {
+  constructor(public code: string, message: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+```
+
+### Retry Strategy
+
+For certain error types (e.g., rate limiting, temporary server issues), implement exponential backoff:
+
+```typescript
+async function fetchWithRetry(url: string, options = {}, maxRetries = 3) {
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const response = await fetch(url, options);
+      if (response.ok) return response.json();
+      
+      const error = await response.json();
+      if (!isRetryableError(error.error.code)) throw new ApiError(error.error.code, error.error.message);
+      
+      // Exponential backoff
+      await sleep(Math.pow(2, attempt) * 1000);
+    } catch (error) {
+      if (attempt === maxRetries - 1) throw error;
+    }
+  }
+}
+
+function isRetryableError(code: string): boolean {
+  return [
+    'RATE_LIMIT_EXCEEDED',
+    'SERVICE_UNAVAILABLE',
+    'BAD_GATEWAY'
+  ].includes(code);
+}
+```
+
+## Error Response Examples
+
+### Invalid Parameters
+
+```json
+{
+  "error": {
+    "code": "INVALID_PARAMETERS",
+    "message": "Invalid request parameters",
+    "details": {
+      "page": "Must be a positive integer",
+      "limit": "Must be between 1 and 100"
+    }
+  }
+}
+```
+
+### Authentication Error
+
+```json
+{
+  "error": {
+    "code": "UNAUTHORIZED",
+    "message": "Invalid API key provided"
+  }
+}
+```
+
+### Rate Limit Error
+
+```json
+{
+  "error": {
+    "code": "RATE_LIMIT_EXCEEDED",
+    "message": "Too many requests",
+    "details": {
+      "retry_after": 60,
+      "limit": 100,
+      "remaining": 0,
+      "reset": 1616789000
+    }
+  }
+}
+```
+
+## Monitoring and Debugging
+
+All API errors are logged with:
+- Unique request ID (returned in `X-Request-ID` header)
+- Timestamp
+- Client IP
+- API key identifier (if present)
+- Full error details
+
+Contact support with the request ID for detailed error investigation. 

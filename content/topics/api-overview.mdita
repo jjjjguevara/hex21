@@ -1,0 +1,121 @@
+---
+title: API Overview
+author: Hex21 Team
+date: 2024-03-21
+description: Overview of the Hex21 CMS API
+publish: true
+audience: developer
+tags: [api, overview]
+---
+
+# API Overview
+
+The Hex21 CMS API provides programmatic access to content, metadata, and search functionality. This API is designed to be RESTful and uses standard HTTP response codes, authentication, and verbs.
+
+## Base URL
+
+All API endpoints are relative to:
+
+```
+https://your-domain.com/api
+```
+
+## Authentication
+
+Most API endpoints require authentication. Include your API key in the `Authorization` header:
+
+```http
+Authorization: Bearer your-api-key
+```
+
+## Response Format
+
+All responses are returned in JSON format. A typical response structure:
+
+```json
+{
+  "data": {
+    // Response data here
+  },
+  "metadata": {
+    "page": 1,
+    "limit": 10,
+    "total": 100
+  }
+}
+```
+
+## Error Handling
+
+The API uses conventional HTTP response codes:
+
+- `200`: Success
+- `400`: Bad request
+- `401`: Unauthorized
+- `403`: Forbidden
+- `404`: Not found
+- `429`: Too many requests
+- `500`: Server error
+
+Error responses include a message:
+
+```json
+{
+  "error": {
+    "code": "NOT_FOUND",
+    "message": "The requested resource was not found"
+  }
+}
+```
+
+## Rate Limiting
+
+API requests are limited to:
+
+- 100 requests per minute for authenticated users
+- 10 requests per minute for unauthenticated users
+
+Rate limit information is included in response headers:
+
+```http
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 95
+X-RateLimit-Reset: 1616789000
+```
+
+## Pagination
+
+List endpoints support pagination using `page` and `limit` query parameters:
+
+```http
+GET /api/articles?page=2&limit=10
+```
+
+## Available Endpoints
+
+### Articles
+
+- `GET /api/articles`: List articles
+- `GET /api/articles/{slug}`: Get article by slug
+- `GET /api/categories`: List article categories
+
+### Documentation
+
+- `GET /api/docs`: List documentation
+- `GET /api/docs/{slug}`: Get documentation by slug
+
+## SDK Support
+
+Official SDKs are available for:
+
+- JavaScript/TypeScript
+- Python
+- Ruby
+
+## Getting Help
+
+For additional help:
+
+- Join our [Discord community](https://discord.gg/hex21)
+- File issues on [GitHub](https://github.com/hex21/cms)
+- Email support at api@hex21.dev 

@@ -2,25 +2,39 @@
 
 import { useState } from 'react';
 import { Article } from '@/types/content';
-import CategoryFilter from './CategoryFilter';
-import ArticleList from './ArticleList';
+import ArticlesTable from './ArticlesTable';
 
 interface ArticlesContainerProps {
-  initialArticles: Article[];
-  categories: string[];
+  articles: Article[];
 }
 
-export default function ArticlesContainer({ initialArticles, categories }: ArticlesContainerProps) {
-  const [filteredArticles, setFilteredArticles] = useState<Article[]>(initialArticles);
+export default function ArticlesContainer({ articles }: ArticlesContainerProps) {
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+
+  const handleTagSelect = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag)
+        : [...prev, tag]
+    );
+  };
+
+  const handleCategorySelect = (category: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category)
+        : [...prev, category]
+    );
+  };
 
   return (
-    <>
-      <CategoryFilter 
-        categories={categories} 
-        articles={initialArticles} 
-        onFilter={setFilteredArticles} 
-      />
-      <ArticleList articles={filteredArticles} />
-    </>
+    <ArticlesTable
+      articles={articles}
+      selectedTags={selectedTags}
+      selectedCategories={selectedCategories}
+      onTagSelect={handleTagSelect}
+      onCategorySelect={handleCategorySelect}
+    />
   );
 } 

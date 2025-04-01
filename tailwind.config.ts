@@ -79,6 +79,39 @@ const config: Config = {
                 color: '#0284c7',
               },
             },
+            'code::before': {
+              content: '""'
+            },
+            'code::after': {
+              content: '""'
+            },
+            code: {
+              color: '#24292e',
+              backgroundColor: '#f6f8fa',
+              paddingLeft: '0.25rem',
+              paddingRight: '0.25rem',
+              paddingTop: '0.125rem',
+              paddingBottom: '0.125rem',
+              borderRadius: '0.25rem',
+              fontWeight: '400',
+            },
+            'pre code': {
+              color: 'inherit',
+              backgroundColor: 'transparent',
+              padding: '0',
+            },
+            pre: {
+              backgroundColor: '#24292e',
+              color: '#e6edf3',
+              overflowX: 'auto',
+              fontWeight: '400',
+            },
+            'blockquote p:first-of-type::before': {
+              content: '""'
+            },
+            'blockquote p:last-of-type::after': {
+              content: '""'
+            },
           },
         },
       },
@@ -88,6 +121,7 @@ const config: Config = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
   ],
+  darkMode: 'media',
 };
 
 export default config; 

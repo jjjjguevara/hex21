@@ -2,64 +2,119 @@ import matter from 'gray-matter';
 import { BaseMetadata, TopicMetadata, MapMetadata } from '@/types/content';
 
 function extractXMLValue(content: string, tag: string): string | undefined {
-  const match = content.match(new RegExp(`<${tag}>(.*?)</${tag}>`, 's'));
+  // First try to find it in topicmeta
+  const topicmetaRegex = new RegExp(`<topicmeta>[^]*?<${tag}[^>]*>(.*?)</${tag}>[^]*?</topicmeta>`, 's');
+  const topicmetaMatch = content.match(topicmetaRegex);
+  if (topicmetaMatch) {
+    return topicmetaMatch[1].trim();
+  }
+
+  // Fallback to direct tag search
+  const regex = new RegExp(`<${tag}[^>]*>(.*?)</${tag}>`, 's');
+  const match = content.match(regex);
   return match ? match[1].trim() : undefined;
 }
 
-function extractDataValue(content: string, name: string): string | undefined {
-  const match = content.match(new RegExp(`<data name="${name}"[^>]*value="([^"]*)"`, 's'));
-  return match ? match[1] : undefined;
+function extractDataValues(content: string): { [key: string]: any } {
+  const dataRegex = /<data\s+name="([^"]+)"\s+value="([^"]+)"/g;
+  const values: { [key: string]: any } = {};
+  let match;
+  while ((match = dataRegex.exec(content)) !== null) {
+    const [_, name, value] = match;
+    // Handle features specially
+    if (name === 'featured') {
+      values.features = values.features || {};
+      values.features.featured = value === 'true';
+    } else {
+      values[name] = value;
+    }
+  }
+  return values;
 }
 
-function parseXMLMetadata(content: string): { metadata: MapMetadata; topics: string[] } {
-  // Extract basic metadata from topicmeta
-  const topicmetaMatch = content.match(/<topicmeta>(.*?)<\/topicmeta>/s);
-  const topicmeta = topicmetaMatch ? topicmetaMatch[1] : '';
+function extractTopicRefs(content: string): string[] {
+  const regex = /<topicref\s+href="([^"]+)"/g;
+  const matches = [...content.matchAll(regex)];
+  return matches.map(match => match[1]);
+}
 
-  const title = extractXMLValue(content, 'title') || '';
-  const author = extractXMLValue(topicmeta, 'author');
-  const category = extractXMLValue(topicmeta, 'category') || 'Uncategorized';
-  const audience = extractXMLValue(topicmeta, 'audience');
-  
-  // Extract data values
-  const publish = extractDataValue(topicmeta, 'publish') === 'true';
-  const access_level = extractDataValue(topicmeta, 'access_level') || 'public';
-  
-  // Extract tags
-  const tagsData = extractDataValue(topicmeta, 'tags') || '';
-  const tags = tagsData.split(',').map(t => t.trim()).filter(Boolean);
+function parseMapMetadata(content: string): { metadata: MapMetadata; topics: string[] } {
+  try {
+    // First try to parse YAML frontmatter
+    const { data: yamlData } = matter(content);
+    
+    if (yamlData && Object.keys(yamlData).length > 0) {
+      // Extract topics from XML part after frontmatter
+      const topics = extractTopicRefs(content);
 
-  // Extract topic references
-  const topicRefs = content.match(/<topicref href="[^"]+"/g) || [];
-  const topics = topicRefs.map(ref => {
-    const match = ref.match(/href="\.\.\/topics\/(.*?)\.mdita"/);
-    return match ? match[1] : '';
-  }).filter(Boolean);
+      const metadata: MapMetadata = {
+        title: yamlData.title || 'Untitled',
+        author: yamlData.authors?.[0] || yamlData.author,
+        category: yamlData.categories?.[0] || yamlData.category || 'Uncategorized',
+        audience: yamlData.audience,
+        publish: yamlData.publish === true,
+        access_level: yamlData.access_level || 'public',
+        tags: yamlData.keywords || yamlData.tags || [],
+        shortdesc: yamlData.shortdesc || yamlData.description,
+        features: {
+          featured: yamlData.features?.featured === true,
+          ...yamlData.features
+        }
+      };
 
-  console.log('Parsed DITA map metadata:', {
-    title,
-    author,
-    category,
-    audience,
-    publish,
-    access_level,
-    tags,
-    topics
-  });
+      console.log('Parsed YAML metadata:', metadata);
+      return { metadata, topics };
+    }
 
-  const metadata: MapMetadata = {
-    id: title.toLowerCase().replace(/\s+/g, '-'),
-    title,
-    author,
-    category,
-    audience: audience as any,
-    publish,
-    access_level: access_level as 'public' | 'restricted' | 'classified',
-    topics,
-    tags
-  };
+    // Fallback to XML parsing if no YAML frontmatter
+    const title = extractXMLValue(content, 'title') || 'Untitled';
+    const author = extractXMLValue(content, 'author');
+    const category = extractXMLValue(content, 'category') || 'Uncategorized';
+    const audience = extractXMLValue(content, 'audience');
+    const shortdesc = extractXMLValue(content, 'shortdesc') || extractXMLValue(content, 'description');
+    
+    // Extract all data values at once
+    const dataValues = extractDataValues(content);
+    const publish = dataValues.publish === 'true';
+    const accessLevel = dataValues.access_level || 'public';
+    const tags = dataValues.tags ? dataValues.tags.split(',').map(tag => tag.trim()) : [];
 
-  return { metadata, topics };
+    const topics = extractTopicRefs(content);
+
+    const metadata: MapMetadata = {
+      title,
+      author,
+      category,
+      audience,
+      publish,
+      access_level: accessLevel,
+      tags,
+      shortdesc,
+      features: {
+        featured: dataValues.features?.featured === true,
+        ...dataValues.features
+      }
+    };
+
+    console.log('Parsed XML metadata:', metadata);
+    return { metadata, topics };
+  } catch (error) {
+    console.error('Error parsing metadata:', error);
+    // Return default values if parsing fails
+    return {
+      metadata: {
+        title: 'Untitled',
+        category: 'Uncategorized',
+        publish: false,
+        access_level: 'public',
+        tags: [],
+        features: {
+          featured: false
+        }
+      },
+      topics: []
+    };
+  }
 }
 
 export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'): { 
@@ -67,7 +122,7 @@ export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'):
   topics?: string[];
 } {
   if (type === 'map') {
-    return parseXMLMetadata(content);
+    return parseMapMetadata(content);
   }
 
   // Parse YAML frontmatter for topics
@@ -82,7 +137,9 @@ export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'):
     tags: data.tags || [],
     category: data.category,
     publish: data.publish !== false,
-    conditional: data.conditional || {}
+    featured: data.featured === true,
+    conditional: data.conditional || {},
+    shortdesc: data.shortdesc || data.description
   };
 
   return { metadata };
@@ -94,10 +151,14 @@ export function validateMetadata(metadata: BaseMetadata): boolean {
     return false;
   }
 
-  if ('audience' in metadata && metadata.audience && 
-      !['beginner', 'intermediate', 'expert', 'Undergraduate Students'].includes(metadata.audience)) {
-    console.error('Invalid audience level:', metadata.audience);
-    return false;
+  if ('audience' in metadata && metadata.audience) {
+    const validAudiences = ['beginner', 'intermediate', 'expert', 'all', 'developer', 'Undergraduate Students'];
+    const audiences = Array.isArray(metadata.audience) ? metadata.audience : [metadata.audience];
+    
+    if (!audiences.every(a => validAudiences.includes(a))) {
+      console.error('Invalid audience level:', metadata.audience);
+      return false;
+    }
   }
 
   return true;
@@ -109,7 +170,7 @@ export function isTopicCompatibleWithMap(
 ): { compatible: boolean; reason?: string } {
   // Check audience compatibility
   if (topicMetadata.audience && mapMetadata.audience) {
-    const audienceLevels = ['beginner', 'intermediate', 'expert', 'Undergraduate Students'];
+    const audienceLevels = ['beginner', 'intermediate', 'expert', 'all', 'developer'];
     const topicLevel = audienceLevels.indexOf(topicMetadata.audience);
     const mapLevel = audienceLevels.indexOf(mapMetadata.audience);
     

@@ -7,6 +7,7 @@
     <category>Physics</category>
     <audience>Undergraduate Students</audience>
     <data name="publish" value="true"/>
+    <data name="featured" value="true"/>
     <data name="access_level" value="public"/>
     <data name="tags" value="physics,quantum,mechanics"/>
   </topicmeta>

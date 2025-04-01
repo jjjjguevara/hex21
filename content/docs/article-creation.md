@@ -1,3 +1,11 @@
+---
+title: Article Creation Guide
+author: Hex21 CMS Team
+date: 2024-04-01
+tags: [documentation, guide, content-creation]
+description: A comprehensive guide for creating articles in the Hex21 CMS, including metadata guidelines and best practices.
+---
+
 # Article Creation Guide
 
 ## Overview

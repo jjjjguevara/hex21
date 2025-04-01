@@ -1,48 +1,52 @@
 ---
-title: "The Physics of Sound: Exploring Acoustics in Everyday Life"
-slug: physics-of-sound
-content-type: learning-material
-publication-date: 2024-11-30
-last-edited: 2024-12-04T15:45:00
+title: The Physics of Sound
+author: Dr. Hex
+publish: true
+content-type: article
+publication-date: 2024-03-15
+last-edited: 2024-03-28
 categories:
   - Physics
   - Acoustics
-  - STEM Education
 authors:
-  - conref: shared-authors.dita#professors/mary-jones
-  - conref: shared-authors.dita#professors/alan-smith
-editor: Dr. Rachel Lee
-reviewer: Prof. James Wilson
+  - name: Dr. Hex
+    affiliation: Harvard University
+    email: j@hex21.com
+editor: Dr. Hex
+reviewer: Prof. Poly
 keywords:
+  - acoustics
   - sound waves
   - frequency
-  - acoustic phenomena
-  - interactive learning
-audience:
-  - Undergraduate Students
-  - STEM Educators
+  - amplitude
+  - harmonics
+audience: undergraduate
 media:
-  pdf-download: physics-of-sound-handout.pdf
-  interactive-media: yes
-  video-embed: https://eduplatform.com/media/sound-waves-intro.mp4
-  simulation: https://eduplatform.com/simulations/sound-waves
-region: Global
+  - type: image
+    path: /media/sound-waves.png
+    caption: Sound wave visualization
+  - type: video
+    path: /media/harmonic-motion.mp4
+    caption: Simple harmonic motion demonstration
+region: global
 language: en-US
-accessibility-compliant: WCAG 2.1 AA
+accessibility-compliant: true
+delivery:
+  - web
+  - pdf
+  - epub
+version: 1.0.0
+revision-history:
+  - version: 1.0.0
+    date: 2024-03-15
+    author: Dr. Hex
+    changes: Initial release
+analytics:
+  tracking-id: UA-12345-6
 features:
   subscription-required: yes
-  featured: no
-delivery:
-  channel-web: yes
-  channel-app: yes
-  channel-print: no
-version: 1.2
-revision-history: |
-  2024-11-28T10:30:00: Initial draft
-  2024-12-02T14:00:00: Peer-reviewed and updated
-analytics:
-  engagement-tracking: enabled
-  utm-campaign: physics-awareness
+  featured: true
+shortdesc: An in-depth exploration of sound physics, covering wave properties, frequency, amplitude, and harmonics, with practical applications in acoustics and music theory.
 ---
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -60,3 +64,4 @@ analytics:
   <topicref href="../topics/interactive-simulations.mdita" format="mdita"/>
   <topicref href="../topics/supplementary-materials.mdita" format="mdita"/>
 </map> 
+

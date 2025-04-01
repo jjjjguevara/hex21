@@ -1,133 +1,213 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { parseMetadata } from '@/lib/metadata';
-import { Article, TopicMetadata } from '@/types/content';
-import Script from 'next/script';
 import matter from 'gray-matter';
-import { marked } from 'marked';
+import MathJaxConfig from '@/components/MathJaxConfig';
+import { getArticleData } from '@/lib/content.server';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkMath from 'remark-math';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeKatex from 'rehype-katex';
+import rehypeStringify from 'rehype-stringify';
+import 'katex/dist/katex.min.css';
+import { Metadata } from 'next';
+import ArticlesContainer from '@/components/ArticlesContainer';
 
-async function getContentSlugs() {
+async function getArticleSlugs() {
+  // Check both maps and articles directories
   const mapsDir = path.join(process.cwd(), 'content/maps');
-  const filenames = await fs.readdir(mapsDir);
-  return filenames
-    .filter((name) => name.endsWith('.ditamap'))
-    .map((name) => name.replace(/\.ditamap$/, ''));
+  const articlesDir = path.join(process.cwd(), 'content/articles');
+  
+  try {
+    const [mapFiles, articleFiles] = await Promise.all([
+      fs.readdir(mapsDir).catch(() => []),
+      fs.readdir(articlesDir).catch(() => [])
+    ]);
+
+    const mapSlugs = mapFiles
+      .filter(file => file.endsWith('.ditamap'))
+      .map(file => file.replace(/\.ditamap$/, ''));
+
+    const articleSlugs = articleFiles
+      .filter(file => file.endsWith('.mdita') || file.endsWith('.md'))
+      .map(file => file.replace(/\.(mdita|md)$/, ''));
+
+    return [...mapSlugs, ...articleSlugs];
+  } catch (error) {
+    console.error('Error reading content directories:', error);
+    return [];
+  }
 }
 
 export async function generateStaticParams() {
-  const slugs = await getContentSlugs();
+  const slugs = await getArticleSlugs();
+  console.log('Generated slugs:', slugs);
   return slugs.map((slug) => ({ slug }));
 }
 
-async function getArticleData(slug: string): Promise<Article | null> {
-  const mapsDir = path.join(process.cwd(), 'content/maps');
-  const topicsDir = path.join(process.cwd(), 'content/topics');
-  const mapPath = path.join(mapsDir, `${slug}.ditamap`);
-
-  try {
-    const mapContents = await fs.readFile(mapPath, 'utf8');
-    const { metadata, topics } = parseMetadata(mapContents, 'map');
-
-    // Only proceed if the article is published
-    if (!metadata.publish) {
-      return null;
-    }
-
-    // Load all topics referenced in the map
-    const topicContents = await Promise.all(
-      topics.map(async (topicId) => {
-        try {
-          const topicPath = path.join(topicsDir, `${topicId}.mdita`);
-          const content = await fs.readFile(topicPath, 'utf8');
-          const { data: topicMetadata, content: markdown } = matter(content);
-          const html = marked(markdown);
-          return {
-            id: topicId,
-            metadata: topicMetadata as TopicMetadata,
-            content: html
-          };
-        } catch (error) {
-          console.error(`Error loading topic ${topicId}:`, error);
-          return null;
-        }
-      })
-    );
-
-    // Filter out any failed topic loads
-    const validTopics = topicContents.filter((topic): topic is NonNullable<typeof topic> => topic !== null);
-
-    // Combine all topic contents
-    const combinedContent = validTopics.map(topic => topic.content).join('\n');
-
-    return {
-      slug,
-      content: combinedContent,
-      metadata,
-      topics: validTopics
-    };
-  } catch (error) {
-    console.error(`Error fetching article ${slug}:`, error);
-    return null;
-  }
+async function processMarkdown(content: string) {
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkMath)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeKatex)
+    .use(rehypeStringify)
+    .process(content);
+  
+  return result.toString();
 }
 
-export default async function ArticlePage({ params }: { params: { slug: string } }) {
-  const article = await getArticleData(params.slug);
+type Props = {
+  params: { slug: string }
+};
 
-  if (!article) {
-    notFound();
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const data = await getArticleData(params.slug);
+  
+  if (!data) {
+    return {
+      title: 'Article Not Found'
+    };
   }
 
-  const { metadata, content } = article;
+  const title = data.metadata.title || params.slug;
+  const description = data.metadata.shortdesc || data.metadata.description;
 
-  return (
-    <>
-      <Script
-        id="mathjax-config"
-        strategy="beforeInteractive"
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.MathJax = {
-              tex: {
-                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
-                processEscapes: true,
-              },
-              options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-              }
-            };
-          `,
-        }}
-      />
-      <Script
-        id="mathjax-script"
-        src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"
-        strategy="beforeInteractive"
-      />
-      <article className="prose lg:prose-xl mx-auto py-8 px-4">
-        <h1>{metadata.title}</h1>
-        {metadata.author && (
-          <p className="text-gray-600">By {metadata.author}</p>
-        )}
-        {metadata.date && (
-          <p className="text-gray-600">{new Date(metadata.date).toLocaleDateString()}</p>
-        )}
-        {metadata.tags && metadata.tags.length > 0 && (
-          <div className="flex gap-2 my-4">
-            {metadata.tags.map((tag) => (
-              <span key={tag} className="bg-gray-100 text-gray-800 text-sm px-2 py-1 rounded">
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        <div 
-          className="mt-8" 
-          dangerouslySetInnerHTML={{ __html: content }} 
-        />
-      </article>
-    </>
-  );
+  return {
+    title: `${title}`,
+    description,
+    keywords: data.metadata.tags,
+    authors: data.metadata.authors?.map(author => ({
+      name: typeof author === 'string' ? author : author.name
+    })) || (data.metadata.author ? [{ name: data.metadata.author }] : undefined),
+    openGraph: {
+      title,
+      description,
+      type: 'article'
+    }
+  };
+}
+
+export default async function ArticlePage({ params }: Props) {
+  try {
+    console.log('Rendering article page for slug:', params.slug);
+    const data = await getArticleData(params.slug);
+
+    if (!data) {
+      console.log('No data found for slug:', params.slug);
+      notFound();
+    }
+
+    const { metadata, content } = data;
+
+    return (
+      <>
+        <MathJaxConfig />
+        <article className="max-w-4xl mx-auto py-8 px-4">
+          <header className="mb-8">
+            <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+              {metadata.title}
+            </h1>
+            
+            {/* Authors */}
+            {metadata.authors && metadata.authors.length > 0 && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                By {metadata.authors.map(author => {
+                  // Handle conref display
+                  if (author.conref) {
+                    // Extract just the name part after the last '/'
+                    const name = author.conref.split('/').pop()?.replace(/-/g, ' ');
+                    return name || author.conref;
+                  }
+                  return author.name || 'Unknown Author';
+                }).join(', ')}
+              </div>
+            )}
+
+            {/* Editor & Reviewer */}
+            {(metadata.editor || metadata.reviewer) && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                {metadata.editor && <span>Editor: {metadata.editor}</span>}
+                {metadata.editor && metadata.reviewer && <span className="mx-2">•</span>}
+                {metadata.reviewer && <span>Reviewer: {metadata.reviewer}</span>}
+              </div>
+            )}
+
+            {/* Publication Date & Last Edited */}
+            {(metadata.date || metadata.lastEdited) && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                {metadata.date && (
+                  <span>Published: {new Date(metadata.date).toLocaleDateString()}</span>
+                )}
+                {metadata.date && metadata.lastEdited && <span className="mx-2">•</span>}
+                {metadata.lastEdited && (
+                  <span>Last updated: {new Date(metadata.lastEdited).toLocaleDateString()}</span>
+                )}
+              </div>
+            )}
+
+            {/* Categories */}
+            {metadata.categories && metadata.categories.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {metadata.categories.map((category) => (
+                  <span
+                    key={category}
+                    className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Keywords/Tags */}
+            {metadata.keywords && metadata.keywords.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-2">
+                {metadata.keywords.map((keyword) => (
+                  <span
+                    key={keyword}
+                    className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                  >
+                    {keyword}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Audience */}
+            {metadata.audience && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                Audience: {Array.isArray(metadata.audience) ? metadata.audience.join(', ') : metadata.audience}
+              </div>
+            )}
+
+            {/* Version */}
+            {metadata.version && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                Version: {metadata.version}
+              </div>
+            )}
+
+            {/* Language */}
+            {metadata.language && (
+              <div className="text-gray-600 dark:text-gray-400 mb-2">
+                Language: {metadata.language}
+              </div>
+            )}
+          </header>
+
+          <div 
+            className="prose dark:prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </article>
+      </>
+    );
+  } catch (error) {
+    console.error('Error rendering article page:', error);
+    notFound();
+  }
 } 
