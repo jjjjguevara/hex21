@@ -1,0 +1,272 @@
+
+> hex21@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.26
+  - Local:        http://localhost:3000
+  - Environments: .env.development
+
+ ✓ Starting...
+ ✓ Ready in 1414ms
+ ○ Compiling /articles/[slug] ...
+ ✓ Compiled /articles/[slug] in 1533ms (1805 modules)
+Generated slugs: [
+  'physics-of-sound',
+  'quantum-mechanics',
+  'sound-physics',
+  'test-obsidian',
+  'brownian-motion',
+  'sample-article',
+  'test-obsidian'
+]
+Rendering article page for slug: test-obsidian
+Reading map file: /Users/josueguevara/Documents/Builds/hex21/content/maps/test-obsidian.ditamap
+Parsed XML metadata: {
+  title: 'Obsidian-Style Markdown Test',
+  author: 'Dr. Hex',
+  category: 'Technical Documentation',
+  audience: undefined,
+  publish: true,
+  access_level: 'public',
+  tags: [],
+  shortdesc: undefined,
+  features: { featured: false }
+}
+Parsed metadata: {
+  title: 'Obsidian-Style Markdown Test',
+  author: 'Dr. Hex',
+  category: 'Technical Documentation',
+  audience: undefined,
+  publish: true,
+  access_level: 'public',
+  tags: [],
+  shortdesc: undefined,
+  features: { featured: false }
+}
+Found topics: [ '../topics/math-example.md', '../topics/features-example.md' ]
+Looking for topic file: ../topics/math-example.md
+Cleaned topic ID: math-example.md
+Possible paths: [
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.mdita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.dita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.xml'
+]
+Trying path: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Looking for topic file: ../topics/features-example.md
+Cleaned topic ID: features-example.md
+Possible paths: [
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.mdita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.dita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.xml'
+]
+Trying path: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Reading map file: /Users/josueguevara/Documents/Builds/hex21/content/maps/test-obsidian.ditamap
+Parsed XML metadata: {
+  title: 'Obsidian-Style Markdown Test',
+  author: 'Dr. Hex',
+  category: 'Technical Documentation',
+  audience: undefined,
+  publish: true,
+  access_level: 'public',
+  tags: [],
+  shortdesc: undefined,
+  features: { featured: false }
+}
+Parsed metadata: {
+  title: 'Obsidian-Style Markdown Test',
+  author: 'Dr. Hex',
+  category: 'Technical Documentation',
+  audience: undefined,
+  publish: true,
+  access_level: 'public',
+  tags: [],
+  shortdesc: undefined,
+  features: { featured: false }
+}
+Found topics: [ '../topics/math-example.md', '../topics/features-example.md' ]
+Looking for topic file: ../topics/math-example.md
+Cleaned topic ID: math-example.md
+Possible paths: [
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.mdita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.dita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md.xml'
+]
+Trying path: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Looking for topic file: ../topics/features-example.md
+Cleaned topic ID: features-example.md
+Possible paths: [
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.mdita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.md',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.dita',
+  '/Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md.xml'
+]
+Trying path: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Found topic file at: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Found topic file: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Error loading topic ../topics/math-example.md: RangeError: Maximum call stack size exceeded
+    at RegExp.exec (<anonymous>)
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:67:45)
+    at overload (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:319:12)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:355:27)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+Found topic file at: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Found topic file: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Error loading topic ../topics/features-example.md: TypeError: Cannot read properties of undefined (reading 'slice')
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:57:45)
+    at overload (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:319:12)
+    at node ([33mparagraph[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:355:27)
+    at node ([33mroot[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at visitParents (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:313:31)
+    at visit (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:310:73)
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:36:64)
+    at wrapped (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:165:27)
+    at next (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:91:23)
+    at Object.run (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:62:5)
+    at executor (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:913:20)
+    at Function.run (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:896:19)
+    at executor (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:749:12)
+    at new Promise (<anonymous>)
+    at Function.process (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:732:47)
+    at processMarkdown (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:261:337)
+    at eval (webpack-internal:///(rsc)/./src/lib/content.server.ts:136:108)
+    at async Promise.all (index 1)
+    at async getArticleData (webpack-internal:///(rsc)/./src/lib/content.server.ts:127:35)
+    at async ArticlePage (webpack-internal:///(rsc)/./src/app/articles/[slug]/page.tsx:92:22)
+No valid topics found for article: test-obsidian
+No data found for slug: test-obsidian
+Error rendering article page: Error: NEXT_NOT_FOUND
+    at notFound (webpack-internal:///(rsc)/./node_modules/next/dist/client/components/not-found.js:23:19)
+    at ArticlePage (webpack-internal:///(rsc)/./src/app/articles/[slug]/page.tsx:95:70) {
+  digest: 'NEXT_NOT_FOUND'
+}
+Found topic file at: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Found topic file: /Users/josueguevara/Documents/Builds/hex21/content/topics/math-example.md
+Error loading topic ../topics/math-example.md: RangeError: Maximum call stack size exceeded
+    at RegExp.exec (<anonymous>)
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:67:45)
+    at overload (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:319:12)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:355:27)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at node ([33mtext[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+Found topic file at: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Found topic file: /Users/josueguevara/Documents/Builds/hex21/content/topics/features-example.md
+Error loading topic ../topics/features-example.md: TypeError: Cannot read properties of undefined (reading 'slice')
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:57:45)
+    at overload (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:319:12)
+    at node ([33mparagraph[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:355:27)
+    at node ([33mroot[39m) (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:372:61)
+    at visitParents (webpack-internal:///(rsc)/./node_modules/unist-util-visit-parents/lib/index.js:313:31)
+    at visit (webpack-internal:///(rsc)/./node_modules/unist-util-visit/lib/index.js:310:73)
+    at eval (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:36:64)
+    at wrapped (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:165:27)
+    at next (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:91:23)
+    at Object.run (webpack-internal:///(rsc)/./node_modules/trough/lib/index.js:62:5)
+    at executor (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:913:20)
+    at Function.run (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:896:19)
+    at executor (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:749:12)
+    at new Promise (<anonymous>)
+    at Function.process (webpack-internal:///(rsc)/./node_modules/unified/lib/index.js:732:47)
+    at processMarkdown (webpack-internal:///(rsc)/./src/lib/markdown/processor.ts:261:337)
+    at eval (webpack-internal:///(rsc)/./src/lib/content.server.ts:136:108)
+    at async Promise.all (index 1)
+    at async getArticleData (webpack-internal:///(rsc)/./src/lib/content.server.ts:127:35)
+    at async Module.generateMetadata (webpack-internal:///(rsc)/./src/app/articles/[slug]/page.tsx:65:18)
+No valid topics found for article: test-obsidian
+ GET /articles/test-obsidian 404 in 6535ms
+ ✓ Compiled in 27ms

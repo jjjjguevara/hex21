@@ -57,11 +57,11 @@ async function getAllArticles() {
           );
           
           return {
-            slug,
             type: 'article',
+            ...metadata,
+            slug,
             title: metadata.title || slug,
-            content: topicContents.join('\n'),
-            ...metadata
+            content: topicContents.join('\n')
           };
         } catch (error) {
           console.warn(`Error processing map file ${file}:`, error);

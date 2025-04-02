@@ -1,0 +1,109 @@
+/* brownian-motion-sim.css (Optional Styling) */
+.simulation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: sans-serif;
+    padding: 20px;
+    background-color: #f0f0f0; /* Light gray page background */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 900px; /* Limit container width */
+    margin: 20px auto; /* Center the container */
+  }
+  
+  .simulation-canvas {
+    border: 1px solid #ccc;
+    margin-bottom: 20px;
+    background-color: #282c34; /* Match JS background */
+    display: block; /* Remove potential extra space below canvas */
+  }
+  
+  .controls {
+    display: flex;
+    flex-wrap: wrap; /* Allow controls to wrap on smaller screens */
+    gap: 20px; /* Space between control elements */
+    align-items: center; /* Align items vertically */
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #e9e9e9; /* Slightly darker background for controls */
+    border-radius: 6px;
+    width: 100%; /* Make controls container take full width */
+    box-sizing: border-box; /* Include padding in width calculation */
+    justify-content: center; /* Center controls horizontally */
+  }
+  
+  .controls button {
+    padding: 10px 20px;
+    font-size: 1em;
+    cursor: pointer;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+  }
+  
+  .controls button:hover {
+    background-color: #45a049;
+  }
+  
+  .controls button:active {
+      background-color: #3e8e41;
+  }
+  
+  /* Style the button when simulation is running */
+  .simulation-container button:active, /* Keep consistent active style */
+  .simulation-container button:focus {
+      outline: none; /* Remove default focus outline */
+      box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.5); /* Add custom focus ring */
+  }
+  
+  /* Update button style when running */
+  /* Check the actual isRunning state in JS to apply conditional styles if needed,
+     or rely on the button text change */
+  
+  .slider-control {
+    display: flex;
+    flex-direction: column; /* Stack label and slider */
+    align-items: center; /* Center slider items */
+    min-width: 180px; /* Give sliders some minimum width */
+  }
+  
+  .slider-control label {
+    margin-bottom: 5px; /* Space between label and slider */
+    font-size: 0.9em;
+    color: #333;
+  }
+  
+  .slider-control input[type="range"] {
+    width: 150px; /* Fixed width for sliders */
+    cursor: pointer;
+  }
+  
+  .explanation {
+      margin-top: 15px;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 0.9em;
+      line-height: 1.5;
+      color: #333;
+      max-width: 800px;
+      text-align: left;
+  }
+  
+  .explanation strong {
+      color: #0056b3; /* Darker blue for emphasis */
+  }
+  
+  h1 {
+      color: #333;
+      margin-bottom: 10px;
+  }
+  
+  p {
+      color: #555;
+      margin-bottom: 15px;
+  }

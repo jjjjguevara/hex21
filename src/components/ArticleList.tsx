@@ -21,7 +21,11 @@ export default function ArticleList({ articles }: ArticleListProps) {
             </Link>
           </h2>
           {article.metadata.author && (
-            <p className="text-gray-600 mb-2">By {article.metadata.author}</p>
+            <p className="text-gray-600 mb-2">
+              By {typeof article.metadata.author === 'string' 
+                ? article.metadata.author 
+                : article.metadata.author.name}
+            </p>
           )}
           <p className="text-gray-600 mb-2">
             Category: {article.metadata.category}

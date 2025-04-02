@@ -1,15 +1,22 @@
-import React from 'react';
+import { Metadata } from 'next';
+import { getDocsNavigation } from '@/lib/docs';
 
-export default function DocsLayout({
+export const metadata: Metadata = {
+  title: 'Documentation - Hex 21',
+  description: 'Learn how to use Hex 21 CMS for managing and publishing scientific content with DITA XML, LaTeX support, and powerful search capabilities.',
+  keywords: 'CMS,DITA,Scientific Content,LaTeX,Technical Documentation',
+};
+
+export default async function DocsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const navigation = await getDocsNavigation();
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {children}
-      </div>
+    <div className="flex-1">
+      {children}
     </div>
   );
 } 

@@ -2,7 +2,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
 import matter from 'gray-matter';
-import MathJaxConfig from '@/components/MathJaxConfig';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkRehype from 'remark-rehype';
@@ -34,9 +33,28 @@ async function processMarkdown(content: string) {
 async function getTopicData(slug: string) {
   try {
     const topicsDir = path.join(process.cwd(), 'content/topics');
-    const filePath = path.join(topicsDir, `${slug}.mdita`);
     
-    const content = await fs.readFile(filePath, 'utf8');
+    // Try both .md and .mdita extensions
+    const extensions = ['.md', '.mdita'];
+    let content;
+    let filePath;
+    
+    for (const ext of extensions) {
+      try {
+        filePath = path.join(topicsDir, `${slug}${ext}`);
+        content = await fs.readFile(filePath, 'utf8');
+        break; // If successful, exit the loop
+      } catch (error) {
+        // Continue to next extension if file not found
+        continue;
+      }
+    }
+    
+    if (!content) {
+      console.error(`No content found for topic ${slug} with any supported extension`);
+      return null;
+    }
+    
     const { data: metadata, content: mdContent } = matter(content);
     
     // Process the markdown content
@@ -57,9 +75,9 @@ export async function generateStaticParams() {
   const files = await fs.readdir(topicsDir);
   
   return files
-    .filter(file => file.endsWith('.mdita'))
+    .filter(file => file.endsWith('.mdita') || file.endsWith('.md'))
     .map(file => ({
-      slug: file.replace(/\.mdita$/, '')
+      slug: file.replace(/\.(mdita|md)$/, '')
     }));
 }
 
@@ -74,7 +92,6 @@ export default async function TopicPage({ params }: { params: { slug: string } }
 
   return (
     <>
-      <MathJaxConfig />
       <article className="max-w-4xl mx-auto py-8 px-4">
         <header className="mb-8">
           <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">

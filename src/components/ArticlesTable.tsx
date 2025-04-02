@@ -38,7 +38,7 @@ const columns: Column[] = [
     render: (article) => (
       <div className="max-w-md">
         <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 whitespace-normal">
-          {article.metadata.shortdesc || article.metadata.description || 'No description available'}
+          {article.metadata.shortdesc || 'No description available'}
         </p>
       </div>
     )
@@ -48,12 +48,10 @@ const columns: Column[] = [
     key: 'author', 
     sortable: true,
     render: (article) => {
-      const authors = Array.isArray(article.metadata.authors) 
-        ? article.metadata.authors 
-        : [article.metadata.author];
-      return authors.filter(Boolean).map(author => 
-        typeof author === 'string' ? author : author?.name || 'Unknown'
-      ).join(', ') || 'Unknown';
+      const author = article.metadata.author;
+      if (!author) return 'Unknown';
+      if (typeof author === 'string') return author;
+      return author.name || 'Unknown';
     }
   },
   { 
@@ -62,7 +60,7 @@ const columns: Column[] = [
     sortable: true,
     render: (article) => (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-sm font-medium bg-gray-100 dark:bg-gray-800">
-        {article.metadata.category}
+        {article.metadata.category || 'Uncategorized'}
       </span>
     )
   },
@@ -127,22 +125,27 @@ export default function ArticlesTable({
   const filteredArticles = articles.filter(article => {
     const matchesSearch = searchTerm === '' || 
       article.metadata.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.metadata.shortdesc?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      article.metadata.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      article.metadata.shortdesc?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesTags = selectedTags.length === 0 || 
       selectedTags.every(tag => article.metadata.tags?.includes(tag));
 
     const matchesCategories = selectedCategories.length === 0 || 
-      selectedCategories.includes(article.metadata.category);
+      (article.metadata.category && selectedCategories.includes(article.metadata.category));
 
     return matchesSearch && matchesTags && matchesCategories;
   });
 
   // Sort filtered articles
   const sortedArticles = [...filteredArticles].sort((a, b) => {
-    const aValue = a.metadata[sortConfig.key] || '';
-    const bValue = b.metadata[sortConfig.key] || '';
+    if (sortConfig.key === 'slug') {
+      return sortConfig.direction === 'asc' 
+        ? a.slug.localeCompare(b.slug) 
+        : b.slug.localeCompare(a.slug);
+    }
+
+    const aValue = a.metadata[sortConfig.key as keyof typeof a.metadata] || '';
+    const bValue = b.metadata[sortConfig.key as keyof typeof b.metadata] || '';
 
     if (Array.isArray(aValue) || Array.isArray(bValue)) {
       const aLength = Array.isArray(aValue) ? aValue.length : 0;
@@ -175,7 +178,10 @@ export default function ArticlesTable({
 
   // Get all unique tags and categories for the filter UI
   const allTags = Array.from(new Set(articles.flatMap(article => article.metadata.tags || [])));
-  const allCategories = Array.from(new Set(articles.map(article => article.metadata.category)));
+  const allCategories = Array.from(new Set(articles
+    .map(article => article.metadata.category)
+    .filter((category): category is string => !!category)
+  ));
 
   return (
     <div className="space-y-4">
@@ -270,9 +276,11 @@ export default function ArticlesTable({
                     }`}
                   >
                     {column.render ? column.render(article) : (
-                      typeof article.metadata[column.key] === 'object' 
-                        ? JSON.stringify(article.metadata[column.key]) 
-                        : article.metadata[column.key]
+                      column.key === 'slug' ? article.slug : (
+                        typeof article.metadata[column.key as keyof typeof article.metadata] === 'object' 
+                          ? JSON.stringify(article.metadata[column.key as keyof typeof article.metadata]) 
+                          : String(article.metadata[column.key as keyof typeof article.metadata] || '')
+                      )
                     )}
                   </td>
                 ))}

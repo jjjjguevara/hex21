@@ -17,7 +17,7 @@ export async function GET() {
           const filePath = path.join(contentDir, filename);
           try {
             const content = await fs.readFile(filePath, 'utf8');
-            const { metadata } = parseMetadata(content, 'map');
+            const { metadata } = await parseMetadata(content, 'map');
             if (metadata.category) {
               categories.add(metadata.category);
             }

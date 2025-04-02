@@ -1,0 +1,74 @@
+---
+title: Article Creation
+description: Learn how to create and structure articles in Hex 21 CMS
+author: Hex 21 Team
+---
+
+# Article Creation
+
+Learn how to create well-structured scientific articles using Hex 21 CMS's DITA-based workflow.
+
+## Article Structure
+
+Each article consists of:
+
+1. **Metadata** (YAML frontmatter)
+2. **Content** (MDITA or XDITA format)
+3. **Optional components** (images, equations, references)
+
+## Creating a New Article
+
+Create a new file with the `.mdita` extension:
+
+```markdown
+---
+title: My Scientific Article
+author: Dr. Researcher
+date: 2024-03-20
+tags: [physics, quantum]
+publish: true
+---
+
+# Introduction
+
+This is the introduction to my groundbreaking research...
+
+## Methods
+
+Our methodology involved...
+
+### Mathematical Model
+
+Here's an equation:
+
+$E = mc^2$
+
+## Results
+
+Our findings show...
+```
+
+## Adding LaTeX Equations
+
+Use LaTeX syntax for equations:
+
+- Inline equations: `$E = mc^2$`
+- Display equations: `$$\frac{\partial f}{\partial x} = 2x$$`
+
+## Including Images
+
+Add images with DITA syntax:
+
+```markdown
+<image href="path/to/image.png" alt="Description">
+  <title>Figure 1: Experiment Setup</title>
+</image>
+```
+
+## References and Citations
+
+Use DITA references for citations:
+
+```markdown
+<xref href="references.dita#smith2023">Smith et al. (2023)</xref>
+``` 

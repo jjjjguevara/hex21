@@ -4,17 +4,22 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 
 // Configure marked with syntax highlighting
-marked.setOptions({
-  highlight: function(code, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(code, { language: lang }).value;
-      } catch (err) {
-        console.error('Error highlighting code:', err);
-      }
+const renderer = new marked.Renderer();
+const originalCodeRenderer = renderer.code;
+renderer.code = function({ text, lang, escaped, type, raw }) {
+  if (lang && hljs.getLanguage(lang)) {
+    try {
+      const highlighted = hljs.highlight(text, { language: lang }).value;
+      return `<pre><code class="hljs language-${lang}">${highlighted}</code></pre>`;
+    } catch (err) {
+      console.error('Error highlighting code:', err);
     }
-    return code; // Use code as is if language isn't found
-  },
+  }
+  return originalCodeRenderer.call(this, { text, lang, escaped, type: type || 'code', raw: raw || text });
+};
+
+marked.setOptions({
+  renderer,
   breaks: true,
   gfm: true
 });

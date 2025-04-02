@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+    <title>Obsidian-Style Markdown Test</title>
+    <topicmeta>
+        <author>Dr. Hex</author>
+        <critdates>
+            <created date="2024-04-01"/>
+            <revised modified="2024-04-01"/>
+        </critdates>
+        <audience type="expert"/>
+        <category>Technical Documentation</category>
+        <metadata>
+            <othermeta name="publish" content="true"/>
+            <othermeta name="access_level" content="public"/>
+            <othermeta name="tags" content="markdown,math,examples,documentation"/>
+        </metadata>
+    </topicmeta>
+    <topicref href="../topics/math-example.md" format="markdown"/>
+    <topicref href="../topics/features-example.md" format="markdown"/>
+</map> 

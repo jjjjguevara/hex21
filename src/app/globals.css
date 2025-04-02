@@ -2,37 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -55,40 +49,125 @@
   }
 }
 
-/* Light mode syntax highlighting (Github-like) */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+@layer base {
+  * {
+    @apply border-gray-200 dark:border-gray-800;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-/* Dark mode syntax highlighting (Github Dark-like) */
-[data-theme='dark'] {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
+/* LaTeX Math Styling */
+.prose .math {
+  @apply overflow-x-auto my-4;
 }
 
-/* Hide dark theme styles by default */
-.hljs-dark {
-  display: none;
+.prose .math-inline {
+  @apply inline-block;
 }
 
-/* Show dark theme styles when dark mode is enabled */
-.dark .hljs-dark {
-  display: block;
+.prose .math-display {
+  @apply block text-center;
 }
 
-/* Hide light theme styles when dark mode is enabled */
-.dark .hljs-light {
-  display: none;
+.prose .katex {
+  @apply text-base;
+}
+
+.prose .katex-display {
+  @apply overflow-x-auto my-4;
+  @apply scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600;
+}
+
+.prose .katex-display > .katex {
+  @apply text-lg;
+}
+
+/* Consistent code block styling */
+.prose pre {
+  @apply bg-gray-900 text-gray-50 dark:bg-gray-800 rounded-lg overflow-x-auto p-2 text-sm leading-6;
+}
+
+.prose code {
+  @apply text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5 text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent text-gray-50 dark:text-gray-50 p-0 text-sm;
+}
+
+/* Syntax highlighting */
+.prose pre .hljs-comment,
+.prose pre .hljs-quote {
+  @apply text-gray-400 italic;
+}
+
+.prose pre .hljs-keyword,
+.prose pre .hljs-selector-tag,
+.prose pre .hljs-subst {
+  @apply text-blue-300;
+}
+
+.prose pre .hljs-string,
+.prose pre .hljs-doctag {
+  @apply text-green-300;
+}
+
+.prose pre .hljs-number,
+.prose pre .hljs-literal {
+  @apply text-yellow-300;
+}
+
+.prose pre .hljs-title,
+.prose pre .hljs-section,
+.prose pre .hljs-selector-id {
+  @apply text-purple-300;
+}
+
+.prose pre .hljs-type,
+.prose pre .hljs-class {
+  @apply text-yellow-200;
+}
+
+.prose pre .hljs-tag,
+.prose pre .hljs-name,
+.prose pre .hljs-attribute {
+  @apply text-blue-200;
+}
+
+.prose pre .hljs-variable,
+.prose pre .hljs-template-variable {
+  @apply text-orange-300;
+}
+
+.prose pre .hljs-regexp,
+.prose pre .hljs-link {
+  @apply text-red-300;
+}
+
+/* Additional prose customizations */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply scroll-mt-20;
+}
+
+/* Theme transition */
+* {
+  @apply transition-colors duration-300;
 }
 
 /* Code block styling */
 pre {
-  @apply rounded-lg overflow-x-auto;
+  @apply rounded-lg overflow-x-auto my-4 relative;
   @apply border border-gray-200 dark:border-gray-800;
+  @apply bg-gray-50 dark:bg-gray-900;
 }
 
 code {
@@ -104,17 +183,18 @@ code {
 
 /* Block code styling */
 pre > code {
-  @apply block p-4;
+  @apply block p-2;
+  @apply text-gray-900 dark:text-gray-100;
 }
 
 /* Light mode syntax highlighting */
 .hljs {
-  @apply text-gray-900 bg-transparent;
+  @apply text-gray-900 dark:text-gray-100 bg-transparent;
 }
 
 .hljs-comment,
 .hljs-quote {
-  @apply text-gray-500;
+  @apply text-gray-500 dark:text-gray-400;
 }
 
 .hljs-variable,
@@ -127,7 +207,7 @@ pre > code {
 .hljs-name,
 .hljs-selector-id,
 .hljs-selector-class {
-  @apply text-red-600;
+  @apply text-red-600 dark:text-red-400;
 }
 
 .hljs-number,
@@ -137,72 +217,23 @@ pre > code {
 .hljs-literal,
 .hljs-type,
 .hljs-params {
-  @apply text-orange-600;
+  @apply text-orange-600 dark:text-orange-400;
 }
 
 .hljs-string,
 .hljs-symbol,
 .hljs-bullet {
-  @apply text-green-600;
+  @apply text-green-600 dark:text-green-400;
 }
 
 .hljs-title,
 .hljs-section {
-  @apply text-yellow-600;
+  @apply text-yellow-600 dark:text-yellow-400;
 }
 
 .hljs-keyword,
 .hljs-selector-tag {
-  @apply text-purple-600;
-}
-
-/* Dark mode syntax highlighting */
-.dark .hljs {
-  @apply text-gray-100 bg-transparent;
-}
-
-.dark .hljs-comment,
-.dark .hljs-quote {
-  @apply text-gray-500;
-}
-
-.dark .hljs-variable,
-.dark .hljs-template-variable,
-.dark .hljs-attribute,
-.dark .hljs-tag,
-.dark .hljs-name,
-.dark .hljs-regexp,
-.dark .hljs-link,
-.dark .hljs-name,
-.dark .hljs-selector-id,
-.dark .hljs-selector-class {
-  @apply text-red-400;
-}
-
-.dark .hljs-number,
-.dark .hljs-meta,
-.dark .hljs-built_in,
-.dark .hljs-builtin-name,
-.dark .hljs-literal,
-.dark .hljs-type,
-.dark .hljs-params {
-  @apply text-orange-400;
-}
-
-.dark .hljs-string,
-.dark .hljs-symbol,
-.dark .hljs-bullet {
-  @apply text-green-400;
-}
-
-.dark .hljs-title,
-.dark .hljs-section {
-  @apply text-yellow-400;
-}
-
-.dark .hljs-keyword,
-.dark .hljs-selector-tag {
-  @apply text-purple-400;
+  @apply text-purple-600 dark:text-purple-400;
 }
 
 .hljs-emphasis {
@@ -211,16 +242,6 @@ pre > code {
 
 .hljs-strong {
   @apply font-bold;
-}
-
-/* Base styles */
-* {
-  @apply border-border;
-}
-
-body {
-  @apply bg-background text-foreground;
-  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 /* Smooth theme transitions */
@@ -262,7 +283,83 @@ body {
   }
 }
 
-/* Theme transition */
-* {
-  @apply transition-colors duration-300;
+/* Heading anchor links */
+.heading-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.anchor-link {
+  opacity: 0;
+  color: theme('colors.gray.400');
+  text-decoration: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.anchor-link:hover {
+  color: theme('colors.gray.600');
+}
+
+.dark .anchor-link:hover {
+  color: theme('colors.gray.300');
+}
+
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link,
+h4:hover .anchor-link,
+h5:hover .anchor-link,
+h6:hover .anchor-link {
+  opacity: 1;
+}
+
+/* Footnotes section styling */
+.footnotes {
+  @apply mt-8 pt-8 border-t border-gray-200 dark:border-gray-800;
+}
+
+.footnotes h2 {
+  @apply sr-only;
+}
+
+.footnotes ol {
+  @apply pl-5;
+}
+
+.footnotes li {
+  @apply text-sm text-gray-600 dark:text-gray-400 mb-2;
+}
+
+.footnotes a {
+  @apply text-blue-600 dark:text-blue-400 hover:underline;
+}
+
+/* Footnote references in text */
+sup[id^="user-content-fnref-"] {
+  @apply ml-0.5 text-xs;
+}
+
+sup[id^="user-content-fnref-"] a {
+  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline;
+}
+
+/* Blinking highlight animation for footnotes */
+@keyframes footnote-highlight {
+  0%, 100% {
+    @apply bg-transparent;
+  }
+  20%, 80% {
+    @apply bg-yellow-100 dark:bg-yellow-900;
+  }
+}
+
+/* Target footnote when clicked from reference */
+:target[id^="user-content-fn-"] {
+  animation: footnote-highlight 2s ease-in-out;
+}
+
+/* Target reference when clicked from footnote */
+:target[id^="user-content-fnref-"] {
+  animation: footnote-highlight 2s ease-in-out;
 }

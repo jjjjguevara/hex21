@@ -28,7 +28,7 @@ export async function GET() {
       filePaths.map(async (filePath) => {
         try {
           const content = await fs.readFile(filePath, 'utf8');
-          const { metadata } = parseMetadata(content);
+          const { metadata } = await parseMetadata(content);
           const relativePath = path.relative(contentDir, filePath);
           const slug = relativePath.replace(/\.(mdita|md)$/, '');
           
