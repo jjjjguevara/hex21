@@ -18,11 +18,8 @@ async function getFeaturedArticles() {
       const article = await getArticleData(slug);
       if (!article || !article.metadata.publish) return null;
       
-      // Check both formats for featured flag
-      const isFeatured = 
-        article.metadata.featured || // YAML format
-        article.metadata.features?.featured || // Nested YAML format
-        article.metadata.data?.find((d: any) => d.name === 'featured' && d.value === 'true'); // DITA XML format
+      // Check if article is featured
+      const isFeatured = article.metadata.features?.featured;
       
       if (!isFeatured) return null;
 

@@ -5,9 +5,9 @@ const nextConfig = {
   
   // Configure webpack to handle our content files
   webpack: (config, { isServer }) => {
-    // Handle XML and DITA files
+    // Handle XML, DITA, and Markdown files
     config.module.rules.push({
-      test: /\.(xml|dita|ditamap)$/,
+      test: /\.(xml|dita|ditamap|md|mdita)$/,
       use: 'raw-loader'
     });
 
@@ -32,23 +32,26 @@ const nextConfig = {
     serverActions: {
       allowedOrigins: ['localhost:3000'],
     },
+
+    // Enable markdown processing
+    mdxRs: true,
   },
 
   // Configure logging
   logging: {
-    level: 'info',
+    level: 'debug',
     fetches: {
       fullUrl: true,
     },
   },
-
-  // Configure page generation
-  generateStaticParams: true,
   
   // Configure static file serving
   images: {
     domains: ['localhost'],
   },
+
+  // Configure content directory
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdita'],
 };
 
 export default nextConfig; 

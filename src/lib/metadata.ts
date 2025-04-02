@@ -50,12 +50,12 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
 
       const metadata: MapMetadata = {
         title: yamlData.title || 'Untitled',
-        author: yamlData.authors?.[0] || yamlData.author,
-        category: yamlData.categories?.[0] || yamlData.category || 'Uncategorized',
+        author: yamlData.author || yamlData.authors?.[0],
+        category: yamlData.category || yamlData.categories?.[0] || 'Uncategorized',
         audience: yamlData.audience,
-        publish: yamlData.publish === true,
+        publish: yamlData.publish !== false, // Default to true if not specified
         access_level: yamlData.access_level || 'public',
-        tags: yamlData.keywords || yamlData.tags || [],
+        tags: yamlData.tags || yamlData.keywords || [],
         shortdesc: yamlData.shortdesc || yamlData.description,
         features: {
           featured: yamlData.features?.featured === true,
@@ -63,7 +63,7 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
         }
       };
 
-      console.log('Parsed YAML metadata:', metadata);
+      console.log('Parsed YAML metadata:', yamlData);
       return { metadata, topics };
     }
 
@@ -76,9 +76,9 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
     
     // Extract all data values at once
     const dataValues = extractDataValues(content);
-    const publish = dataValues.publish === 'true';
+    const publish = dataValues.publish !== 'false'; // Default to true if not specified
     const accessLevel = dataValues.access_level || 'public';
-    const tags = dataValues.tags ? dataValues.tags.split(',').map(tag => tag.trim()) : [];
+    const tags = dataValues.tags ? dataValues.tags.split(',').map((tag: string) => tag.trim()) : [];
 
     const topics = extractTopicRefs(content);
 
@@ -106,7 +106,7 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
       metadata: {
         title: 'Untitled',
         category: 'Uncategorized',
-        publish: false,
+        publish: true, // Default to true
         access_level: 'public',
         tags: [],
         features: {
@@ -118,11 +118,11 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
   }
 }
 
-export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'): { 
+export async function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'): Promise<{ 
   metadata: MapMetadata | TopicMetadata; 
   topics?: string[];
   content: string;
-} {
+}> {
   if (type === 'map') {
     const result = parseMapMetadata(content);
     return { ...result, content: '' }; // Maps don't have content to render
@@ -140,13 +140,12 @@ export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'):
     tags: data.tags || [],
     category: data.category,
     publish: data.publish !== false,
-    featured: data.featured === true,
     conditional: data.conditional || {},
     shortdesc: data.shortdesc || data.description
   };
 
   // Convert markdown content to HTML
-  const htmlContent = marked(mdContent);
+  const htmlContent = await marked.parse(mdContent);
 
   return { metadata, content: htmlContent };
 }
@@ -177,10 +176,19 @@ export function isTopicCompatibleWithMap(
   // Check audience compatibility
   if (topicMetadata.audience && mapMetadata.audience) {
     const audienceLevels = ['beginner', 'intermediate', 'expert', 'all', 'developer'];
-    const topicLevel = audienceLevels.indexOf(topicMetadata.audience);
-    const mapLevel = audienceLevels.indexOf(mapMetadata.audience);
+    const topicAudiences = Array.isArray(topicMetadata.audience) ? topicMetadata.audience : [topicMetadata.audience];
+    const mapAudiences = Array.isArray(mapMetadata.audience) ? mapMetadata.audience : [mapMetadata.audience];
     
-    if (topicLevel > mapLevel) {
+    // Check if any topic audience level exceeds any map audience level
+    const hasIncompatibleAudience = topicAudiences.some(topicAudience => {
+      const topicLevel = audienceLevels.indexOf(topicAudience);
+      return mapAudiences.some(mapAudience => {
+        const mapLevel = audienceLevels.indexOf(mapAudience);
+        return topicLevel > mapLevel;
+      });
+    });
+    
+    if (hasIncompatibleAudience) {
       return { 
         compatible: false, 
         reason: 'Topic audience level exceeds map audience level' 
@@ -202,7 +210,7 @@ export function isTopicCompatibleWithMap(
   // Check access level compatibility
   const accessLevels = ['public', 'restricted', 'classified'];
   const topicAccess = topicMetadata.conditional?.access_level || 'public';
-  const mapAccess = mapMetadata.access_level;
+  const mapAccess = mapMetadata.access_level || 'public';
   
   if (accessLevels.indexOf(topicAccess) > accessLevels.indexOf(mapAccess)) {
     return { 

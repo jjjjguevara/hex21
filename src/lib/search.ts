@@ -90,11 +90,17 @@ export async function buildSearchIndex() {
             })
           );
 
+          // Only include if published
+          if (!metadata.publish) {
+            console.log(`Article ${slug} not published, skipping from search index`);
+            return null;
+          }
+
           return {
-            slug: `articles/${slug}`,
             type: 'article',
             ...metadata,
-            content: topicContents.join('\n')
+            content: topicContents.join('\n'),
+            slug: `articles/${slug}`
           };
         } catch (error) {
           console.warn(`Error processing map file ${file}:`, error);
@@ -115,7 +121,7 @@ export async function buildSearchIndex() {
     // Build the index
     searchIndex = lunr(function () {
       // Make search case-insensitive
-      this.use(lunr.tokenizer.separator(/[\s\-]+/));
+      this.tokenizer.separator = /[\s\-]+/;
       this.pipeline.remove(lunr.stemmer);
       this.searchPipeline.remove(lunr.stemmer);
 
@@ -126,7 +132,7 @@ export async function buildSearchIndex() {
       this.field('type', { boost: 3 });
       this.ref('slug');
 
-      allContent.forEach((doc) => {
+      allContent.forEach((doc: any) => {
         // Only index published content or content without a publish flag
         if (doc.publish === false) return;
 

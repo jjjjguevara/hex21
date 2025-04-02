@@ -6,9 +6,16 @@ import { parseMetadata } from '@/lib/metadata';
 import { Metadata } from 'next';
 import ContentPane from '@/components/ContentPane';
 import CodeBlock from '@/components/CodeBlock';
+import CodeCopy from '@/components/CodeCopy';
+import { MapMetadata, TopicMetadata } from '@/types/content';
 
 type Props = {
   params: { slug: string }
+};
+
+type BlogPostData = {
+  metadata: MapMetadata | TopicMetadata;
+  content: string;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -20,33 +27,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  const { metadata } = data;
+
   return {
-    title: `${data.metadata.title} - Hex 21 Blog`,
-    description: data.metadata.description,
-    authors: data.metadata.author ? [{ name: data.metadata.author }] : undefined,
+    title: `${metadata.title} - Hex 21 Blog`,
+    description: metadata.shortdesc,
+    authors: metadata.author ? [{ name: typeof metadata.author === 'string' ? metadata.author : metadata.author.name }] : undefined,
     openGraph: {
-      title: data.metadata.title,
-      description: data.metadata.description,
+      title: metadata.title,
+      description: metadata.shortdesc,
       type: 'article'
     }
   };
 }
 
-async function getBlogPost(slug: string) {
+async function getBlogPost(slug: string): Promise<BlogPostData | null> {
   const contentDir = path.join(process.cwd(), 'content/blog');
   const filePath = path.join(contentDir, `${slug}.mdita`);
 
   try {
     const fileContents = await fs.readFile(filePath, 'utf8');
     const { data: frontmatter, content } = matter(fileContents);
-    const metadata = parseMetadata(content, 'topic');
-    let htmlContent = metadata.content;
+    const { metadata, content: htmlContent } = await parseMetadata(content, 'topic');
     
     // Remove the title from the HTML content since we'll display it separately
-    htmlContent = htmlContent.replace(/<h1[^>]*>.*?<\/h1>/, '');
+    const processedContent = htmlContent.replace(/<h1[^>]*>.*?<\/h1>/, '');
 
     // Process code blocks
-    const processedContent = htmlContent.replace(
+    const finalContent = processedContent.replace(
       /<pre><code(?:\s+class="language-([^"]+)")?>([\s\S]*?)<\/code><\/pre>/g,
       (_, language, content) => {
         const decodedContent = content
@@ -59,7 +67,7 @@ async function getBlogPost(slug: string) {
         return `<div class="relative group">
           <pre class="${language ? `language-${language}` : ''}"><code class="${language ? `language-${language}` : ''}">${decodedContent}</code></pre>
           <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-            <button onclick="navigator.clipboard.writeText(\`${decodedContent.replace(/`/g, '\\`')}\`)"
+            <button data-copy-code
               class="absolute right-2 top-2 p-2 rounded-lg bg-gray-800/30 hover:bg-gray-800/50 transition-colors"
               aria-label="Copy to clipboard">
               <svg class="w-5 h-5 text-gray-400 hover:text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +81,7 @@ async function getBlogPost(slug: string) {
 
     return {
       metadata: { ...frontmatter, ...metadata },
-      content: processedContent
+      content: finalContent
     };
   } catch (error) {
     console.error(`Error fetching blog post ${slug}:`, error);
@@ -99,7 +107,7 @@ export default async function BlogPost({ params }: Props) {
           </h1>
           {metadata.author && (
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              By {metadata.author}
+              By {typeof metadata.author === 'string' ? metadata.author : metadata.author.name}
             </p>
           )}
           {metadata.date && (
@@ -119,9 +127,9 @@ export default async function BlogPost({ params }: Props) {
               ))}
             </div>
           )}
-          {metadata.description && (
+          {metadata.shortdesc && (
             <p className="text-gray-600 dark:text-gray-400 text-lg">
-              {metadata.description}
+              {metadata.shortdesc}
             </p>
           )}
         </header>
@@ -145,6 +153,7 @@ export default async function BlogPost({ params }: Props) {
           dangerouslySetInnerHTML={{ __html: content }}
         />
       </article>
+      <CodeCopy />
     </ContentPane>
   );
 } 

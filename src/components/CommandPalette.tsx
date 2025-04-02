@@ -22,7 +22,7 @@ export default function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProp
     const down = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setIsOpen((open) => !open);
+        setIsOpen(!isOpen);
       }
       if (e.key === 'Escape') {
         setIsOpen(false);
@@ -31,7 +31,7 @@ export default function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProp
 
     document.addEventListener('keydown', down);
     return () => document.removeEventListener('keydown', down);
-  }, [setIsOpen]);
+  }, [setIsOpen, isOpen]);
 
   // Auto-focus input when opened
   useEffect(() => {

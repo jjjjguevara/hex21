@@ -3,6 +3,14 @@ import path from 'path';
 import { parseMetadata } from '@/lib/metadata';
 import { Article, MapMetadata } from '@/types/content';
 import { NextResponse } from 'next/server';
+import { findTopicContent } from '@/lib/content/topic-finder';
+
+type ArticleWithRequiredTopics = {
+  slug: string;
+  content: string;
+  metadata: MapMetadata;
+  topics: { id: string }[];
+};
 
 export async function GET() {
   const contentDir = path.join(process.cwd(), 'content/maps');
@@ -19,7 +27,8 @@ export async function GET() {
           const filePath = path.join(contentDir, filename);
           try {
             const content = await fs.readFile(filePath, 'utf8');
-            const { metadata, topics } = parseMetadata(content, 'map') as { 
+            const result = await parseMetadata(content, 'map');
+            const { metadata, topics } = result as { 
               metadata: MapMetadata; 
               topics: string[] 
             };
@@ -29,22 +38,29 @@ export async function GET() {
             // Load first topic content for preview
             let firstTopicContent = '';
             if (topics && topics.length > 0) {
-              const topicPath = path.join(topicsDir, `${topics[0]}.mdita`);
-              try {
-                const topicContent = await fs.readFile(topicPath, 'utf8');
-                const { metadata: topicMetadata } = parseMetadata(topicContent, 'topic');
+              console.log(`Loading first topic for ${slug}:`, topics[0]);
+              const topicContent = await findTopicContent(topics[0], topicsDir);
+              if (topicContent) {
+                const { metadata: topicMetadata } = await parseMetadata(topicContent, 'topic');
                 firstTopicContent = topicContent;
-              } catch (error) {
-                console.error(`Error loading topic ${topics[0]}:`, error);
+                console.log(`Successfully loaded first topic for ${slug}`);
+              } else {
+                console.error(`Could not load first topic for ${slug}`);
               }
             }
             
+            // Only include if published
+            if (!metadata.publish) {
+              console.log(`Article ${slug} not published, skipping from API`);
+              return null;
+            }
+
             return {
               slug,
               content: firstTopicContent,
               metadata,
               topics: topics.map(id => ({ id }))
-            };
+            } as ArticleWithRequiredTopics;
           } catch (error) {
             console.error(`Error processing map ${filename}:`, error);
             return null;
@@ -54,7 +70,7 @@ export async function GET() {
 
     // Filter out failed articles and unpublished ones
     const filteredArticles = articles
-      .filter((article): article is Article => article !== null)
+      .filter((article): article is ArticleWithRequiredTopics => article !== null)
       .filter((article) => {
         // Check publish flag and date
         if (!article.metadata.publish) {

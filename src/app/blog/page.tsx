@@ -3,7 +3,7 @@ import path from 'path';
 import { parseMetadata } from '@/lib/metadata';
 import { Metadata } from 'next';
 import ContentPane from '@/components/ContentPane';
-import MathJaxConfig from '@/components/MathJaxConfig';
+import CodeCopy from '@/components/CodeCopy';
 
 export const metadata: Metadata = {
   title: 'Blog - Hex 21',
@@ -38,7 +38,7 @@ async function getBlogPosts() {
         try {
           const content = await fs.readFile(file, 'utf8');
           console.log('Processing file:', file);
-          const { metadata, content: htmlContent } = parseMetadata(content, 'topic');
+          const { metadata, content: htmlContent } = await parseMetadata(content, 'topic');
           
           // Remove the title from the HTML content
           const contentWithoutTitle = htmlContent.replace(/<h1[^>]*>.*?<\/h1>/, '');
@@ -80,7 +80,6 @@ export default async function BlogPage() {
 
   return (
     <>
-      <MathJaxConfig />
       <ContentPane spacing="normal">
         <header className="mb-8">
           <div className="text-4xl font-bold mb-4">Blog</div>
@@ -106,7 +105,7 @@ export default async function BlogPage() {
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {post.author && (
                   <span>
-                    By {post.author}
+                    By {typeof post.author === 'string' ? post.author : post.author.name}
                   </span>
                 )}
                 {post.date && (
@@ -164,6 +163,7 @@ export default async function BlogPage() {
           </ContentPane>
         ))}
       </div>
+      <CodeCopy />
     </>
   );
 }

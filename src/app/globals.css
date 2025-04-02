@@ -51,16 +51,42 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-gray-200 dark:border-gray-800;
   }
   body {
     @apply bg-background text-foreground;
   }
 }
 
+/* LaTeX Math Styling */
+.prose .math {
+  @apply overflow-x-auto my-4;
+}
+
+.prose .math-inline {
+  @apply inline-block;
+}
+
+.prose .math-display {
+  @apply block text-center;
+}
+
+.prose .katex {
+  @apply text-base;
+}
+
+.prose .katex-display {
+  @apply overflow-x-auto my-4;
+  @apply scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600;
+}
+
+.prose .katex-display > .katex {
+  @apply text-lg;
+}
+
 /* Consistent code block styling */
 .prose pre {
-  @apply bg-gray-900 text-gray-50 dark:bg-gray-800 rounded-lg overflow-x-auto p-4 text-sm leading-6;
+  @apply bg-gray-900 text-gray-50 dark:bg-gray-800 rounded-lg overflow-x-auto p-2 text-sm leading-6;
 }
 
 .prose code {
@@ -157,7 +183,7 @@ code {
 
 /* Block code styling */
 pre > code {
-  @apply block p-4;
+  @apply block p-2;
   @apply text-gray-900 dark:text-gray-100;
 }
 
@@ -286,4 +312,54 @@ h4:hover .anchor-link,
 h5:hover .anchor-link,
 h6:hover .anchor-link {
   opacity: 1;
+}
+
+/* Footnotes section styling */
+.footnotes {
+  @apply mt-8 pt-8 border-t border-gray-200 dark:border-gray-800;
+}
+
+.footnotes h2 {
+  @apply sr-only;
+}
+
+.footnotes ol {
+  @apply pl-5;
+}
+
+.footnotes li {
+  @apply text-sm text-gray-600 dark:text-gray-400 mb-2;
+}
+
+.footnotes a {
+  @apply text-blue-600 dark:text-blue-400 hover:underline;
+}
+
+/* Footnote references in text */
+sup[id^="user-content-fnref-"] {
+  @apply ml-0.5 text-xs;
+}
+
+sup[id^="user-content-fnref-"] a {
+  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline;
+}
+
+/* Blinking highlight animation for footnotes */
+@keyframes footnote-highlight {
+  0%, 100% {
+    @apply bg-transparent;
+  }
+  20%, 80% {
+    @apply bg-yellow-100 dark:bg-yellow-900;
+  }
+}
+
+/* Target footnote when clicked from reference */
+:target[id^="user-content-fn-"] {
+  animation: footnote-highlight 2s ease-in-out;
+}
+
+/* Target reference when clicked from footnote */
+:target[id^="user-content-fnref-"] {
+  animation: footnote-highlight 2s ease-in-out;
 }

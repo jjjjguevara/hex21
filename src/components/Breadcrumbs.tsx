@@ -10,7 +10,7 @@ interface BreadcrumbsProps {
 
 export default function Breadcrumbs({ navigation = [] }: BreadcrumbsProps) {
   const pathname = usePathname();
-  const segments = pathname.split('/').filter(Boolean);
+  const segments = pathname?.split('/').filter(Boolean) || [];
 
   // Function to check if a path exists in the navigation structure
   const isValidPath = (path: string): boolean => {

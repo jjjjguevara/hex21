@@ -8,6 +8,8 @@ import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 import ClientLayout from '@/components/ClientLayout';
 import Footer from '@/components/Footer';
+import '@/lib/client-utils';
+import 'katex/dist/katex.min.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -35,15 +37,21 @@ export default function RootLayout({
             __html: `
               window.MathJax = {
                 tex: {
-                  inlineMath: [['$', '$'], ['\\(', '\\)']],
-                  displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                  inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+                  displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
                   processEscapes: true,
+                  processEnvironments: true,
+                  packages: ['base', 'ams', 'noerrors', 'noundefined']
                 },
                 svg: {
                   fontCache: 'global'
                 },
                 options: {
-                  skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+                  skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                  processHtmlClass: 'math'
+                },
+                startup: {
+                  typeset: true
                 }
               };
             `,

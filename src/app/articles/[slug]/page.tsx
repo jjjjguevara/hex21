@@ -2,7 +2,6 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
 import matter from 'gray-matter';
-import MathJaxConfig from '@/components/MathJaxConfig';
 import { getArticleData } from '@/lib/content.server';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
@@ -75,15 +74,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = data.metadata.title || params.slug;
-  const description = data.metadata.shortdesc || data.metadata.description;
+  const description = data.metadata.shortdesc;
 
   return {
     title: `${title}`,
     description,
     keywords: data.metadata.tags,
-    authors: data.metadata.authors?.map(author => ({
-      name: typeof author === 'string' ? author : author.name
-    })) || (data.metadata.author ? [{ name: data.metadata.author }] : undefined),
+    authors: data.metadata.author ? [{ name: typeof data.metadata.author === 'string' ? data.metadata.author : data.metadata.author.name }] : undefined,
     openGraph: {
       title,
       description,
@@ -106,7 +103,6 @@ export default async function ArticlePage({ params }: Props) {
 
     return (
       <>
-        <MathJaxConfig />
         <ContentPane>
           <article className="max-w-4xl mx-auto">
             <header className="mb-8">
@@ -114,18 +110,10 @@ export default async function ArticlePage({ params }: Props) {
                 {metadata.title}
               </h1>
               
-              {/* Authors */}
-              {metadata.authors && metadata.authors.length > 0 && (
+              {/* Author */}
+              {metadata.author && (
                 <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  By {metadata.authors.map(author => {
-                    // Handle conref display
-                    if (author.conref) {
-                      // Extract just the name part after the last '/'
-                      const name = author.conref.split('/').pop()?.replace(/-/g, ' ');
-                      return name || author.conref;
-                    }
-                    return author.name || 'Unknown Author';
-                  }).join(', ')}
+                  By {typeof metadata.author === 'string' ? metadata.author : metadata.author.name}
                 </div>
               )}
 
@@ -151,29 +139,24 @@ export default async function ArticlePage({ params }: Props) {
                 </div>
               )}
 
-              {/* Categories */}
-              {metadata.categories && metadata.categories.length > 0 && (
+              {/* Category */}
+              {metadata.category && (
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {metadata.categories.map((category) => (
-                    <span
-                      key={category}
-                      className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300"
-                    >
-                      {category}
-                    </span>
-                  ))}
+                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                    {metadata.category}
+                  </span>
                 </div>
               )}
 
-              {/* Keywords/Tags */}
-              {metadata.keywords && metadata.keywords.length > 0 && (
+              {/* Tags */}
+              {metadata.tags && metadata.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-2">
-                  {metadata.keywords.map((keyword) => (
+                  {metadata.tags.map((tag) => (
                     <span
-                      key={keyword}
+                      key={tag}
                       className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
                     >
-                      {keyword}
+                      {tag}
                     </span>
                   ))}
                 </div>
