@@ -2,37 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.5rem;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
     --card: 222.2 84% 4.9%;
@@ -55,40 +49,26 @@
   }
 }
 
-/* Light mode syntax highlighting (Github-like) */
-:root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-/* Dark mode syntax highlighting (Github Dark-like) */
-[data-theme='dark'] {
-  --foreground-rgb: 255, 255, 255;
-  --background-start-rgb: 0, 0, 0;
-  --background-end-rgb: 0, 0, 0;
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-}
-
-/* Hide dark theme styles by default */
-.hljs-dark {
-  display: none;
-}
-
-/* Show dark theme styles when dark mode is enabled */
-.dark .hljs-dark {
-  display: block;
-}
-
-/* Hide light theme styles when dark mode is enabled */
-.dark .hljs-light {
-  display: none;
+/* Theme transition */
+* {
+  @apply transition-colors duration-300;
 }
 
 /* Code block styling */
 pre {
-  @apply rounded-lg overflow-x-auto;
+  @apply rounded-lg overflow-x-auto my-4 relative;
   @apply border border-gray-200 dark:border-gray-800;
+  @apply bg-gray-50 dark:bg-gray-900;
 }
 
 code {
@@ -105,16 +85,17 @@ code {
 /* Block code styling */
 pre > code {
   @apply block p-4;
+  @apply text-gray-900 dark:text-gray-100;
 }
 
 /* Light mode syntax highlighting */
 .hljs {
-  @apply text-gray-900 bg-transparent;
+  @apply text-gray-900 dark:text-gray-100 bg-transparent;
 }
 
 .hljs-comment,
 .hljs-quote {
-  @apply text-gray-500;
+  @apply text-gray-500 dark:text-gray-400;
 }
 
 .hljs-variable,
@@ -127,7 +108,7 @@ pre > code {
 .hljs-name,
 .hljs-selector-id,
 .hljs-selector-class {
-  @apply text-red-600;
+  @apply text-red-600 dark:text-red-400;
 }
 
 .hljs-number,
@@ -137,72 +118,23 @@ pre > code {
 .hljs-literal,
 .hljs-type,
 .hljs-params {
-  @apply text-orange-600;
+  @apply text-orange-600 dark:text-orange-400;
 }
 
 .hljs-string,
 .hljs-symbol,
 .hljs-bullet {
-  @apply text-green-600;
+  @apply text-green-600 dark:text-green-400;
 }
 
 .hljs-title,
 .hljs-section {
-  @apply text-yellow-600;
+  @apply text-yellow-600 dark:text-yellow-400;
 }
 
 .hljs-keyword,
 .hljs-selector-tag {
-  @apply text-purple-600;
-}
-
-/* Dark mode syntax highlighting */
-.dark .hljs {
-  @apply text-gray-100 bg-transparent;
-}
-
-.dark .hljs-comment,
-.dark .hljs-quote {
-  @apply text-gray-500;
-}
-
-.dark .hljs-variable,
-.dark .hljs-template-variable,
-.dark .hljs-attribute,
-.dark .hljs-tag,
-.dark .hljs-name,
-.dark .hljs-regexp,
-.dark .hljs-link,
-.dark .hljs-name,
-.dark .hljs-selector-id,
-.dark .hljs-selector-class {
-  @apply text-red-400;
-}
-
-.dark .hljs-number,
-.dark .hljs-meta,
-.dark .hljs-built_in,
-.dark .hljs-builtin-name,
-.dark .hljs-literal,
-.dark .hljs-type,
-.dark .hljs-params {
-  @apply text-orange-400;
-}
-
-.dark .hljs-string,
-.dark .hljs-symbol,
-.dark .hljs-bullet {
-  @apply text-green-400;
-}
-
-.dark .hljs-title,
-.dark .hljs-section {
-  @apply text-yellow-400;
-}
-
-.dark .hljs-keyword,
-.dark .hljs-selector-tag {
-  @apply text-purple-400;
+  @apply text-purple-600 dark:text-purple-400;
 }
 
 .hljs-emphasis {
@@ -211,16 +143,6 @@ pre > code {
 
 .hljs-strong {
   @apply font-bold;
-}
-
-/* Base styles */
-* {
-  @apply border-border;
-}
-
-body {
-  @apply bg-background text-foreground;
-  font-feature-settings: "rlig" 1, "calt" 1;
 }
 
 /* Smooth theme transitions */
@@ -260,9 +182,4 @@ body {
   .nav-link-active {
     @apply inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900;
   }
-}
-
-/* Theme transition */
-* {
-  @apply transition-colors duration-300;
 }

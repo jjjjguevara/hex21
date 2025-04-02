@@ -1,5 +1,6 @@
 import matter from 'gray-matter';
 import { BaseMetadata, TopicMetadata, MapMetadata } from '@/types/content';
+import { marked } from 'marked';
 
 function extractXMLValue(content: string, tag: string): string | undefined {
   // First try to find it in topicmeta
@@ -120,13 +121,15 @@ function parseMapMetadata(content: string): { metadata: MapMetadata; topics: str
 export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'): { 
   metadata: MapMetadata | TopicMetadata; 
   topics?: string[];
+  content: string;
 } {
   if (type === 'map') {
-    return parseMapMetadata(content);
+    const result = parseMapMetadata(content);
+    return { ...result, content: '' }; // Maps don't have content to render
   }
 
   // Parse YAML frontmatter for topics
-  const { data } = matter(content);
+  const { data, content: mdContent } = matter(content);
   
   const metadata: TopicMetadata = {
     id: data.id || '',
@@ -142,7 +145,10 @@ export function parseMetadata(content: string, type: 'map' | 'topic' = 'topic'):
     shortdesc: data.shortdesc || data.description
   };
 
-  return { metadata };
+  // Convert markdown content to HTML
+  const htmlContent = marked(mdContent);
+
+  return { metadata, content: htmlContent };
 }
 
 export function validateMetadata(metadata: BaseMetadata): boolean {

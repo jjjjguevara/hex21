@@ -3,6 +3,7 @@ import path from 'path';
 import { parseMetadata } from '@/lib/metadata';
 import DocsTable from '@/components/DocsTable';
 import { Metadata } from 'next';
+import ContentPane from '@/components/ContentPane';
 
 export const metadata: Metadata = {
   title: 'Documentation',
@@ -76,7 +77,7 @@ export default async function DocsPage() {
   const docs = await getDocs();
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
+    <ContentPane width="wide">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-4">Documentation</h1>
         <p className="text-gray-600 dark:text-gray-400">
@@ -85,6 +86,6 @@ export default async function DocsPage() {
       </div>
       
       <DocsTable docs={docs} />
-    </div>
+    </ContentPane>
   );
 } 

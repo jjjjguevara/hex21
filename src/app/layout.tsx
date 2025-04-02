@@ -5,8 +5,6 @@ import Script from "next/script";
 import 'highlight.js/styles/github.css';
 import 'highlight.js/styles/github-dark.css';
 import { Theme } from '@radix-ui/themes';
-import { ThemeProvider } from 'next-themes';
-import ThemeToggle from '@/components/ThemeToggle';
 import '@radix-ui/themes/styles.css';
 import ClientLayout from '@/components/ClientLayout';
 
@@ -56,7 +54,7 @@ export default function RootLayout({
           strategy="beforeInteractive"
         />
       </head>
-      <body className={inter.className}>
+      <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>

@@ -15,7 +15,7 @@ async function buildSearchIndex() {
     const files = await fs.readdir(contentDir);
     
     for (const file of files) {
-      if (!file.endsWith('.mdita')) continue;
+      if (!file.endsWith('.mdita') && !file.endsWith('.md')) continue;
 
       const filePath = path.join(contentDir, file);
       const content = await fs.readFile(filePath, 'utf8');
@@ -25,10 +25,15 @@ async function buildSearchIndex() {
       if (!metadata.publish) continue;
 
       documents.push({
-        slug: file.replace(/\.mdita$/, ''),
+        slug: file.replace(/\.(mdita|md)$/, ''),
         title: metadata.title || 'Untitled',
         content: parsedContent,
+        author: metadata.author,
+        date: metadata.date,
+        category: metadata.category,
         tags: metadata.tags || [],
+        audience: metadata.audience,
+        shortdesc: metadata.shortdesc || '',
       });
     }
 

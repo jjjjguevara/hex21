@@ -3,6 +3,7 @@ import { Card } from '@radix-ui/themes';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Metadata } from 'next';
+import ContentPane from '@/components/ContentPane';
 
 export const metadata: Metadata = {
   title: 'Featured',
@@ -15,9 +16,16 @@ async function getFeaturedArticles() {
   const articles = await Promise.all(
     slugs.map(async (slug) => {
       const article = await getArticleData(slug);
-      if (!article || !article.metadata.publish || !article.metadata.features?.featured) {
-        return null;
-      }
+      if (!article || !article.metadata.publish) return null;
+      
+      // Check both formats for featured flag
+      const isFeatured = 
+        article.metadata.featured || // YAML format
+        article.metadata.features?.featured || // Nested YAML format
+        article.metadata.data?.find((d: any) => d.name === 'featured' && d.value === 'true'); // DITA XML format
+      
+      if (!isFeatured) return null;
+
       return {
         slug,
         ...article.metadata
@@ -32,8 +40,10 @@ export default async function FeaturedPage() {
   const articles = await getFeaturedArticles();
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white">Featured Articles</h1>
+    <ContentPane width="wide">
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white">Featured Articles</h1>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {articles.map((article) => (
@@ -79,6 +89,6 @@ export default async function FeaturedPage() {
           No featured articles found.
         </p>
       )}
-    </div>
+    </ContentPane>
   );
 } 

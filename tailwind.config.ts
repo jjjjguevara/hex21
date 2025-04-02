@@ -121,7 +121,7 @@ const config: Config = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
   ],
-  darkMode: 'media',
+  darkMode: 'class',
 };
 
 export default config; 

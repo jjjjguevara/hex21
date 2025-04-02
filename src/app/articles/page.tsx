@@ -1,6 +1,7 @@
 import { getArticles } from '@/lib/articles';
 import ArticlesContainer from '@/components/ArticlesContainer';
 import { Metadata } from 'next';
+import ContentPane from '@/components/ContentPane';
 
 export const metadata: Metadata = {
   title: 'Articles',
@@ -12,9 +13,11 @@ export default async function ArticlesPage() {
   const articles = await getArticles();
 
   return (
-    <div className="max-w-7xl mx-auto py-8 px-4">
-      <h1 className="text-3xl font-bold mb-8">Articles</h1>
+    <ContentPane width="wide">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-8">Articles</h1>
+      </div>
       <ArticlesContainer articles={articles} />
-    </div>
+    </ContentPane>
   );
 } 

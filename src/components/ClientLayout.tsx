@@ -15,7 +15,7 @@ export default function ClientLayout({
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <ThemeProvider attribute="data-theme" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <Theme>
         <div className="min-h-screen bg-background text-foreground transition-colors duration-300">
           <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -27,9 +27,11 @@ export default function ClientLayout({
                   </span>
                 </a>
                 <nav className="flex items-center space-x-6 text-sm font-medium">
-                  <a href="/articles" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Articles</a>
                   <a href="/featured" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Featured</a>
+                  <a href="/articles" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Articles</a>
                   <a href="/docs" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Docs</a>
+                  <a href="/blog" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">Blog</a>
+                  <a href="/about" className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white">About</a>
                 </nav>
               </div>
               <div className="flex flex-1 items-center justify-end space-x-2">
