@@ -108,4 +108,113 @@ We plan to implement these features in upcoming releases:
 3. **Analytics Integration**
    - Content engagement tracking
    - User behavior analysis
-   - A/B testing support 
+   - A/B testing support
+
+# Metadata Guidelines
+
+Proper metadata management is crucial for organizing and discovering content in Hex 21 CMS. This guide explains how to use metadata effectively in your DITA content.
+
+## YAML Frontmatter
+
+Every MDITA file should include YAML frontmatter at the beginning:
+
+```yaml
+---
+title: My Article Title
+description: A brief description of the article
+author: John Doe
+date: 2024-04-01
+tags: [science, physics, quantum]
+category: research
+status: draft
+---
+```
+
+## Required Metadata Fields
+
+### Title
+- Must be descriptive and unique
+- Keep it under 60 characters
+- Use title case
+
+### Description
+- Summarize the content in 2-3 sentences
+- Include key terms for searchability
+- Keep it under 160 characters
+
+### Author
+- Use full name
+- Include organizational affiliation
+- Add ORCID if available
+
+## Optional Metadata
+
+### Tags
+- Use lowercase
+- Separate multiple words with hyphens
+- Choose from the controlled vocabulary
+- Maximum 5 tags per document
+
+### Category
+- Choose one primary category
+- Must match the taxonomy structure
+- Examples: research, tutorial, reference
+
+### Status
+- Valid values: draft, review, published
+- Affects content visibility
+- Controls workflow transitions
+
+## Taxonomy Integration
+
+Your metadata should align with our taxonomy:
+
+```yaml
+category: research
+subcategory: physics
+domain: quantum-mechanics
+```
+
+## Best Practices
+
+1. **Consistency**
+   - Follow naming conventions
+   - Use controlled vocabularies
+   - Maintain standard formats
+
+2. **Completeness**
+   - Fill all required fields
+   - Add optional fields when relevant
+   - Update metadata when content changes
+
+3. **Quality Control**
+   - Validate metadata before publishing
+   - Check for spelling errors
+   - Ensure proper formatting
+
+## Schema Validation
+
+Hex 21 CMS validates metadata against JSON Schema:
+
+```json
+{
+  "type": "object",
+  "required": ["title", "description", "author"],
+  "properties": {
+    "title": {
+      "type": "string",
+      "maxLength": 60
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 160
+    }
+  }
+}
+```
+
+## Next Steps
+
+- [Explore DITA maps](./dita-maps)
+- [Learn about content validation](./validation)
+- [View publishing workflows](./workflows) 

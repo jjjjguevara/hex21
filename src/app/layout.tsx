@@ -7,6 +7,7 @@ import 'highlight.js/styles/github-dark.css';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 import ClientLayout from '@/components/ClientLayout';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -55,7 +56,10 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-background text-foreground antialiased`}>
-        <ClientLayout>{children}</ClientLayout>
+        <ClientLayout>
+          {children}
+          <Footer />
+        </ClientLayout>
       </body>
     </html>
   );

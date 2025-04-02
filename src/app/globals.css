@@ -55,8 +55,81 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-feature-settings: "rlig" 1, "calt" 1;
   }
+}
+
+/* Consistent code block styling */
+.prose pre {
+  @apply bg-gray-900 text-gray-50 dark:bg-gray-800 rounded-lg overflow-x-auto p-4 text-sm leading-6;
+}
+
+.prose code {
+  @apply text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-800 rounded px-1.5 py-0.5 text-sm font-mono;
+}
+
+.prose pre code {
+  @apply bg-transparent text-gray-50 dark:text-gray-50 p-0 text-sm;
+}
+
+/* Syntax highlighting */
+.prose pre .hljs-comment,
+.prose pre .hljs-quote {
+  @apply text-gray-400 italic;
+}
+
+.prose pre .hljs-keyword,
+.prose pre .hljs-selector-tag,
+.prose pre .hljs-subst {
+  @apply text-blue-300;
+}
+
+.prose pre .hljs-string,
+.prose pre .hljs-doctag {
+  @apply text-green-300;
+}
+
+.prose pre .hljs-number,
+.prose pre .hljs-literal {
+  @apply text-yellow-300;
+}
+
+.prose pre .hljs-title,
+.prose pre .hljs-section,
+.prose pre .hljs-selector-id {
+  @apply text-purple-300;
+}
+
+.prose pre .hljs-type,
+.prose pre .hljs-class {
+  @apply text-yellow-200;
+}
+
+.prose pre .hljs-tag,
+.prose pre .hljs-name,
+.prose pre .hljs-attribute {
+  @apply text-blue-200;
+}
+
+.prose pre .hljs-variable,
+.prose pre .hljs-template-variable {
+  @apply text-orange-300;
+}
+
+.prose pre .hljs-regexp,
+.prose pre .hljs-link {
+  @apply text-red-300;
+}
+
+/* Additional prose customizations */
+.prose {
+  @apply max-w-none;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply scroll-mt-20;
 }
 
 /* Theme transition */
@@ -182,4 +255,35 @@ pre > code {
   .nav-link-active {
     @apply inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-900;
   }
+}
+
+/* Heading anchor links */
+.heading-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.anchor-link {
+  opacity: 0;
+  color: theme('colors.gray.400');
+  text-decoration: none;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.anchor-link:hover {
+  color: theme('colors.gray.600');
+}
+
+.dark .anchor-link:hover {
+  color: theme('colors.gray.300');
+}
+
+h1:hover .anchor-link,
+h2:hover .anchor-link,
+h3:hover .anchor-link,
+h4:hover .anchor-link,
+h5:hover .anchor-link,
+h6:hover .anchor-link {
+  opacity: 1;
 }
