@@ -1,26 +1,263 @@
 import fs from 'fs/promises';
 import path from 'path';
-import { parseMetadata } from './metadata';
 import matter from 'gray-matter';
 import hljs from 'highlight.js';
-import { Article, MapMetadata, TopicMetadata } from '@/types/content';
+import { Article, MapMetadata, TopicMetadata, Doc, TocEntry } from '@/types/content';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
-import rehypeKatex from 'rehype-katex';
+import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeStringify from 'rehype-stringify';
-import { parse } from 'node-html-parser';
+import rehypeSlug from 'rehype-slug';
+import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import { h } from 'hastscript';
+import { visit } from 'unist-util-visit';
+import { toString } from 'hast-util-to-string';
+import { toHtml } from 'hast-util-to-html';
+import { parseMetadata } from './metadata';
+import type { Root } from 'hast';
+import { VFile } from 'vfile';
 
-// Create the unified processor instance
-const processor = unified()
+// Create the unified processor instance (Restored)
+// NOTE: This is now the BASE processor, plugins like footnote processing/stringifying are added manually.
+const baseProcessor = unified()
   .use(remarkParse)       // Parse markdown
   .use(remarkGfm)         // Support GFM (includes standard footnotes)
-  .use(remarkMath)        // Support math blocks
-  .use(remarkRehype)      // Convert to rehype
-  .use(rehypeKatex)       // Render math with KaTeX
-  .use(rehypeStringify);  // Convert HTML AST to string
+  .use(remarkMath)        // Support math blocks 
+  .use(remarkRehype, { 
+    allowDangerousHtml: true
+  }) // Convert to rehype
+  .use(rehypeMathjax, { // Render math content 
+    svg: {
+      displayAlign: 'center' 
+    }
+  })
+  .use(fixMathDisplayAttribute) // Fix math display block attribute
+  .use(rehypeSlug)        // Add IDs to headings
+  .use(rehypeAutolinkHeadings, {
+    behavior: 'append',
+    properties: {
+      className: ['anchor', 'heading-link'],
+      'aria-hidden': 'true',
+      tabIndex: -1,
+    },
+    content: h('span', { className: 'heading-link-icon' }, '¶')
+  })
+  .use(rehypeExtractToc); // Extract TOC data
+  // NOTE: rehypeProcessFootnotes (extract) and rehypeRenumberFootnoteRefs (renumber)
+  // will be run manually in getArticleData using .use() on a cloned processor.
+  // rehypeStringify will also be run manually after renumbering.
+
+// Custom Rehype plugin to extract TOC
+function rehypeExtractToc() {
+  return (tree: any, file: any) => {
+    const toc: TocEntry[] = [];
+    visit(tree, 'element', (node) => {
+      // Target heading elements (h1 to h6)
+      if (node.tagName && node.tagName.match(/^h[1-6]$/)) {
+        const level = parseInt(node.tagName.substring(1), 10);
+        const id = node.properties?.id as string;
+        
+        // Extract text content, excluding the autolink heading anchor
+        let text = '';
+        if (node.children) {
+          // Filter out the anchor link node added by rehype-autolink-headings
+          const contentNodes = node.children.filter((child: any) => 
+            !(child.type === 'element' && 
+              child.tagName === 'a' && 
+              child.properties?.className?.includes('heading-link'))
+          );
+          // Convert the remaining nodes to string
+          text = toString({ type: 'root', children: contentNodes }).trim();
+        }
+
+        // Only add to TOC if we have an ID and non-empty text
+        if (id && text) {
+          toc.push({ id, text, level });
+        }
+      }
+    });
+    // Store the collected TOC data in the vfile
+    file.data = file.data || {};
+    file.data.toc = toc;
+  };
+}
+
+// *** RESTORING Rehype plugin to fix display attribute ***
+function fixMathDisplayAttribute() {
+  return (tree: any) => {
+    visit(tree, 'element', (node) => {
+      // Look for paragraph elements
+      if (node.tagName === 'p') {
+        if (!node.children || node.children.length === 0) return;
+
+        let mjxContainerNode = null;
+        let onlyContainerAndWhitespace = true;
+
+        // Check if paragraph contains ONLY an mjx-container and possibly whitespace/comments
+        for (const child of node.children) {
+          if (child.type === 'element' && child.tagName === 'mjx-container') {
+            if (mjxContainerNode) { // Found more than one container
+              onlyContainerAndWhitespace = false;
+              break;
+            }
+            mjxContainerNode = child;
+          } else if (child.type === 'text' && child.value.trim() === '') {
+            continue;
+          } else if (child.type === 'comment') {
+            continue;
+          } else {
+            onlyContainerAndWhitespace = false;
+            break;
+          }
+        }
+
+        // If conditions met, add display="true" to the container's properties
+        if (mjxContainerNode && onlyContainerAndWhitespace) {
+          mjxContainerNode.properties = mjxContainerNode.properties || {};
+          if (mjxContainerNode.properties.display !== 'true') {
+            // console.log(`>>> REHYPE FIX: Adding display=true to mjx-container inside <p>`);
+            mjxContainerNode.properties.display = 'true';
+          }
+        }
+      }
+    });
+  };
+}
+
+// *** MODIFIED Rehype plugin to ONLY process/extract footnote definitions ***
+function rehypeProcessFootnotes() {
+  return (tree: any, file: any) => {
+    const footnotes: { originalId: string; contentHtml: string; backrefs: string[] }[] = [];
+
+    // Remove any standalone H2 'Footnotes' headings
+    visit(tree, 'element', (node, index, parent) => {
+      if (node.tagName === 'h2' &&
+          parent &&
+          typeof index === 'number' &&
+          toString(node).trim().toLowerCase() === 'footnotes') {
+
+        // console.log(`[rehypeProcessFootnotes - EXTRACT ONLY] Removing standalone H2 'Footnotes' node.`);
+        parent.children.splice(index, 1);
+        return index; // Adjust index for continuing visit
+      }
+    });
+
+    // Extract footnote definitions and remove the section
+    visit(tree, 'element', (node, index, parent) => {
+      if (node.tagName === 'section' && node.properties?.className?.includes('footnotes')) {
+        // console.log('[rehypeProcessFootnotes - EXTRACT ONLY] Found footnote definition section.');
+
+        visit(node, 'element', (liNode) => {
+          if (liNode.tagName === 'li' && liNode.properties?.id) {
+            const liNodeId = liNode.properties.id as string;
+            // Expect IDs like 'user-content-fn-1' from remark-gfm
+            const originalIdMatch = liNodeId.match(/fn-(\d+)$/);
+
+            if (originalIdMatch && originalIdMatch[1]) {
+              const extractedNum = originalIdMatch[1];
+              const normalizedOriginalId = `fn-${extractedNum}`; // Consistent 'fn-X' format
+
+              const contentNodes = liNode.children?.filter((child: any) =>
+                !(child.type === 'element' && child.tagName === 'a' && child.properties?.className?.includes('footnote-backref'))
+              ) || [];
+
+              const backrefs = liNode.children?.filter((child: any) =>
+                child.type === 'element' && child.tagName === 'a' && child.properties?.className?.includes('footnote-backref')
+              ).map((link: any) => link.properties.href as string) || [];
+
+              const contentHtml = toHtml(contentNodes);
+
+              // console.log(`[rehypeProcessFootnotes - EXTRACT ONLY] Extracted footnote: liNodeId=${liNodeId}, normalizedOriginalId=${normalizedOriginalId}`);
+              footnotes.push({ originalId: normalizedOriginalId, contentHtml, backrefs });
+            } else {
+              // console.warn(`[rehypeProcessFootnotes - EXTRACT ONLY] Could not extract normalized ID from li node ID: ${liNodeId}`);
+            }
+          }
+        });
+
+        // Remove the entire footnote section from the tree
+        if (parent && typeof index === 'number') {
+          // console.log(`[rehypeProcessFootnotes - EXTRACT ONLY] Removing definition section node at index ${index}.`);
+          parent.children.splice(index, 1);
+          return index;
+        } else {
+            // console.warn('[rehypeProcessFootnotes - EXTRACT ONLY] Could not remove definition section node - parent or index invalid.');
+        }
+      }
+    });
+
+    // Store extracted footnotes in vfile
+    file.data = file.data || {};
+    file.data.extractedFootnotes = footnotes;
+    // console.log('[rehypeProcessFootnotes - EXTRACT ONLY] Finished extraction.');
+
+    // NO SECOND PASS for marking refs anymore
+  };
+}
+
+// *** NEW Rehype plugin to renumber footnote references in HAST ***
+function rehypeRenumberFootnoteRefs() {
+  return (tree: any, file: any) => {
+    // Retrieve the map and slug passed via processor.data() or file.data
+    const originalToNewIdMap = file.data?.originalToNewIdMap as Map<string, number> | undefined;
+    const currentTopicSlug = file.data?.currentTopicSlug as string | undefined;
+
+    if (!originalToNewIdMap || !currentTopicSlug) {
+      // console.warn('[rehypeRenumberFootnoteRefs] Missing originalToNewIdMap or currentTopicSlug in file.data. Skipping renumbering.');
+      return; // Cannot proceed without the map and slug
+    }
+
+    // console.log(`[rehypeRenumberFootnoteRefs] Running for slug: ${currentTopicSlug}. Map size: ${originalToNewIdMap.size}`);
+
+    visit(tree, 'element', (node) => {
+      // Find the footnote reference anchors (added by remark-gfm)
+      // Example: <a href="#user-content-fn-1" id="user-content-fnref-1" aria-describedby="footnote-label">1</a>
+      if (node.tagName === 'a' && node.properties?.href?.startsWith('#user-content-fn-')) {
+        const hrefValue = node.properties.href as string;
+        const originalIdNumMatch = hrefValue.match(/fn-(\d+)$/);
+        const originalIdNum = originalIdNumMatch ? originalIdNumMatch[1] : null;
+
+        if (originalIdNum) {
+          const normalizedOriginalId = `fn-${originalIdNum}`; // e.g., 'fn-1'
+          const originalKey = `${currentTopicSlug}::${normalizedOriginalId}`; // e.g., 'math-example::fn-1'
+
+          const newNumber = originalToNewIdMap.get(originalKey);
+
+          // console.log(`[rehypeRenumberFootnoteRefs] Found ref: ${hrefValue}. Key: ${originalKey}. Mapped New Number: ${newNumber}`);
+
+          if (newNumber !== undefined) {
+            // 1. Update the href attribute
+            node.properties.href = `#footnote-${newNumber}`;
+
+            // 2. Update the visible number (assuming it's the first text node child)
+            const textNode = node.children?.find((child: any) => child.type === 'text');
+            if (textNode) {
+              // console.log(`[rehypeRenumberFootnoteRefs] Updating text node from '${textNode.value}' to '${newNumber}'.`);
+              textNode.value = String(newNumber);
+            } else {
+               // console.warn(`[rehypeRenumberFootnoteRefs] Could not find text node child for anchor ${hrefValue} to update number.`);
+            }
+
+            // 3. Optional: Clean up remark-gfm specific attributes if desired
+            // delete node.properties.id;
+            // delete node.properties['aria-describedby'];
+
+            // 4. Remove the temporary data-footnote-ref if it was ever added (it shouldn't be with this flow)
+            // delete node.properties['data-footnote-ref'];
+
+          } else {
+            // console.warn(`[rehypeRenumberFootnoteRefs] Lookup FAILED for key: ${originalKey}. Map keys:`, Array.from(originalToNewIdMap.keys()));
+          }
+        } else {
+          // console.warn(`[rehypeRenumberFootnoteRefs] Could not extract numeric ID from href: ${hrefValue}`);
+        }
+      }
+    });
+  };
+}
 
 export async function getContentSlugs() {
   try {
@@ -47,419 +284,332 @@ export async function getContentSlugs() {
   }
 }
 
+// --- Start Re-added Helper Functions ---
+
+// Helper function to find topic file with various extensions
 async function findTopicFile(topicId: string, topicsDir: string): Promise<{ path: string; content: string } | null> {
-  // Clean up the topic ID by removing any leading slashes or ../topics/
   const cleanTopicId = topicId.replace(/^\.\.\/topics\//, '').replace(/^\//, '');
-  
-  // Try different extensions and locations
   const possiblePaths = [
-    path.join(topicsDir, cleanTopicId), // Exact path
+    path.join(topicsDir, cleanTopicId), // Assume it might be passed with extension already
     path.join(topicsDir, `${cleanTopicId}.mdita`),
     path.join(topicsDir, `${cleanTopicId}.md`),
     path.join(topicsDir, `${cleanTopicId}.dita`),
     path.join(topicsDir, `${cleanTopicId}.xml`),
   ];
 
-  console.log('Looking for topic file:', topicId);
-  console.log('Cleaned topic ID:', cleanTopicId);
-  console.log('Possible paths:', possiblePaths);
+  // console.log('[findTopicFile] Looking for:', topicId, '(Clean:', cleanTopicId, ')');
 
   for (const filePath of possiblePaths) {
     try {
-      console.log('Trying path:', filePath);
       const content = await fs.readFile(filePath, 'utf8');
-      console.log('Found topic file at:', filePath);
+      // console.log('[findTopicFile] Found at:', filePath);
       return { path: filePath, content };
-    } catch (err) {
-      console.log('Not found at:', filePath);
-      continue;
+    } catch (err: any) {
+      if (err.code !== 'ENOENT') {
+        console.error(`[findTopicFile] Error reading potential topic file ${filePath}:`, err);
+      }
     }
   }
 
-  console.error(`Could not find topic file for ${topicId} in ${topicsDir}`);
-  console.error('Tried paths:', possiblePaths.join(', '));
+  console.error(`[findTopicFile] Could not find topic file for ${topicId} in ${topicsDir}`);
   return null;
 }
 
+// Helper function to process inline footnotes into standard refs/defs
+function processInlineFootnotes(markdown: string): string {
+  const inlineFootnoteRegex = /\^\[([\s\S]*?)\]/g;
+  let footnoteIndex = 1;
+  const footnoteDefs: string[] = [];
+  
+  // Determine the starting index for new footnote refs
+  const existingRefs = new Set<number>();
+  const refRegex = /\[\^(\d+)\]/g;
+  let refMatch;
+  while ((refMatch = refRegex.exec(markdown)) !== null) {
+      existingRefs.add(parseInt(refMatch[1]));
+  }
+  while (existingRefs.has(footnoteIndex)) {
+      footnoteIndex++;
+  }
+
+  const processedMarkdown = markdown.replace(inlineFootnoteRegex, (match, footnoteText) => {
+    const footnoteId = footnoteIndex++; // Use and increment
+    footnoteDefs.push(`[^${footnoteId}]: ${footnoteText}`);
+    return `[^${footnoteId}]`;
+  });
+
+  if (footnoteDefs.length > 0) {
+    return `${processedMarkdown}\n\n${footnoteDefs.join('\n')}`;
+  }
+  return processedMarkdown;
+}
+
+// --- End Re-added Helper Functions ---
+
 export async function getArticleData(slug: string): Promise<Article | null> {
+  console.log(`[getArticleData V2] Starting processing for slug: ${slug}`);
   try {
-    // First try to find the article in the maps directory
     const mapsDir = path.join(process.cwd(), 'content/maps');
     const articlesDir = path.join(process.cwd(), 'content/articles');
     const topicsDir = path.join(process.cwd(), 'content/topics');
-    
-    // Try to read from maps directory first
+
+    // Try processing as a DITA map first
     try {
       const mapPath = path.join(mapsDir, `${slug}.ditamap`);
       const mapContents = await fs.readFile(mapPath, 'utf8');
-      console.log('Reading map file:', mapPath);
-      
+      console.log('[getArticleData V2] Reading map file:', mapPath);
+
       const { metadata, topics } = await parseMetadata(mapContents, 'map');
-      console.log('Parsed metadata:', metadata);
-      console.log('Found topics:', topics);
+      console.log('[getArticleData V2] Parsed map metadata:', metadata);
+      console.log('[getArticleData V2] Found topics in map:', topics);
 
-      // Only proceed if the article is published
       if (!metadata.publish) {
-        console.log('Article not published:', slug);
+        console.log(`[getArticleData V2] Map article ${slug} not published.`);
         return null;
       }
 
-      // Initialize arrays to hold main content and footnote list items
-      const topicMainContents: { id: string; metadata: TopicMetadata; content: string }[] = [];
-      const allFootnotes: { 
-        originalId: string; 
-        content: string; 
-        topicId: string; 
-        backrefId: string;
-        topicIndex: number;
-        originalName?: string; // Add originalName to track named footnotes
-      }[] = [];
-      
-      // Track topic index for proper footnote ordering
-      let topicIndex = 0;
-
-      // Load and process all topics referenced in the map
-      await Promise.all(
-        (topics || []).map(async (topicId, index) => {
-          try {
-            const topicFile = await findTopicFile(topicId, topicsDir);
-            
-            if (!topicFile) {
-              console.error(`Topic file not found: ${topicId}`);
-              return; // Skip this topic
-            }
-
-            console.log('Found topic file:', topicFile.path);
-            const { data: topicMetadata, content: markdown } = matter(topicFile.content);
-            
-            // Handle inline footnotes before processing
-            const processedMarkdown = processInlineFootnotes(markdown);
-            
-            // Process markdown to HTML using unified
-            const file = await processor.process(processedMarkdown);
-            const html = file.toString();
-
-            // Parse the generated HTML
-            const root = parse(html);
-
-            // Find and extract footnote list items
-            const footnotesSection = root.querySelector('section.footnotes[data-footnotes]');
-            if (footnotesSection) {
-              const footnoteItems = footnotesSection.querySelectorAll('li');
-              
-              // Extract and store the footnotes with their original info
-              footnoteItems.forEach(li => {
-                const originalId = li.getAttribute('id') || '';
-                const originalName = originalId.replace('user-content-fn-', ''); // Capture the original name
-                const backrefLinks = li.querySelectorAll('a.data-footnote-backref');
-                
-                backrefLinks.forEach(backrefLink => {
-                  const backrefId = backrefLink.getAttribute('href')?.replace('#', '') || '';
-                  const content = li.innerHTML;
-                
-                  allFootnotes.push({
-                    originalId,
-                    originalName, // Store the original name
-                    content,
-                    topicId,
-                    backrefId,
-                    topicIndex: index // Store topic order
-                  });
-                });
-              });
-              
-              // Remove the footnotes section from this topic's HTML
-              footnotesSection.remove();
-            }
-            
-            // Remove any manual "Footnotes" headings (case insensitive)
-            const headings = root.querySelectorAll('h1, h2, h3, h4, h5, h6');
-            headings.forEach(heading => {
-              if (heading.textContent.trim().toLowerCase() === 'footnotes') {
-                heading.remove();
-              }
-            });
-
-            // Store the modified main content (without footnotes section)
-            topicMainContents.push({
-              id: topicId,
-              metadata: topicMetadata as TopicMetadata,
-              content: root.toString() // Get HTML string from the modified root
-            });
-
-          } catch (error) {
-            console.error(`Error loading topic ${topicId}:`, error);
-          }
-        })
-      );
-
-      // Ensure topics maintain their original order from the map
-      const orderedTopics = (topics || []).map(topicId => 
-        topicMainContents.find(t => t.id === topicId)
-      ).filter((topic): topic is NonNullable<typeof topic> => topic !== null);
-
-      if (orderedTopics.length === 0) {
-        console.error('No valid topics found for article:', slug);
-        return null;
+      if (!topics || topics.length === 0) {
+        console.warn(`[getArticleData V2] Map ${slug} contains no topics.`);
+        throw new Error("Map contains no topics");
       }
 
-      // Sort footnotes by topic order and then by their occurrence in the document
-      // This ensures footnotes appear in reading order
-      allFootnotes.sort((a, b) => {
-        if (a.topicIndex !== b.topicIndex) {
-          return a.topicIndex - b.topicIndex;
-        }
-        // Try to sort by natural order if the IDs are numeric
-        const aNum = parseInt(a.originalName || '0', 10);
-        const bNum = parseInt(b.originalName || '0', 10);
-        if (!isNaN(aNum) && !isNaN(bNum)) {
-          return aNum - bNum;
-        }
-        // Otherwise use string comparison
-        return (a.originalName || '').localeCompare(b.originalName || '');
-      });
+      // --- Pass 1: Process Markdown -> HAST & Extract Footnotes ---
+      console.log('[getArticleData V2] --- Starting Pass 1: HAST Generation & Footnote Extraction ---');
+      // Clone the base processor and add the extraction plugin
+      const extractProcessor = baseProcessor().use(rehypeProcessFootnotes);
 
-      // Create a sequential ID for each unique footnote while preserving original IDs
-      const uniqueFootnotes = new Map<string, { 
-        newId: string, 
-        originalName: string,
-        content: string,
-        references: { originalRefId: string, newRefId: string }[]
-      }>();
-      
-      // First pass: create a mapping of all footnotes with their new IDs
-      // Instead of starting from 1 each time, we'll use the original numeric IDs
-      // from the Markdown files when possible
-      
-      for (const footnote of allFootnotes) {
-        const key = `${footnote.topicId}-${footnote.originalId}`;
-        
-        if (!uniqueFootnotes.has(key)) {
-          // Get the original numeric ID if possible
-          let numericId = parseInt(footnote.originalName || '0', 10);
-          
-          // Ensure the ID is valid
-          if (isNaN(numericId) || numericId <= 0) {
-            // Use a default ID if not valid
-            numericId = uniqueFootnotes.size + 1;
-          }
-          
-          uniqueFootnotes.set(key, {
-            newId: `user-content-fn-${numericId}`,
-            originalName: footnote.originalName || String(numericId),
-            content: footnote.content,
-            references: [{
-              originalRefId: footnote.backrefId,
-              newRefId: `user-content-fnref-${numericId}`
-            }]
-          });
-        } else {
-          // If we've seen this footnote before, just add this reference to it
-          const existingFootnote = uniqueFootnotes.get(key)!;
-          existingFootnote.references.push({
-            originalRefId: footnote.backrefId,
-            newRefId: `user-content-fnref-${existingFootnote.references.length + 1}-${existingFootnote.newId.split('-').pop()}`
-          });
-        }
-      }
-      
-      // Create a mapping from original reference IDs to new reference IDs
-      const refIdMap = new Map<string, { newRefId: string, footnoteId: string }>();
-      // Also create a mapping from originalName to newId for named footnotes
-      const nameIdMap = new Map<string, string>();
-      
-      // Process the uniqueFootnotes map to extract all reference mappings
-      for (const [key, footnote] of uniqueFootnotes.entries()) {
-        // Add mapping by originalName (for named references like [^energy])
-        nameIdMap.set(footnote.originalName, footnote.newId);
-        
-        for (const ref of footnote.references) {
-          refIdMap.set(ref.originalRefId, {
-            newRefId: ref.newRefId,
-            footnoteId: footnote.newId
-          });
-        }
-      }
-      
-      // Process each topic's content to update footnote references
-      const processedTopics = orderedTopics.map(topic => {
-        // Parse the topic content to update footnote references
-        const topicRoot = parse(topic.content);
-        
-        // Update all footnote reference links
-        const footnoteRefs = topicRoot.querySelectorAll('a[data-footnote-ref]');
-        footnoteRefs.forEach(ref => {
-          const href = ref.getAttribute('href');
-          if (href) {
-            const targetId = href.replace('#', '');
-            // Try to get the named part of the id
-            const namePart = targetId.replace('user-content-fn-', '');
-            
-            // First check if we have a direct mapping for this targetId
-            const mapping = refIdMap.get(targetId);
-            
-            if (mapping) {
-              // Direct mapping exists, use it
-              ref.setAttribute('href', `#${mapping.footnoteId}`);
-              ref.setAttribute('id', mapping.newRefId);
-              
-              // Update the text content to match the numeric ID
-              const numericId = mapping.footnoteId.split('-').pop();
-              ref.textContent = numericId;
-            } else if (nameIdMap.has(namePart)) {
-              // This is a named footnote reference like [^energy]
-              const newFootnoteId = nameIdMap.get(namePart)!;
-              const numericId = newFootnoteId.split('-').pop();
-              const newRefId = `user-content-fnref-${numericId}`;
-              
-              ref.setAttribute('href', `#${newFootnoteId}`);
-              ref.setAttribute('id', newRefId);
-              
-              // Update the text content to match the numeric ID
-              ref.textContent = numericId;
-              
-              // Also add this to refIdMap for backrefs
-              refIdMap.set(targetId, {
-                newRefId: newRefId,
-                footnoteId: newFootnoteId
-              });
-            }
-          }
-        });
-        
-        // Return the processed topic content
-        return {
-          ...topic,
-          content: topicRoot.toString()
-        };
-      });
-      
-      // Combine all topic main contents with proper spacing and structure
-      let combinedContent = processedTopics.map(topic => `
-        <section class="topic" id="${topic.id.replace(/[^a-zA-Z0-9-_]/g, '_')}">
-          ${topic.content}
-        </section>
-      `).join('\n');
-
-      // If there were any footnotes collected, append the combined footnote section
-      if (uniqueFootnotes.size > 0) {
-        const footnoteLiElements: string[] = [];
-        
-        // Iterate through uniqueFootnotes in order of their new IDs
-        Array.from(uniqueFootnotes.values())
-          .sort((a, b) => {
-            const aId = parseInt(a.newId.split('-').pop() || '0', 10);
-            const bId = parseInt(b.newId.split('-').pop() || '0', 10);
-            return aId - bId;
-          })
-          .forEach(footnote => {
-            // Parse the content to update backlinks
-            const parser = parse(footnote.content);
-            
-            // Find and update all backref links
-            const backrefLinks = parser.querySelectorAll('a.data-footnote-backref');
-            
-            // If there are multiple backref links, we need to handle them
-            if (backrefLinks.length === 1 && footnote.references.length === 1) {
-              // Simple case: one link to one reference
-              backrefLinks[0].setAttribute('href', `#${footnote.references[0].newRefId}`);
-            } else if (backrefLinks.length >= 1 && footnote.references.length >= 1) {
-              // Complex case: possibly multiple links or references
-              backrefLinks.forEach((link, idx) => {
-                // If we have a corresponding reference, use it
-                if (idx < footnote.references.length) {
-                  link.setAttribute('href', `#${footnote.references[idx].newRefId}`);
-                } else {
-                  // Otherwise use the first reference
-                  link.setAttribute('href', `#${footnote.references[0].newRefId}`);
-                }
-              });
-            }
-            
-            // Create the footnote list item
-            const newLi = `<li id="${footnote.newId}">
-              ${parser.toString()}
-            </li>`;
-            
-            footnoteLiElements.push(newLi);
-          });
-        
-        const finalFootnotesSection = `
-          <section data-footnotes class="footnotes">
-            <h2 class="sr-only" id="footnote-label">Footnotes</h2>
-            <ol>
-              ${footnoteLiElements.join('\n')}
-            </ol>
-          </section>
-        `;
-        combinedContent += finalFootnotesSection;
-      }
-
-      return {
-        slug,
-        content: combinedContent,
-        metadata,
-        topics: orderedTopics // Return the ordered, processed topics
-      };
-    } catch (mapError) {
-      // If not found in maps, try articles directory
-      try {
-        const articlePath = path.join(articlesDir, `${slug}.mdita`);
-        const articleContents = await fs.readFile(articlePath, 'utf8');
-        console.log('Reading article file:', articlePath);
-        
-        const { data: metadata, content: markdown } = matter(articleContents);
-        
-        // Only proceed if the article is published
-        if (!metadata.publish) {
-          console.log('Article not published:', slug);
-          return null;
-        }
-
-        const file = await processor.process(markdown);
-        const html = file.toString();
-
-        return {
-          slug,
-          content: html,
-          metadata: metadata as MapMetadata
-        };
-      } catch (articleError) {
-        // Try .md extension as last resort
+      const topicPass1Results = await Promise.all(topics.map(async (topicId, index) => {
+        const topicSlug = topicId.replace(/^\.\.\/topics\//, '').replace(/^\//, '').replace(/(mdita|md|dita|xml)$/, '');
         try {
-          const mdPath = path.join(articlesDir, `${slug}.md`);
-          const mdContents = await fs.readFile(mdPath, 'utf8');
-          console.log('Reading markdown file:', mdPath);
-          
-          const { data: metadata, content: markdown } = matter(mdContents);
-          
-          // Only proceed if the article is published
-          if (!metadata.publish) {
-            console.log('Article not published:', slug);
+          const topicFile = await findTopicFile(topicId, topicsDir);
+          if (!topicFile) {
+            console.error(`[getArticleData V2 Pass 1] Topic file not found: ${topicId}`);
             return null;
           }
+          console.log('[getArticleData V2 Pass 1] Processing topic:', topicFile.path);
+          const { content: markdown } = matter(topicFile.content); // Don't need metadata here
+          const processedMarkdown = processInlineFootnotes(markdown);
 
-          const file = await processor.process(markdown);
-          const html = file.toString();
+          // Run the processor to get HAST and extracted data
+          // Use parse() and run() instead of process() as we don't have a compiler yet
+          const mdast = extractProcessor.parse(processedMarkdown);
+          const vfile = new VFile({ value: processedMarkdown }); // Create VFile instance
+          const hastTree = await extractProcessor.run(mdast, vfile); // Pass VFile
+
+          // Access data from the VFile instance
+          const extractedFootnotes = (vfile.data?.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
+          const topicToc = (vfile.data?.toc || []) as TocEntry[];
+
+          console.log(`[getArticleData V2 Pass 1] Topic ${topicSlug} processed. Extracted ${extractedFootnotes.length} footnotes.`);
 
           return {
-            slug,
-            content: html,
-            metadata: metadata as MapMetadata
+            slug: topicSlug,
+            order: index,
+            hastTree: hastTree, // Store HAST
+            extractedFootnotes: extractedFootnotes,
+            toc: topicToc
           };
-        } catch (mdError) {
-          console.error(`Article not found in any location: ${slug}`);
+        } catch (error) {
+          console.error(`[getArticleData V2 Pass 1] Error processing topic ${topicId}:`, error);
           return null;
         }
+      }));
+
+      const validTopicDataPass1 = topicPass1Results.filter((topic): topic is NonNullable<typeof topic> => topic !== null);
+
+      if (validTopicDataPass1.length === 0) {
+        console.error(`[getArticleData V2] No valid topics could be processed in Pass 1 for map: ${slug}`);
+        return null;
       }
-    }
-  } catch (error) {
-    console.error(`Error fetching article ${slug}:`, error);
-    return null;
+
+      // --- Build Footnote Maps ---
+      console.log('[getArticleData V2] --- Building Footnote Maps ---');
+      let globalFootnoteCounter = 0;
+      const finalFootnotesMap = new Map<number, { contentHtml: string; backRefHrefs: string[] }>();
+      const originalToNewIdMap = new Map<string, number>(); // Key: topicSlug::fn-X
+
+      validTopicDataPass1.forEach(topic => {
+        if (Array.isArray(topic.extractedFootnotes)) {
+            topic.extractedFootnotes.forEach(fn => {
+                const originalKey = `${topic.slug}::${fn.originalId}`; 
+                if (!originalToNewIdMap.has(originalKey)) { // Avoid duplicates if somehow extracted twice
+                    globalFootnoteCounter++;
+                    originalToNewIdMap.set(originalKey, globalFootnoteCounter);
+                    console.log(`[getArticleData V2 Mapping] Key: ${originalKey} -> New ID: ${globalFootnoteCounter}`);
+                    finalFootnotesMap.set(globalFootnoteCounter, {
+                        contentHtml: fn.contentHtml,
+                        backRefHrefs: fn.backrefs, // Store original backrefs if needed later
+                    });
+                } else {
+                     console.warn(`[getArticleData V2 Mapping] Duplicate original key detected: ${originalKey}. Ignoring subsequent.`);
+                }
+            });
+        }
+      });
+      console.log('[getArticleData V2 Mapping] Finished. originalToNewIdMap size:', originalToNewIdMap.size);
+
+      // --- Pass 2: Renumber Refs in HAST & Stringify ---
+      console.log('[getArticleData V2] --- Starting Pass 2: Renumbering Refs & Stringifying HAST ---');
+      const finalTopicHtmls = await Promise.all(validTopicDataPass1.map(async (topic) => {
+          try {
+              // Create a processor with the necessary data for renumbering
+              const renumberStringifyProcessor = (unified() as any)
+                  .data('originalToNewIdMap', originalToNewIdMap)
+                  .data('currentTopicSlug', topic.slug)
+                  .use(rehypeRenumberFootnoteRefs)
+                  .use(rehypeStringify, { allowDangerousHtml: true });
+             
+              // IMPORTANT: Process the HAST tree directly.
+              // process() expects a string, so we use runSync() and stringify() manually
+              const vfileForProcessing = new VFile(); // Create VFile for processing
+              vfileForProcessing.data = { // Explicitly pass data via the file object
+                  originalToNewIdMap: originalToNewIdMap,
+                  currentTopicSlug: topic.slug
+              };
+             
+              // Run the plugins on the HAST tree, passing the file object with data
+              const transformedTree = await renumberStringifyProcessor.run(topic.hastTree as Root, vfileForProcessing);
+             
+              // Stringify the transformed tree
+              const finalHtml = renumberStringifyProcessor.stringify(transformedTree as Root);
+
+              console.log(`[getArticleData V2 Pass 2] Stringified HTML for topic: ${topic.slug} (Length: ${finalHtml.length})`);
+              return { html: finalHtml, order: topic.order };
+          } catch (error) {
+              console.error(`[getArticleData V2 Pass 2] Error processing HAST for topic ${topic.slug}:`, error);
+              return null; // Handle error for this specific topic
+          }
+      }));
+
+      // Filter out any null results from errors and sort
+      const validFinalHtmls = finalTopicHtmls
+          .filter((result): result is NonNullable<typeof result> => result !== null)
+          .sort((a, b) => a.order - b.order)
+          .map(result => result.html);
+
+      if (validFinalHtmls.length !== validTopicDataPass1.length) {
+          console.warn(`[getArticleData V2 Pass 2] Some topics failed during HAST processing/stringifying.`);
+          // Decide if partial content is acceptable or if we should fail
+          if (validFinalHtmls.length === 0) {
+              console.error(`[getArticleData V2] All topics failed in Pass 2 for map: ${slug}`);
+              return null;
+          }
+      }
+
+      // --- Combine & Finalize ---
+      console.log('[getArticleData V2] --- Combining HTML and Appending Footnotes ---');
+      let combinedHtml = validFinalHtmls.join('\n\n<hr class="my-8 border-border" />\n\n');
+
+      // Append Final Footnote Section
+      if (finalFootnotesMap.size > 0) {
+        const footnoteLiElements = Array.from(finalFootnotesMap.entries())
+          .sort(([idA], [idB]) => idA - idB)
+          .map(([newId, { contentHtml }]) => {
+            const wrappedContent = contentHtml.trim().startsWith('<p') ? contentHtml : `<p>${contentHtml.trim()}</p>`;
+            // Remove the placeholder addition - rely on the backref from Pass 1 extraction
+            // const contentWithBackrefPlaceholder = wrappedContent.replace(/<\/p>\s*$/, ` <a href="#placeholder-backref-${newId}" data-footnote-backref aria-label="Back to reference ${newId}" class="data-footnote-backref">↩</a></p>`);
+            // Use the wrapped content directly, which should already contain the correct backref
+            return `<li id="footnote-${newId}">${wrappedContent}</li>`; 
+          }).join('\n');
+
+        combinedHtml += `\n\n<section data-footnotes class="footnotes mt-12 pt-8 border-t border-border">\n<h2 class="sr-only" id="footnotes-section-label">Footnotes</h2>\n<ol>\n${footnoteLiElements}\n</ol>\n</section>`;
+         console.log(`[getArticleData V2] Appended footnote section with ${finalFootnotesMap.size} items.`);
+      } else {
+          console.log(`[getArticleData V2] No footnotes found to append.`);
+      }
+
+      // Combine TOCs from all valid topics
+      const combinedToc = validTopicDataPass1.flatMap(t => t.toc || []);
+
+      console.log(`[getArticleData V2] Successfully processed map ${slug}, returning data.`);
+      return {
+        slug,
+        metadata: metadata as MapMetadata,
+        content: combinedHtml,
+        toc: combinedToc,
+      };
+
+    } catch (mapError: any) {
+        // --- Standalone Article Fallback Path (largely unchanged, but simplified footnote handling) ---
+        console.log(`[getArticleData V2] Map processing failed for ${slug}, trying as standalone. Error: ${mapError.message}`);
+        const possibleExtensions = ['.mdita', '.md'];
+        for (const ext of possibleExtensions) {
+            const standaloneFilePath = path.join(articlesDir, `${slug}${ext}`);
+            try {
+                const fileContents = await fs.readFile(standaloneFilePath, 'utf8');
+                console.log(`[getArticleData V2 Standalone] Reading: ${standaloneFilePath}`);
+                const { data: metadata, content: markdown } = matter(fileContents);
+
+                if (!metadata.publish) {
+                    console.log(`[getArticleData V2 Standalone] ${slug}${ext} not published.`);
+                    continue; // Try next extension or fail
+                }
+
+                const processedMarkdown = processInlineFootnotes(markdown);
+
+                // Processor for standalone: includes extract + stringify
+                // Clone base, add extract plugin, add stringify
+                const standaloneProcessor = baseProcessor()
+                    .use(rehypeProcessFootnotes) // Extract definitions
+                    .use(rehypeStringify, { allowDangerousHtml: true }); // ADDED OPTION
+
+                const file = await standaloneProcessor.process(processedMarkdown);
+                let html = file.toString(); // .toString() uses the processor's stringify options
+                const toc = (file.data.toc || []) as TocEntry[];
+                const extractedFootnotes = (file.data.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
+
+                // Append extracted footnotes (no renumbering, use original IDs/structure)
+                if (extractedFootnotes && extractedFootnotes.length > 0) {
+                    console.log(`[getArticleData V2 Standalone] Processing ${extractedFootnotes.length} footnotes for ${slug}${ext}`);
+                    const finalFootnotesHtmlStandalone: string[] = [];
+                    let counterStandalone = 0;
+
+                    extractedFootnotes.forEach(fn => {
+                        counterStandalone++; // Simple counter for li id
+                        const originalNumericId = fn.originalId.replace(/^fn-/, ''); // '1', '2' etc.
+                        // Construct the expected back-ref target ID from remark-gfm
+                        const backRefTargetId = `#user-content-fnref-${originalNumericId}`;
+
+                        const wrappedContent = fn.contentHtml.trim().startsWith('<p') ? fn.contentHtml : `<p>${fn.contentHtml.trim()}</p>`;
+                        const contentWithBackref = wrappedContent.replace(/<\/p>\s*$/, ` <a href="${backRefTargetId}" data-footnote-backref aria-label="Back to reference ${counterStandalone}" class="data-footnote-backref">↩</a></p>`);
+                       
+                        // Use the counter for the list ID, link back to the original ref ID
+                        finalFootnotesHtmlStandalone.push(
+                            `<li id="footnote-${counterStandalone}">${contentWithBackref}</li>`
+                        );
+                    });
+
+                    html += `\n\n<section data-footnotes class="footnotes mt-12 pt-8 border-t border-border">\n<h2 class="sr-only" id="footnotes-section-label">Footnotes</h2>\n<ol>\n${finalFootnotesHtmlStandalone.join('\n')}\n</ol>\n</section>`;
+                }
+
+                console.log(`[getArticleData V2 Standalone] Successfully processed ${slug}${ext}.`);
+                return {
+                    slug,
+                    metadata: metadata as TopicMetadata, // Assuming standalone has TopicMetadata
+                    content: html,
+                    toc,
+                };
+            } catch (error: any) {
+                if (error.code !== 'ENOENT') {
+                    console.error(`[getArticleData V2 Standalone] Error reading ${standaloneFilePath}:`, error.message);
+                } else {
+                    console.log(`[getArticleData V2 Standalone] File not found: ${standaloneFilePath}`);
+                }
+            }
+        } // End loop through extensions
+
+        console.error(`[getArticleData V2] Failed to find or process slug ${slug} as map or standalone article.`);
+        return null; // Failed to find as map or standalone
+
+    } // End catch mapError / Fallback block
+
+  } catch (generalError: any) {
+    console.error(`[getArticleData V2] General error processing ${slug}: ${generalError.message}`);
+    return null; // General failure
   }
 }
 
-export async function getDocData(slug: string) {
+export async function getDocData(slug: string): Promise<Doc | null> {
   const docsDir = path.join(process.cwd(), 'content/docs');
   // Handle nested paths by joining with the slug directly
   const mditaPath = path.join(docsDir, `${slug}.mdita`);
@@ -495,55 +645,44 @@ export async function getDocData(slug: string) {
     return null;
   }
 
-  // Replace marked with processor.process
-  const file = await processor.process(markdown);
-  const html = file.toString();
+  // Process using the shared processor that includes TOC extraction
+  // For docs, we probably don't need footnote renumbering, just extract+stringify
+  const docProcessor = baseProcessor()
+      .use(rehypeProcessFootnotes) // Add extraction
+      .use(rehypeStringify);      // Add stringify
+     
+  const file = await docProcessor.process(markdown);
+  let html = file.toString();
+  const toc = (file.data.toc || []) as TocEntry[]; // Extract TOC data
+  const extractedFootnotes = (file.data.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
+
+  // Append footnotes if any (similar to standalone article logic)
+  if (extractedFootnotes && extractedFootnotes.length > 0) {
+    console.log(`[getDocData] Processing ${extractedFootnotes.length} footnotes for doc: ${slug}`);
+    const finalFootnotesHtml: string[] = [];
+    let counter = 0;
+    extractedFootnotes.forEach(fn => {
+        counter++;
+        const originalNumericId = fn.originalId.replace(/^fn-/, ''); 
+        const backRefTargetId = `#user-content-fnref-${originalNumericId}`;
+        const wrappedContent = fn.contentHtml.trim().startsWith('<p') ? fn.contentHtml : `<p>${fn.contentHtml.trim()}</p>`;
+        const contentWithBackref = wrappedContent.replace(/<\/p>\s*$/, ` <a href="${backRefTargetId}" data-footnote-backref aria-label="Back to reference ${counter}" class="data-footnote-backref">↩</a></p>`);
+        finalFootnotesHtml.push(
+            `<li id="footnote-${counter}">${contentWithBackref}</li>`
+        );
+    });
+    html += `\n\n<section data-footnotes class="footnotes mt-12 pt-8 border-t border-border">\n<h2 class="sr-only" id="footnotes-section-label">Footnotes</h2>\n<ol>\n${finalFootnotesHtml.join('\n')}\n</ol>\n</section>`;
+  }
+
+  // --- ADD DECODING STEP ---
+  // Ensure our specific component placeholder is not entity encoded
+  html = html.replace(/&#x3C;div data-component="([^"]+)"&#x3E;&#x3C;\/div&#x3E;/g, '<div data-component="$1"></div>');
+  // --- END DECODING STEP ---
 
   return {
     slug,
     content: html,
-    metadata
+    metadata: metadata as TopicMetadata,
+    toc, 
   };
-}
-
-// Helper function to process inline footnotes
-function processInlineFootnotes(markdown: string): string {
-  // Find inline footnotes with the pattern ^[footnote text]
-  const inlineFootnoteRegex = /\^\[([\s\S]*?)\]/g;
-  
-  let match;
-  let counter = 1;
-  let processedMarkdown = markdown;
-  
-  // Keep track of existing footnote references to avoid ID collisions
-  const existingRefs = new Set<number>();
-  const refRegex = /\[\^(\d+)\]/g;
-  let refMatch;
-  
-  while ((refMatch = refRegex.exec(markdown)) !== null) {
-    existingRefs.add(parseInt(refMatch[1]));
-  }
-  
-  // Find the highest existing footnote number
-  let footnoteSuffix = 1;
-  while (existingRefs.has(footnoteSuffix)) {
-    footnoteSuffix++;
-  }
-  
-  // Replace inline footnotes with reference-style footnotes
-  while ((match = inlineFootnoteRegex.exec(markdown)) !== null) {
-    const [fullMatch, content] = match;
-    const footnoteRef = `[^${footnoteSuffix}]`;
-    const footnoteDefinition = `\n\n[^${footnoteSuffix}]: ${content}\n\n`;
-    
-    // Replace the inline footnote with a reference
-    processedMarkdown = processedMarkdown.replace(fullMatch, footnoteRef);
-    
-    // Add the footnote definition at the end of the document
-    processedMarkdown += footnoteDefinition;
-    
-    footnoteSuffix++;
-  }
-  
-  return processedMarkdown;
 } 

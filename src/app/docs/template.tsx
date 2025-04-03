@@ -7,5 +7,6 @@ export default async function DocsTemplate({
   children: React.ReactNode;
 }) {
   const navigation = await getDocsNavigation();
+  
   return <DocsClient navigation={navigation}>{children}</DocsClient>;
 } 

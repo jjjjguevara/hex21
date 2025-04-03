@@ -1,20 +1,24 @@
+// Remove 'use client' directive
+// 'use client'; 
+
 import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import matter from 'gray-matter';
 import { getArticleData } from '@/lib/content.server';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkMath from 'remark-math';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeKatex from 'rehype-katex';
-import rehypeStringify from 'rehype-stringify';
-import 'katex/dist/katex.min.css';
+// Import Article type directly from its definition file
+import { Article, TocEntry } from '@/types/content'; 
 import { Metadata } from 'next';
-import ArticlesContainer from '@/components/ArticlesContainer';
 import ContentPane from '@/components/ContentPane';
+import ArticleRenderer from '@/components/ArticleRenderer';
+// Import placeholder types for components we will create
+import MetadataList from '@/components/MetadataList'; // Import the actual component
+import TableOfContents from '@/components/TableOfContents'; // Import the actual component
 
+// --- Remove client-side imports --- 
+// import parse, { domToReact, HTMLReactParserOptions, Element } from 'html-react-parser';
+// import dynamic from 'next/dynamic';
+
+// --- getArticleSlugs remains the same --- 
 async function getArticleSlugs() {
   // Check both maps and articles directories
   const mapsDir = path.join(process.cwd(), 'content/maps');
@@ -41,29 +45,20 @@ async function getArticleSlugs() {
   }
 }
 
+// --- generateStaticParams remains the same --- 
 export async function generateStaticParams() {
   const slugs = await getArticleSlugs();
   console.log('Generated slugs:', slugs);
+  // Ensure DITA transformation runs before this if not done elsewhere
   return slugs.map((slug) => ({ slug }));
 }
 
-async function processMarkdown(content: string) {
-  const result = await unified()
-    .use(remarkParse)
-    .use(remarkMath)
-    .use(remarkGfm)
-    .use(remarkRehype)
-    .use(rehypeKatex)
-    .use(rehypeStringify)
-    .process(content);
-  
-  return result.toString();
-}
-
+// --- Props type remains the same ---
 type Props = {
   params: { slug: string }
 };
 
+// --- generateMetadata remains the same --- 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getArticleData(params.slug);
   
@@ -73,14 +68,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
-  const title = data.metadata.title || params.slug;
-  const description = data.metadata.shortdesc;
+  const title = data.metadata?.title || params.slug;
+  const description = data.metadata?.shortdesc;
+  const keywords = Array.isArray(data.metadata?.tags) ? data.metadata.tags : undefined;
+  const author = data.metadata?.author;
+  const authorName = typeof author === 'string' ? author : author?.name;
 
   return {
     title: `${title}`,
     description,
-    keywords: data.metadata.tags,
-    authors: data.metadata.author ? [{ name: typeof data.metadata.author === 'string' ? data.metadata.author : data.metadata.author.name }] : undefined,
+    keywords,
+    authors: authorName ? [{ name: authorName }] : undefined,
     openGraph: {
       title,
       description,
@@ -89,109 +87,61 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+// --- Updated Article Page Component (Now a Server Component) ---
 export default async function ArticlePage({ params }: Props) {
   try {
-    console.log('Rendering article page for slug:', params.slug);
-    const data = await getArticleData(params.slug);
+    // Fetch data on the server
+    const rawData = await getArticleData(params.slug);
 
-    if (!data) {
-      console.log('No data found for slug:', params.slug);
+    // Check for null/undefined before assertion
+    if (!rawData) {
       notFound();
     }
 
-    const { metadata, content } = data;
+    // Explicitly assert the type of the fetched data
+    const data = rawData as Article;
 
+    // === Runtime Safety Check === 
+    if (!data || typeof data !== 'object' || !data.metadata || !data.content) {
+      console.error(`[ArticlePage] Invalid data structure received for slug: ${params.slug}. Data:`, data);
+      // Optionally, you could show a specific error message instead of just 404
+      notFound(); 
+    }
+    // === End Safety Check ===
+
+    // Destructure metadata, content, and toc FROM the *validated* 'data'
+    const { metadata, content: htmlContent, toc } = data;
+
+    // Check if title exists on metadata before rendering h1
+    if (!metadata.title) {
+      console.warn(`[ArticlePage] Metadata title missing for slug: ${params.slug}`);
+      // Decide how to handle missing title - use slug? show generic title? For now, let it render undefined/empty
+    }
+
+    // === Restore Original Render === 
     return (
       <>
-        <ContentPane>
-          <article className="max-w-4xl mx-auto">
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-                {metadata.title}
-              </h1>
-              
-              {/* Author */}
-              {metadata.author && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  By {typeof metadata.author === 'string' ? metadata.author : metadata.author.name}
-                </div>
-              )}
+        <div className="flex flex-col md:flex-row max-w-screen-xl mx-auto py-8 md:px-8">
+          <main className="flex-1 w-full md:mr-8 px-4 md:px-0">
+            <MetadataList metadata={metadata} />
 
-              {/* Editor & Reviewer */}
-              {(metadata.editor || metadata.reviewer) && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  {metadata.editor && <span>Editor: {metadata.editor}</span>}
-                  {metadata.editor && metadata.reviewer && <span className="mx-2">•</span>}
-                  {metadata.reviewer && <span>Reviewer: {metadata.reviewer}</span>}
-                </div>
-              )}
+            <article className="prose dark:prose-invert max-w-none">
+              {/* Render h1 only if title exists */} 
+              {/* {metadata.title && <h1 className=\"mb-4\">{metadata.title}</h1>} */}
+              <ArticleRenderer htmlContent={htmlContent} />
+            </article>
+          </main>
 
-              {/* Publication Date & Last Edited */}
-              {(metadata.date || metadata.lastEdited) && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  {metadata.date && (
-                    <span>Published: {new Date(metadata.date).toLocaleDateString()}</span>
-                  )}
-                  {metadata.date && metadata.lastEdited && <span className="mx-2">•</span>}
-                  {metadata.lastEdited && (
-                    <span>Last updated: {new Date(metadata.lastEdited).toLocaleDateString()}</span>
-                  )}
-                </div>
-              )}
+          <aside className="w-64 flex-shrink-0 md:sticky md:top-20 md:max-h-[calc(100vh-5rem)] px-4 md:px-0">
+            {/* TOC is optional, so the existing check is fine */} 
+            {toc && toc.length > 0 && <TableOfContents toc={toc} />} 
+          </aside>
 
-              {/* Category */}
-              {metadata.category && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  <span className="px-2 py-1 text-xs rounded-full bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                    {metadata.category}
-                  </span>
-                </div>
-              )}
-
-              {/* Tags */}
-              {metadata.tags && metadata.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {metadata.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              {/* Audience */}
-              {metadata.audience && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  Audience: {Array.isArray(metadata.audience) ? metadata.audience.join(', ') : metadata.audience}
-                </div>
-              )}
-
-              {/* Version */}
-              {metadata.version && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  Version: {metadata.version}
-                </div>
-              )}
-
-              {/* Language */}
-              {metadata.language && (
-                <div className="text-gray-600 dark:text-gray-400 mb-2">
-                  Language: {metadata.language}
-                </div>
-              )}
-            </header>
-
-            <div 
-              className="prose dark:prose-invert max-w-none"
-              dangerouslySetInnerHTML={{ __html: content }}
-            />
-          </article>
-        </ContentPane>
+        </div>
       </>
     );
+    // === End Restore Original Render ===
+
   } catch (error) {
     console.error('Error rendering article page:', error);
     notFound();

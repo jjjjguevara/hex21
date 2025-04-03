@@ -1,8 +1,7 @@
 import { promises as fs } from 'fs';
-import { join, relative } from 'path';
+import { join, relative, extname } from 'path';
 import { processMarkdown } from '../markdown/processor';
-import { ProcessedContent, Frontmatter } from '../markdown/types';
-import { extname } from 'path';
+import { ProcessedContent, Frontmatter, Embed } from '../markdown/types';
 
 export interface ContentMap {
   [key: string]: ProcessedContent;
@@ -112,7 +111,20 @@ export class ContentLoader {
     }
   }
 
-  async loadContent(slug: string): Promise<ProcessedContent> {
+  async loadContent(
+    slug: string,
+    visitedSlugs: Set<string> = new Set()
+  ): Promise<ProcessedContent> {
+    // Check for recursion
+    if (visitedSlugs.has(slug)) {
+      console.warn(`Circular embed detected: Trying to load ${slug} again. Path: ${[...visitedSlugs].join(' -> ')}`);
+      throw new Error(`Circular embed detected involving slug: ${slug}`);
+    }
+    
+    // Add current slug to visited set for this call chain
+    const currentVisitedSlugs = new Set(visitedSlugs);
+    currentVisitedSlugs.add(slug);
+    
     // Check content cache first
     if (this.contentCache[slug]) {
       return this.contentCache[slug];
@@ -135,42 +147,54 @@ export class ContentLoader {
 
         const content = await this.processContent(filePath);
         
-        // Cache the result before processing embeds
-        this.contentCache[slug] = content;
+        // Store preliminary content in cache immediately to break cycles
+        this.contentCache[slug] = content; 
         
         // Process embeds concurrently with limited concurrency
         if (content.embeds && content.embeds.length > 0) {
-          const embedPromises = content.embeds.map(async (embed) => {
+          const embedPromises = content.embeds.map(async (embed: string | Embed) => { // Explicitly type embed
             try {
               // Extract the source from the embed object
               const embedSlug = typeof embed === 'string' ? embed : embed.source;
-              const embedContent = await this.loadContent(embedSlug);
+              // Pass the updated visitedSlugs set down
+              const embedContent = await this.loadContent(embedSlug, currentVisitedSlugs);
               
               // If a section is specified, extract it
               if (typeof embed !== 'string' && embed.section) {
-                const sectionMatch = embedContent.html.match(
-                  new RegExp(`<h\\d[^>]*>${embed.section}.*?</h\\d>(.*?)(?=<h\\d|$)`, 's')
-                );
-                if (sectionMatch) {
+                // Simplified regex example, adjust as needed
+                const sectionRegex = new RegExp(`(?:<h[1-6][^>]*>\\s*${embed.section}\\s*</h[1-6]>|<a[^>]*name="${embed.section}"[^>]*>)(.*?)(?=<h[1-6]|<a[^>]*name=|$)`, 'si');
+                const sectionMatch = embedContent.html.match(sectionRegex);
+
+                if (sectionMatch && sectionMatch[1]) {
                   return {
                     ...embedContent,
                     html: sectionMatch[1].trim(),
                   };
+                } else {
+                    console.warn(`Section "${embed.section}" not found in embed: ${embedSlug}`);
+                    // Return the full embed content if section not found
+                    return embedContent; 
                 }
               }
               
               return embedContent;
             } catch (error) {
-              console.error(`Failed to load embed: ${embed}`, error);
+              // Log circular dependency errors specifically if they occur
+              if (error instanceof Error && error.message.includes('Circular embed detected')) {
+                 console.error(`Failed to load embed due to cycle: ${slug} embedding ${typeof embed === 'string' ? embed : embed.source}`);
+              } else {
+                 console.error(`Failed to load embed: ${typeof embed === 'string' ? embed : JSON.stringify(embed)}`, error);
+              }
               return null;
             }
           });
 
           const resolvedEmbeds = (await Promise.all(embedPromises)).filter((embed): embed is ProcessedContent => embed !== null);
-          content.resolvedEmbeds = resolvedEmbeds;
+          // Update the cached content with resolved embeds
+          this.contentCache[slug].resolvedEmbeds = resolvedEmbeds;
         }
 
-        return content;
+        return this.contentCache[slug]; // Return the potentially updated cached content
       })();
 
       this.processingCache[slug] = processPromise;
