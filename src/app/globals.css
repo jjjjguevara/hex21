@@ -363,3 +363,73 @@ sup[id^="user-content-fnref-"] a {
 :target[id^="user-content-fnref-"] {
   animation: footnote-highlight 2s ease-in-out;
 }
+
+/* Heading Anchor Link Styles */
+.heading-link {
+  @apply text-gray-400 dark:text-gray-600 no-underline ml-2 opacity-0 transition-opacity duration-200 ease-in-out;
+}
+
+h1:hover .heading-link,
+h2:hover .heading-link,
+h3:hover .heading-link,
+h4:hover .heading-link,
+h5:hover .heading-link,
+h6:hover .heading-link {
+  @apply opacity-100;
+}
+
+.heading-link:hover .heading-link-icon {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+.heading-link-icon {
+  @apply inline-block align-middle;
+}
+
+/* Remove top margin from first heading inside prose */
+.prose h1:first-child,
+.prose h2:first-child,
+.prose :where(h1, h2):first-child {
+  @apply mt-0;
+}
+
+/* Add MathJax SVG Styling Overrides */
+/* Ensure inline math flows correctly */
+.prose mjx-container[jax="SVG"]:not([display="true"]) {
+  display: inline-flex !important;
+  vertical-align: -0.1ex;
+}
+
+/* Center display math - Increase specificity and use display:table */
+.prose mjx-container[jax="SVG"][display="true"] {
+  display: table !important; /* Use table display to shrink-wrap content width */
+  margin-left: auto !important; 
+  margin-right: auto !important;
+  margin-top: 1em; 
+  margin-bottom: 1em; 
+  text-align: center; /* Keep this, centers SVG if table width > SVG width */
+}
+
+/* Optional: Ensure inline math baseline aligns well */
+.prose mjx-container[jax="SVG"]:not([display="true"]) {
+  vertical-align: baseline;
+}
+
+/* Optional: Adjust SVG size slightly if needed */
+/* mjx-container[jax="SVG"] > svg {
+  max-width: 100%;
+} */
+
+/* Add custom styles below */
+@keyframes footnote-highlight {
+  0% { background-color: transparent; }
+  25% { background-color: rgba(255, 255, 0, 0.3); } /* Yellow highlight */
+  100% { background-color: transparent; }
+}
+
+/* Target the specific list item when it's the URL fragment target */
+section[data-footnotes] ol > li:target {
+  animation: footnote-highlight 1.5s ease-in-out;
+  /* Add padding/margin adjustments if needed to make highlight more visible */
+  /* scroll-margin-top: 2rem; Optional: Adjust scroll position */
+}

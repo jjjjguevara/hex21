@@ -1,4 +1,5 @@
 import { getContentSlugs, getArticleData } from '@/lib/content.server';
+import { Article, MapMetadata, TopicMetadata } from '@/types/content';
 import { Card } from '@radix-ui/themes';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,30 +12,32 @@ export const metadata: Metadata = {
   keywords: ['featured', 'articles', 'research', 'science'],
 };
 
-async function getFeaturedArticles() {
-  const slugs = await getContentSlugs();
-  const articles = await Promise.all(
-    slugs.map(async (slug) => {
-      const article = await getArticleData(slug);
-      if (!article || !article.metadata.publish) return null;
-      
-      // Check if article is featured
-      const isFeatured = article.metadata.features?.featured;
-      
-      if (!isFeatured) return null;
-
-      return {
-        slug,
-        ...article.metadata
-      };
-    })
-  );
-
-  return articles.filter((a): a is NonNullable<typeof a> => a !== null);
+// Helper type guard function
+function isMapMetadataWithFeatures(metadata: MapMetadata | TopicMetadata): metadata is MapMetadata {
+  return metadata && typeof metadata === 'object' && 'features' in metadata;
 }
 
 export default async function FeaturedPage() {
-  const articles = await getFeaturedArticles();
+  const slugs = await getContentSlugs();
+  // Fetch all articles, filter nulls, assert type
+  const articles = (await Promise.all(
+    slugs.map(slug => getArticleData(slug))
+  )).filter(Boolean) as Article[]; 
+
+  // Filter for featured and published articles using the type guard
+  const featuredArticles = articles.filter(article => {
+    // Basic check
+    if (!article?.metadata) return false;
+
+    // Check if published (assuming publish exists on BaseMetadata or both)
+    const isPublished = article.metadata.publish === true;
+    if (!isPublished) return false;
+
+    // Use type guard to safely check for features.featured
+    const isFeatured = isMapMetadataWithFeatures(article.metadata) && article.metadata.features?.featured === true;
+    
+    return isFeatured;
+  });
 
   return (
     <ContentPane width="wide">
@@ -42,46 +45,46 @@ export default async function FeaturedPage() {
         <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white">Featured Articles</h1>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {articles.map((article) => (
-          <Link key={article.slug} href={`/articles/${article.slug}`}>
-            <Card className="h-full hover:shadow-lg transition-shadow duration-200">
-              {article.coverImage && (
-                <div className="relative h-48 mb-4">
-                  <Image
-                    src={article.coverImage}
-                    alt={article.title}
-                    fill
-                    className="object-cover rounded-t-lg"
-                  />
-                </div>
-              )}
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                  {article.title}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
-                  {article.shortdesc || 'No description available'}
-                </p>
-                {article.tags && article.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {article.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
+      {featuredArticles.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {featuredArticles.map((article) => (
+            <Link key={article.slug} href={`/articles/${article.slug}`} passHref>
+              <Card className="h-full hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+                {article.metadata.coverImage && (
+                  <div className="relative h-48 mb-4">
+                    <Image
+                      src={article.metadata.coverImage}
+                      alt={article.metadata.title}
+                      fill
+                      className="object-cover rounded-t-lg"
+                    />
                   </div>
                 )}
-              </div>
-            </Card>
-          </Link>
-        ))}
-      </div>
-
-      {articles.length === 0 && (
+                <div className="p-4">
+                  <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                    {article.metadata.title}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                    {article.metadata.shortdesc || 'No description available'}
+                  </p>
+                  {article.metadata.tags && article.metadata.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {article.metadata.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      ) : (
         <p className="text-center text-gray-600 dark:text-gray-400">
           No featured articles found.
         </p>

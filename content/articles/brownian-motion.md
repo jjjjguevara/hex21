@@ -8,13 +8,13 @@ audience: "advanced"
 category: "Physics"
 tags: ["brownian motion", "thermodynamics", "molecular theory", "statistical mechanics"]
 shortdesc: "A groundbreaking paper on the molecular-kinetic theory of heat and its implications for the movement of small particles suspended in liquids."
-
+datalist: ["author", "date", "category", "tags"]
 ---
+
+# INVESTIGATIONS ON THE THEORY OF THE BROWNIAN MOVEMENT
 
 > _The contents presented here have been reproduced from Albert Einstein's works during his Annus Mirabilis. The source can be found [here](https://ia601603.us.archive.org/14/items/investigationont0000albe/investigationont0000albe.pdf)._
 
-
-# INVESTIGATIONS ON THE THEORY OF THE BROWNIAN MOVEMENT
 
 ## ON THE MOVEMENT OF SMALL PARTICLES SUSPENDED IN A STATIONARY LIQUID DEMANDED BY THE MOLECULAR-KINETIC THEORY OF HEAT
 
@@ -24,11 +24,7 @@ If the movement discussed here can actually be observed (together with the laws 
 
 ### § ON THE OSMOTIC PRESSURE TO BE ASCRIBED TO THE SUSPENDED PARTICLES
 
-Let $z$ gram-molecules of a non-electrolyte be dissolved in a volume $V$ * forming part of a quantity of liquid of total volume $V$. If the volume $V$ * is separated from the pure solvent by a partition permeable for the solvent but impermeable for the solute, a so-called "osmotic pressure," $p$, is exerted on this partition, which satisfies the equation
-
-$$pV* = RTz$$
-
-when $V*/z$ is sufficiently great.
+Let $z$ gram-molecules of a non-electrolyte be dissolved in a volume $V$ * forming part of a quantity of liquid of total volume $V$. If the volume $V$ * is separated from the pure solvent by a partition permeable for the solvent but impermeable for the solute, a so-called "osmotic pressure," $p$, is exerted on this partition, which satisfies the equation $pV* = RTz$ when $V*/z$ is sufficiently great.
 
 On the other hand, if small suspended particles are present in the fractional volume $V$ * in place of the dissolved substance, which particles are also unable to pass through the partition permeable to the solvent: according to the classical theory of thermodynamics—at least when the force of gravity (which does not interest us here) is ignored—we would not expect to find any force acting on the partition.
 
@@ -36,7 +32,7 @@ But a different conception is reached from the standpoint of the molecular-kinet
 
 $$p = \frac{RT}{V*N} n = \frac{RT}{N} v$$
 
-where N signifies the actual number of molecules contained in a gram-molecule.
+where $N$ signifies the actual number of molecules contained in a gram-molecule.
 
 ### § OSMOTIC PRESSURE FROM THE STANDPOINT OF THE MOLECULAR-KINETIC THEORY OF HEAT
 
@@ -52,7 +48,7 @@ then the entropy of the system is given by the expression
 
 $$S = \frac{\bar{E}}{T} + 2x \lg\int e^{-\frac{E}{2xT}}dp_1 ... dp_l$$
 
-where $T$ is the absolute temperature, Ē the energy of the system, E the energy as a function of p_v. The integral is extended over all possible values of p consistent with the conditions of the problem. $x$ is connected with the constant $N$ referred to before by the relation $2xN = R$. We obtain hence for the free energy $F$,
+where $T$ is the absolute temperature, $Ē$ the energy of the system, $E$ the energy as a function of p_v. The integral is extended over all possible values of p consistent with the conditions of the problem. $x$ is connected with the constant $N$ referred to before by the relation $2xN = R$. We obtain hence for the free energy $F$,
 
 $$F = -\frac{RT}{N}\lg\int e^{-\frac{EN}{RT}}dp_1 ... dp_l = -\frac{RT}{N} \lg B$$
 
@@ -146,6 +142,8 @@ The mean displacement in one minute would be, therefore, about $6μ$.
 On the other hand, the relation found can be used for the determination of $N$. We obtain
 
 $$N = \frac{1}{λ_x^2}\frac{RT}{3πkP}$$
+
+<div data-component="BrownianMotionSimulation"></div>
 
 It is to be hoped that some enquirer may succeed shortly in solving the problem suggested here, which is so important in connection with the theory of Heat.
 

@@ -1,3 +1,9 @@
+export interface TocEntry {
+  id: string;
+  text: string;
+  level: number;
+}
+
 export interface BaseMetadata {
   title: string;
   author?: string | { name: string; affiliation?: string; email?: string };
@@ -7,12 +13,15 @@ export interface BaseMetadata {
   category?: string;
   region?: string;
   shortdesc?: string;
+  description?: string;
   coverImage?: string;
+  datalist?: string[];
+  status?: string;
+  publish?: boolean;
 }
 
 export interface TopicMetadata extends BaseMetadata {
   id?: string;
-  publish?: boolean;
   conditional?: {
     [key: string]: any;  // Flexible conditional flags
   };
@@ -20,9 +29,7 @@ export interface TopicMetadata extends BaseMetadata {
 
 export interface MapMetadata extends BaseMetadata {
   id?: string;
-  publish?: boolean;  // Optional for backward compatibility
   topics?: string[];  // Optional for backward compatibility
-  category?: string;  // Optional for backward compatibility
   access_level?: 'public' | 'restricted' | 'classified';
   publish_date?: string;
   lastEdited?: string;
@@ -39,13 +46,15 @@ export interface MapMetadata extends BaseMetadata {
 export interface Article {
   slug: string;
   content: string;
-  metadata: MapMetadata;
-  topics?: Array<{
-    id: string;
-    metadata: TopicMetadata;
-    content: string;
-  }>;
-  html?: string;
+  metadata: MapMetadata | TopicMetadata;
+  toc: TocEntry[];
+}
+
+export interface Doc {
+  slug: string;
+  content: string;
+  metadata: MapMetadata | TopicMetadata;
+  toc: TocEntry[];
 }
 
 export interface SearchResult {

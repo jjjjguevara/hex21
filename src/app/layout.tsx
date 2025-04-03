@@ -9,7 +9,6 @@ import '@radix-ui/themes/styles.css';
 import ClientLayout from '@/components/ClientLayout';
 import Footer from '@/components/Footer';
 import '@/lib/client-utils';
-import 'katex/dist/katex.min.css';
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -30,38 +29,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <Script
-          id="mathjax-config"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.MathJax = {
-                tex: {
-                  inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                  displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
-                  processEscapes: true,
-                  processEnvironments: true,
-                  packages: ['base', 'ams', 'noerrors', 'noundefined']
-                },
-                svg: {
-                  fontCache: 'global'
-                },
-                options: {
-                  skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                  processHtmlClass: 'math'
-                },
-                startup: {
-                  typeset: true
-                }
-              };
-            `,
-          }}
-        />
-        <Script
-          id="mathjax-script"
-          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
-          strategy="beforeInteractive"
-        />
       </head>
       <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <ClientLayout>

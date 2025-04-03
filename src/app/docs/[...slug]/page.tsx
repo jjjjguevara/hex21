@@ -2,18 +2,9 @@ import { Metadata } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import matter from 'gray-matter';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
-import rehypeHighlight from 'rehype-highlight';
-import rehypeSlug from 'rehype-slug';
-import { rehypeAnchorLinks } from '@/lib/rehype-anchor-links';
-import { rehypeCodeBlock } from '@/lib/rehype-code-block';
-import 'highlight.js/styles/github-dark.css';
-import { getDocsNavigation } from '@/lib/docs';
+import { getDocData } from '@/lib/content.server'; // Import the shared function
+import { Doc } from '@/types/content'; 
+import ArticleRenderer from '@/components/ArticleRenderer'; // Import renderer
 
 // Helper to get content paths/slugs
 async function getContentSlugs() {
@@ -22,134 +13,73 @@ async function getContentSlugs() {
   return files
     .filter(file => file.endsWith('.mdita') || file.endsWith('.md'))
     .map(file => file.replace(/\.(mdita|md)$/, ''))
-    .map(file => file.split(path.sep));
+    // Map 'index' specifically or handle root case in fetch
+    .map(file => file.split(path.sep)); 
 }
 
 // Generate routes at build time
 export async function generateStaticParams() {
-  const slugs = await getContentSlugs();
-  const navigation = await getDocsNavigation();
-  
-  // Add section paths to the slugs
-  const sectionSlugs = navigation
-    .filter(section => Array.isArray(section.items) && section.items.length > 0)
-    .map(section => section.href.split('/').slice(2));
-  
-  return [...slugs, ...sectionSlugs].map(slug => ({ slug: Array.isArray(slug) ? slug : [slug] }));
+  const slugsArrays = await getContentSlugs();
+  // Ensure 'index' file maps to a valid param if needed, or handle root separately
+  // Let's assume an index.md exists and corresponds to slug = ['index'] or handled by fetch
+  const validSlugs = slugsArrays.filter(slug => slug.join('/') !== 'index'); // Exclude explicit 'index' slug if handled by root
+  validSlugs.push([]); // Add explicit root path
+
+  console.log('Docs slugs for generateStaticParams:', validSlugs);
+  return validSlugs.map(slug => ({ slug: slug.length === 0 ? undefined : slug })); // Pass undefined for root
 }
 
-// Fetch data for a specific page
-async function getDocContent(slug: string[]) {
-  const contentDir = path.join(process.cwd(), 'content/docs');
-  
-  // Try all possible file paths
-  const possiblePaths = [
-    path.join(contentDir, ...slug) + '.mdita',
-    path.join(contentDir, ...slug) + '.md',
-    // Try with the last segment only
-    path.join(contentDir, slug[slug.length - 1]) + '.mdita',
-    path.join(contentDir, slug[slug.length - 1]) + '.md',
-    // Try with the last two segments
-    ...(slug.length > 1 ? [
-      path.join(contentDir, slug[slug.length - 2], slug[slug.length - 1]) + '.mdita',
-      path.join(contentDir, slug[slug.length - 2], slug[slug.length - 1]) + '.md'
-    ] : [])
-  ];
-
-  for (const filePath of possiblePaths) {
-    try {
-      const exists = await fs.stat(filePath).catch(() => false);
-      if (exists) {
-        console.log('Found file at:', filePath);
-        const fileContents = await fs.readFile(filePath, 'utf8');
-        const { data: metadata, content } = matter(fileContents);
-
-        // Process the markdown content with syntax highlighting and anchor links
-        const processedContent = await unified()
-          .use(remarkParse)
-          .use(remarkGfm)
-          .use(remarkRehype)
-          .use(rehypeSlug) // Add IDs to headings
-          .use(rehypeAnchorLinks) // Add anchor links
-          .use(rehypeHighlight, { // Add syntax highlighting
-            ignoreMissing: true,
-            detect: true
-          })
-          .use(rehypeCodeBlock) // Add copy button to code blocks
-          .use(rehypeStringify)
-          .process(content);
-
-        return {
-          metadata,
-          content: processedContent.toString()
-        };
-      }
-    } catch (error) {
-      console.error(`Error trying path ${filePath}:`, error);
-      continue;
-    }
+// Fetch data using the shared function
+async function fetchAndProcessDocData(slugArray: string[] | undefined) {
+  // If slugArray is undefined or empty, fetch 'index'
+  const slugString = (slugArray && slugArray.length > 0) ? slugArray.join('/') : 'index';
+  console.log(`[fetchAndProcessDocData] Fetching data for slug: ${slugString}`);
+  const data = await getDocData(slugString);
+  if (!data) {
+    console.warn(`[fetchAndProcessDocData] No data returned for slug: ${slugString}`);
+    // Optional: Try fetching a default/root page if index fails?
   }
-
-  // Check if this is a section path
-  const navigation = await getDocsNavigation();
-  const sectionPath = '/docs/' + slug.join('/');
-  const section = navigation.find(item => item.href === sectionPath);
-  
-  if (section && Array.isArray(section.items) && section.items.length > 0) {
-    return {
-      metadata: {
-        title: section.title,
-        description: `Documentation section for ${section.title}`
-      },
-      content: await unified()
-        .use(remarkParse)
-        .use(remarkRehype)
-        .use(rehypeSlug)
-        .use(rehypeAnchorLinks)
-        .use(rehypeCodeBlock)
-        .use(rehypeStringify)
-        .process(`
-          # ${section.title}
-          <div class="grid gap-4">
-            ${section.items.map(item => `
-              <div class="p-4 border rounded-lg">
-                <h2><a href="${item.href}" class="text-blue-600 dark:text-blue-400 hover:underline">${item.title}</a></h2>
-              </div>
-            `).join('')}
-          </div>
-        `).then(result => result.toString())
-    };
-  }
-
-  return null;
+  return data;
 }
 
-export async function generateMetadata({ params }: { params: { slug: string[] } }): Promise<Metadata> {
-  const data = await getDocContent(params.slug);
+// --- Props type allowing undefined slug for root ---
+type Props = {
+  params: { slug?: string[] } // Slug is optional, representing the root path when undefined/empty
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const data = await fetchAndProcessDocData(params.slug);
   
   if (!data) {
     return {
-      title: 'Not Found',
-      description: 'The requested page could not be found.'
+      title: 'Docs Not Found | Hex 21',
+      description: 'The requested documentation page could not be found.'
     };
   }
 
+  // Determine title: Use metadata, fallback to slug, or specific title for index
+  const slugString = (params.slug && params.slug.length > 0) ? params.slug.join('/') : 'index';
+  const title = data.metadata?.title || (slugString === 'index' ? 'Documentation Home' : slugString);
+  
   return {
-    title: `${data.metadata.title} - Hex 21`,
-    description: data.metadata.description || 'Documentation page'
+    title: `${title} - Docs | Hex 21`,
+    description: data.metadata?.description || 'Documentation page for Hex 21 CMS'
   };
 }
 
-export default async function DocPage({ params }: { params: { slug: string[] } }) {
-  const data = await getDocContent(params.slug);
-
+// This page component now ONLY renders the main content part.
+// Layout (Sidebar, TOC placement) is handled by DocsClient via template.tsx
+export default async function DocPage({ params }: Props) {
+  const data = await fetchAndProcessDocData(params.slug);
   if (!data) {
     notFound();
   }
+  const { metadata, content: htmlContent, toc } = data; // toc is fetched but not used directly here
 
   return (
-    <article className="prose dark:prose-invert max-w-none">
-      <div dangerouslySetInnerHTML={{ __html: data.content }} />
-    </article>
+      // Apply prose class here, ensure ArticleRenderer doesn't duplicate it
+      <div className="prose dark:prose-invert *:first:mt-0">
+         <ArticleRenderer htmlContent={htmlContent} />
+      </div>
   );
 } 
