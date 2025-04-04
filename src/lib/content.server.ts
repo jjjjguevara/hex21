@@ -8,7 +8,6 @@ import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
-import rehypeMathjax from 'rehype-mathjax/svg';
 import rehypeStringify from 'rehype-stringify';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
@@ -25,16 +24,10 @@ import { VFile } from 'vfile';
 const baseProcessor = unified()
   .use(remarkParse)       // Parse markdown
   .use(remarkGfm)         // Support GFM (includes standard footnotes)
-  .use(remarkMath)        // Support math blocks 
-  .use(remarkRehype, { 
+  .use(remarkMath)        // Support math blocks
+  .use(remarkRehype, {
     allowDangerousHtml: true
-  }) // Convert to rehype
-  .use(rehypeMathjax, { // Render math content 
-    svg: {
-      displayAlign: 'center' 
-    }
-  })
-  .use(fixMathDisplayAttribute) // Fix math display block attribute
+  }) // Convert to rehype - MathJax will be handled client-side
   .use(rehypeSlug)        // Add IDs to headings
   .use(rehypeAutolinkHeadings, {
     behavior: 'append',
@@ -82,48 +75,6 @@ function rehypeExtractToc() {
     // Store the collected TOC data in the vfile
     file.data = file.data || {};
     file.data.toc = toc;
-  };
-}
-
-// *** RESTORING Rehype plugin to fix display attribute ***
-function fixMathDisplayAttribute() {
-  return (tree: any) => {
-    visit(tree, 'element', (node) => {
-      // Look for paragraph elements
-      if (node.tagName === 'p') {
-        if (!node.children || node.children.length === 0) return;
-
-        let mjxContainerNode = null;
-        let onlyContainerAndWhitespace = true;
-
-        // Check if paragraph contains ONLY an mjx-container and possibly whitespace/comments
-        for (const child of node.children) {
-          if (child.type === 'element' && child.tagName === 'mjx-container') {
-            if (mjxContainerNode) { // Found more than one container
-              onlyContainerAndWhitespace = false;
-              break;
-            }
-            mjxContainerNode = child;
-          } else if (child.type === 'text' && child.value.trim() === '') {
-            continue;
-          } else if (child.type === 'comment') {
-            continue;
-          } else {
-            onlyContainerAndWhitespace = false;
-            break;
-          }
-        }
-
-        // If conditions met, add display="true" to the container's properties
-        if (mjxContainerNode && onlyContainerAndWhitespace) {
-          mjxContainerNode.properties = mjxContainerNode.properties || {};
-          if (mjxContainerNode.properties.display !== 'true') {
-            // console.log(`>>> REHYPE FIX: Adding display=true to mjx-container inside <p>`);
-            mjxContainerNode.properties.display = 'true';
-          }
-        }
-      }
-    });
   };
 }
 

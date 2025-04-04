@@ -9,10 +9,22 @@ import { getArticleData } from '@/lib/content.server';
 import { Article, TocEntry } from '@/types/content'; 
 import { Metadata } from 'next';
 import ContentPane from '@/components/ContentPane';
-import ArticleRenderer from '@/components/ArticleRenderer';
+// Remove static import
+// import ArticleRenderer from '@/components/ArticleRenderer';
 // Import placeholder types for components we will create
 import MetadataList from '@/components/MetadataList'; // Import the actual component
 import TableOfContents from '@/components/TableOfContents'; // Import the actual component
+import dynamic from 'next/dynamic'; // Import dynamic
+
+// Dynamically import ArticleRenderer with SSR disabled
+const ArticleRenderer = dynamic(
+  () => import('@/components/ArticleRenderer'),
+  { 
+    ssr: false,
+    // Optional: Add a loading component
+    // loading: () => <p>Loading article content...</p> 
+  }
+);
 
 // --- Remove client-side imports --- 
 // import parse, { domToReact, HTMLReactParserOptions, Element } from 'html-react-parser';
