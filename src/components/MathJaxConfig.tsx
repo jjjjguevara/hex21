@@ -12,7 +12,7 @@ export default function MathJaxConfig() {
           __html: `
             window.MathJax = {
               tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                inlineMath: [['$', '$']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
                 processEnvironments: true,
@@ -26,7 +26,7 @@ export default function MathJaxConfig() {
                 processHtmlClass: 'math-tex'
               },
               startup: {
-                typeset: true
+                typeset: false
               }
             };
           `

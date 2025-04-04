@@ -29,6 +29,38 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* REMOVED Standard MathJax 3 Configuration */}
+        {/* 
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.MathJax = {
+                tex: {
+                  inlineMath: [['$', '$']],
+                  displayMath: [['$$', '$$']],
+                },
+                svg: {
+                  fontCache: 'global'
+                },
+                options: {
+                  enableMenu: true
+                },
+                startup: {
+                  typesetOnLoad: false // Note: this was already false here too
+                }
+              };
+            `
+          }}
+        />
+        */}
+        {/* REMOVED Load MathJax 3 from CDN */}
+        {/*
+        <script
+          id="MathJax-script"
+          defer
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"
+        ></script>
+        */}
       </head>
       <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <ClientLayout>
