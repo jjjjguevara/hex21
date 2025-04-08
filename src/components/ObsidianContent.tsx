@@ -43,7 +43,7 @@ export function ObsidianContent({ content, metadata, basePath = '' }: ObsidianCo
   useEffect(() => {
     if (!contentRef.current) return;
     
-    console.log('[ObsidianContent] Processing DOM for client-side transformations');
+    // console.log('[ObsidianContent] Processing DOM for client-side transformations');
 
     // Process all paragraph text nodes to find and replace Obsidian syntax
     const processWikiLinks = () => {
@@ -64,11 +64,11 @@ export function ObsidianContent({ content, metadata, basePath = '' }: ObsidianCo
             }
             // Log accepted nodes that contain the target patterns
             if (node.nodeValue && (node.nodeValue.includes('![[') || node.nodeValue.includes('[['))) {
-              console.log(`[acceptNode] ACCEPTING node:`, node.nodeValue?.trim());
+              // console.log(`[acceptNode] ACCEPTING node:`, node.nodeValue?.trim());
               // Log parent structure for context
-              console.log(`  -> Parent:`, node.parentElement?.tagName, `Attrs:`, node.parentElement?.attributes);
+              // console.log(`  -> Parent:`, node.parentElement?.tagName, `Attrs:`, node.parentElement?.attributes);
               // Check closest again just to be sure
-              console.log(`  -> Closest pre/code:`, node.parentElement?.closest('pre, code')?.tagName || 'None');
+              // console.log(`  -> Closest pre/code:`, node.parentElement?.closest('pre, code')?.tagName || 'None');
             }
             return NodeFilter.FILTER_ACCEPT;
           }

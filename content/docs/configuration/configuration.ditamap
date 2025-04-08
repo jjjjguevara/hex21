@@ -8,3 +8,5 @@ description: How to configure the Hex21 CMS.
 
 - [[configuration.md|CMS Configuration]]
 - [[installation.md|Installation Guide]]
+- [[docker-configuration.md|Docker Configuration]]
+- [[vercel-deployment.md|Vercel Deployment]]

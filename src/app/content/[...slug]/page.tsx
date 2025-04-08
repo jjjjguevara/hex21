@@ -29,7 +29,7 @@ export default async function ContentPage({ params }: ContentPageProps) {
 
     return (
       <article className="prose prose-lg mx-auto py-8">
-        <MarkdownContent content={content} />
+        <MarkdownContent htmlContent={content.html} basePath="/content" assetBasePath="/content/assets" />
       </article>
     );
   } catch (error) {

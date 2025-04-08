@@ -189,7 +189,7 @@ function remarkTransformWikilinks(options: {
   const wikilinkRegex = /\[\[([^|\]]+)(?:\|([^|\]]+))?\]\]/g; // Simpler regex for non-embeds
 
   return (tree: MdastRoot) => {
-    console.log("--- Running remarkTransformWikilinks ---");
+    // console.log("--- Running remarkTransformWikilinks ---");
     // Use visitParents to get access to the ancestor chain
     visitParents(tree, 'text', (node: MdastText, ancestors: Parent[]) => {
       const parent = ancestors[ancestors.length - 1]; // Direct parent is the last ancestor
@@ -233,11 +233,11 @@ function remarkTransformWikilinks(options: {
 
         if (isEmbed) {
           [, target, alias, size] = match; // Destructure embed match
-          console.log(`Found embed: ${fullMatch}, target: ${target}, alias: ${alias}, size: ${size}`);
+          // console.log(`Found embed: ${fullMatch}, target: ${target}, alias: ${alias}, size: ${size}`);
         } else {
           [, target, alias] = match; // Destructure wikilink match
           size = undefined;
-          console.log(`Found wikilink: ${fullMatch}, target: ${target}, alias: ${alias}`);
+          // console.log(`Found wikilink: ${fullMatch}, target: ${target}, alias: ${alias}`);
         }
 
         // Add text before match
@@ -495,13 +495,13 @@ export async function getDocData(slug: string): Promise<Doc | null> {
   const file = new VFile({ value: markdown, path: filePath }); // Create VFile
   const mdast = baseProcessor.parse(file);
 
-  console.log('\n--- DEBUG LOG 1: Initial MDAST ---');
-  visit(mdast, (node) => {
-    if (node.type === 'code' || node.type === 'inlineCode') {
-      console.log(stringifyNodeForLog(node));
-    }
-  });
-  console.log('--- END DEBUG LOG 1 ---');
+  // console.log('\n--- DEBUG LOG 1: Initial MDAST ---');
+  // visit(mdast, (node) => {
+  //   if (node.type === 'code' || node.type === 'inlineCode') {
+  //     console.log(stringifyNodeForLog(node));
+  //   }
+  // });
+  // console.log('--- END DEBUG LOG 1 ---');
 
   // 2. Process MDAST (Apply wikilink transforms)
   const mdastProcessor = unified()
@@ -510,21 +510,21 @@ export async function getDocData(slug: string): Promise<Doc | null> {
     });
   const processedMdast = await mdastProcessor.run(mdast, file) as MdastRoot;
 
-  console.log('\n--- DEBUG LOG 2: MDAST after remarkTransformWikilinks ---');
-  visit(processedMdast, (node) => {
-    if (node.type === 'code' || node.type === 'inlineCode') {
-      console.log(stringifyNodeForLog(node));
-    }
-  });
-  console.log('--- END DEBUG LOG 2 ---');
+  // console.log('\n--- DEBUG LOG 2: MDAST after remarkTransformWikilinks ---');
+  // visit(processedMdast, (node) => {
+  //   if (node.type === 'code' || node.type === 'inlineCode') {
+  //     console.log(stringifyNodeForLog(node));
+  //   }
+  // });
+  // console.log('--- END DEBUG LOG 2 ---');
 
-  console.log('\n--- DEBUG LOG 3: Final MDAST before HAST conversion ---');
-  visit(processedMdast, (node) => {
-    if (node.type === 'code' || node.type === 'inlineCode') {
-      console.log(stringifyNodeForLog(node));
-    }
-  });
-  console.log('--- END DEBUG LOG 3 ---');
+  // console.log('\n--- DEBUG LOG 3: Final MDAST before HAST conversion ---');
+  // visit(processedMdast, (node) => {
+  //   if (node.type === 'code' || node.type === 'inlineCode') {
+  //     console.log(stringifyNodeForLog(node));
+  //   }
+  // });
+  // console.log('--- END DEBUG LOG 3 ---');
 
   // 3. Convert MDAST -> HAST (Explicit conversion step)
   // Note: remarkRehype itself is a transformer, not just a plugin for .use()
@@ -551,30 +551,30 @@ export async function getDocData(slug: string): Promise<Doc | null> {
   // Run processor: MDAST Parse -> MDAST Transform -> HAST Convert -> HAST Transform
   let hastTree = await hastProcessor.run(processedMdast, file) as HastRoot; // Start with processed MDAST
 
-  console.log('\n--- DEBUG LOG 4: Initial HAST ---');
-  visit(hastTree, 'element', (node: HastElement) => {
-    // Corrected check for className array and ensure element is string
-    if (node.tagName === 'code' && Array.isArray(node.properties?.className) && typeof node.properties.className[0] === 'string' && node.properties.className[0].startsWith('language-')) {
-      // Log fenced code blocks
-      console.log(stringifyNodeForLog(node));
-    } else if (node.tagName === 'code' && !node.properties?.className) {
-      // Log inline code blocks (heuristic: no class)
-      console.log(stringifyNodeForLog(node));
-    }
-  });
-  console.log('--- END DEBUG LOG 4 ---');
+  // console.log('\n--- DEBUG LOG 4: Initial HAST ---');
+  // visit(hastTree, 'element', (node: HastElement) => {
+  //   // Corrected check for className array and ensure element is string
+  //   if (node.tagName === 'code' && Array.isArray(node.properties?.className) && typeof node.properties.className[0] === 'string' && node.properties.className[0].startsWith('language-')) {
+  //     // Log fenced code blocks
+  //     console.log(stringifyNodeForLog(node));
+  //   } else if (node.tagName === 'code' && !node.properties?.className) {
+  //     // Log inline code blocks (heuristic: no class)
+  //     console.log(stringifyNodeForLog(node));
+  //   }
+  // });
+  // console.log('--- END DEBUG LOG 4 ---');
 
   // Apply highlighting separately to log its effect
   const highlightProcessor = unified().use(rehypeHighlightCode, { hljs });
   hastTree = await highlightProcessor.run(hastTree, file) as HastRoot;
 
-  console.log('\n--- DEBUG LOG 5: HAST after rehypeHighlightCode ---');
-  visit(hastTree, 'element', (node: HastElement) => {
-    if (node.tagName === 'code') { // Log all code elements after highlighting
-      console.log(stringifyNodeForLog(node));
-    }
-  });
-  console.log('--- END DEBUG LOG 5 ---');
+  // console.log('\n--- DEBUG LOG 5: HAST after rehypeHighlightCode ---');
+  // visit(hastTree, 'element', (node: HastElement) => {
+  //   if (node.tagName === 'code') { // Log all code elements after highlighting
+  //     console.log(stringifyNodeForLog(node));
+  //   }
+  // });
+  // console.log('--- END DEBUG LOG 5 ---');
 
   const toc = (file.data.toc || []) as TocEntry[];
   const extractedFootnotes = (file.data.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
@@ -632,12 +632,12 @@ export async function getDocData(slug: string): Promise<Doc | null> {
     // Append the generated footnote section to the main HTML string
     html += `\n\n<section data-footnotes class="footnotes mt-12 pt-8 border-t border-border">\n<h2 class="sr-only" id="footnotes-section-label">Footnotes</h2>\n<ol>\n${footnoteListItems.join('\n')}\n</ol>\n</section>`;
   } else {
-    console.warn("Footnotes referenced, but no definition section (footnotesHast) found.");
+    // console.warn("Footnotes referenced, but no definition section (footnotesHast) found.");
   }
 
-  console.log('\n--- DEBUG LOG 6: Final HAST Tree ---');
-  console.log(stringifyNodeForLog(hastTree));
-  console.log('--- END DEBUG LOG 6 ---');
+  // console.log('\n--- DEBUG LOG 6: Final HAST Tree ---');
+  // console.log(stringifyNodeForLog(hastTree));
+  // console.log('--- END DEBUG LOG 6 ---');
 
   // Return the final Doc object
   return {
