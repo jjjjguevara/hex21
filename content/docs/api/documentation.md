@@ -1,11 +1,10 @@
 ---
 title: Documentation API
-author: Hex21 Team
-date: 2024-03-21
-description: Documentation for the Documentation API endpoints
-publish: true
-audience: developer
-tags: [api, documentation]
+author: Hex21 API Team
+date: 2024-04-01
+tags: [documentation, api, reference, docs, crud]
+description: API endpoints for managing general documentation pages (like this one).
+id: api-documentation
 ---
 
 # Documentation API

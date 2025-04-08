@@ -1,17 +1,10 @@
 ---
-title: Version Control and Content Management in Hex21 CMS
-author: Hex21 Team
-publish: true
-audience: Content Authors
-categories:
-  - Documentation
-  - DITA
-keywords:
-  - version control
-  - git
-  - content management
-  - branching
-  - workflow
+title: DITA and Version Control
+author: Hex21 DITA Team
+date: 2024-04-01
+tags: [documentation, guide, dita, version-control, git, best-practices]
+description: Best practices for using DITA with version control systems like Git.
+id: dita-version-control
 ---
 
 # Version Control and Content Management

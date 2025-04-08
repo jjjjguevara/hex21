@@ -1,0 +1,13 @@
+---
+title: Advanced DITA Features
+description: Guides on using advanced DITA features within the Hex21 CMS.
+# Map for the /docs/dita section
+---
+
+# Advanced DITA Features
+
+- [[overview.md|DITA Features Overview]]
+- [[file-types.md|Supported File Types]]
+- [[content-reuse.md|Content Reuse Strategies]]
+- [[conditional-processing.md|Conditional Processing]]
+- [[version-control.md|DITA and Version Control]]

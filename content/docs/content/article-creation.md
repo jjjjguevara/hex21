@@ -4,6 +4,7 @@ author: Hex21 CMS Team
 date: 2024-04-01
 tags: [documentation, guide, content-creation]
 description: A comprehensive guide for creating articles in the Hex21 CMS, including metadata guidelines and best practices.
+id: article-creation
 ---
 
 # Article Creation Guide
@@ -19,14 +20,14 @@ content/
 ├── maps/
 │   └── your-article.ditamap
 └── topics/
-    ├── topic1.mdita
-    ├── topic2.mdita
-    └── topic3.mdita
+    ├── topic1.md
+    ├── topic2.md
+    └── topic3.md
 ```
 
 ## Creating Topics
 
-Topics are individual markdown files (`.mdita`) that contain a section of your article. Each topic should have its own metadata.
+Topics are individual markdown files (`.md`) that contain a section of your article. Each topic should have its own metadata.
 
 ### Topic Metadata Structure
 
@@ -88,7 +89,7 @@ tags:
 2. Maps must specify a category
 3. Maps define the base access level - topics cannot exceed this
 4. Future `publish_date` will prevent the article from appearing until that date
-5. Topics must be listed in the `topics` array using their IDs
+5. Topics must be listed in the `topics` array using their IDs (or referenced via wiki links in the map body if using Markdown maps)
 
 ## Metadata Hierarchy
 
@@ -144,7 +145,7 @@ tags:
 This article introduces the fundamental concepts of sound physics.
 ```
 
-### Topic File (intro-sound.mdita)
+### Topic File (intro-sound.md)
 ```yaml
 ---
 id: intro-sound
@@ -168,4 +169,4 @@ Sound is a form of energy that travels through matter as waves...
 4. Set access levels appropriately
 5. Test your content with different access levels
 6. Use LaTeX for mathematical equations
-7. Include relevant tags for better searchability 
+7. Include relevant tags for better searchability

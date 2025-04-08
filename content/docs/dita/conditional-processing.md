@@ -1,17 +1,10 @@
 ---
-title: Conditional Processing in Hex21 CMS
-author: Hex21 Team
-publish: true
-audience: Content Authors
-categories:
-  - Documentation
-  - DITA
-keywords:
-  - dita
-  - conditional processing
-  - filtering
-  - props
-  - profiling
+title: Conditional Processing
+author: Hex21 DITA Team
+date: 2024-04-01
+tags: [documentation, guide, dita, conditional-processing, filtering, profiling]
+description: Using DITA attributes for conditional processing and content filtering.
+id: dita-conditional-processing
 ---
 
 # Conditional Processing

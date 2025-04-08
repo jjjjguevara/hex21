@@ -1,11 +1,10 @@
 ---
 title: API Overview
-author: Hex21 Team
-date: 2024-03-21
-description: Overview of the Hex21 CMS API
-publish: true
-audience: developer
-tags: [api, overview]
+author: Hex21 API Team
+date: 2024-04-01
+tags: [documentation, api, reference, overview]
+description: General information about the Hex21 CMS API, including authentication and base URL.
+id: api-overview
 ---
 
 # API Overview

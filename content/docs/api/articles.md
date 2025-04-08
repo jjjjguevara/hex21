@@ -1,11 +1,10 @@
 ---
 title: Articles API
-author: Hex21 Team
-date: 2024-03-21
-description: Documentation for the Articles API endpoints
-publish: true
-audience: developer
-tags: [api, articles]
+author: Hex21 API Team
+date: 2024-04-01
+tags: [documentation, api, reference, articles, crud]
+description: API endpoints for managing articles (maps and associated topics).
+id: api-articles
 ---
 
 # Articles API

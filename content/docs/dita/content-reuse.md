@@ -1,17 +1,10 @@
 ---
-title: Content Reuse Features in Hex21 CMS
-author: Hex21 Team
-publish: true
-audience: Content Authors
-categories:
-  - Documentation
-  - DITA
-keywords:
-  - dita
-  - content reuse
-  - conref
-  - keyref
-  - variables
+title: Content Reuse Strategies
+author: Hex21 DITA Team
+date: 2024-04-01
+tags: [documentation, guide, dita, content-reuse, conref, keyref]
+description: Techniques for reusing content effectively using DITA features.
+id: dita-content-reuse
 ---
 
 # Content Reuse Features

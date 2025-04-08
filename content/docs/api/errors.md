@@ -1,14 +1,13 @@
 ---
-title: Error Handling
-author: Hex21 Team
-date: 2024-03-21
-description: Comprehensive guide to handling API errors
-publish: true
-audience: developer
-tags: [api, errors]
+title: API Error Codes
+author: Hex21 API Team
+date: 2024-04-01
+tags: [documentation, api, reference, errors, codes]
+description: A list of common error codes returned by the Hex21 CMS API.
+id: api-errors
 ---
 
-# Error Handling
+# API Error Codes
 
 This guide explains how to handle errors in the Hex21 CMS API.
 

@@ -1,0 +1,12 @@
+---
+title: API Reference
+description: Details about the Hex21 CMS REST API endpoints.
+# Map for the /docs/api section
+---
+
+# API Reference
+
+- [[overview.md|API Overview]]
+- [[articles.md|Articles API]]
+- [[documentation.md|Documentation API]]
+- [[errors.md|Error Codes]]
