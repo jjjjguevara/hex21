@@ -19,12 +19,25 @@ import { parseMetadata } from './metadata';
 import type { Root } from 'hast';
 import { VFile } from 'vfile';
 
+// *** Remove TEMPORARY DEBUGGING PLUGIN ***
+// function logMathNodes() {
+//   return (tree: any) => {
+//     visit(tree, (node) => {
+//       if (node.type === 'inlineMath') {
+//         console.log(`[AST Logger] Found inlineMath node: value=${JSON.stringify(node.value)}, Position: ${JSON.stringify(node.position)}`);
+//       }
+//     });
+//   };
+// }
+// *** END TEMPORARY DEBUGGING PLUGIN ***
+
 // Create the unified processor instance (Restored)
 // NOTE: This is now the BASE processor, plugins like footnote processing/stringifying are added manually.
 const baseProcessor = unified()
   .use(remarkParse)       // Parse markdown
   .use(remarkGfm)         // Support GFM (includes standard footnotes)
-  .use(remarkMath)        // Support math blocks
+  .use(remarkMath)        // Support math blocks (Default config)
+  // .use(logMathNodes)      // <<< Remove temporary logger
   .use(remarkRehype, {
     allowDangerousHtml: true
   }) // Convert to rehype - MathJax will be handled client-side
@@ -303,13 +316,13 @@ export async function getArticleData(slug: string): Promise<Article | null> {
     const mapsDir = path.join(process.cwd(), 'content/maps');
     const articlesDir = path.join(process.cwd(), 'content/articles');
     const topicsDir = path.join(process.cwd(), 'content/topics');
-
+    
     // Try processing as a DITA map first
     try {
       const mapPath = path.join(mapsDir, `${slug}.ditamap`);
       const mapContents = await fs.readFile(mapPath, 'utf8');
       console.log('[getArticleData V2] Reading map file:', mapPath);
-
+      
       const { metadata, topics } = await parseMetadata(mapContents, 'map');
       console.log('[getArticleData V2] Parsed map metadata:', metadata);
       console.log('[getArticleData V2] Found topics in map:', topics);
@@ -331,16 +344,16 @@ export async function getArticleData(slug: string): Promise<Article | null> {
 
       const topicPass1Results = await Promise.all(topics.map(async (topicId, index) => {
         const topicSlug = topicId.replace(/^\.\.\/topics\//, '').replace(/^\//, '').replace(/(mdita|md|dita|xml)$/, '');
-        try {
-          const topicFile = await findTopicFile(topicId, topicsDir);
-          if (!topicFile) {
+          try {
+            const topicFile = await findTopicFile(topicId, topicsDir);
+            if (!topicFile) {
             console.error(`[getArticleData V2 Pass 1] Topic file not found: ${topicId}`);
             return null;
           }
           console.log('[getArticleData V2 Pass 1] Processing topic:', topicFile.path);
           const { content: markdown } = matter(topicFile.content); // Don't need metadata here
-          const processedMarkdown = processInlineFootnotes(markdown);
-
+            const processedMarkdown = processInlineFootnotes(markdown);
+            
           // Run the processor to get HAST and extracted data
           // Use parse() and run() instead of process() as we don't have a compiler yet
           const mdast = extractProcessor.parse(processedMarkdown);
@@ -360,10 +373,10 @@ export async function getArticleData(slug: string): Promise<Article | null> {
             extractedFootnotes: extractedFootnotes,
             toc: topicToc
           };
-        } catch (error) {
+          } catch (error) {
           console.error(`[getArticleData V2 Pass 1] Error processing topic ${topicId}:`, error);
           return null;
-        }
+          }
       }));
 
       const validTopicDataPass1 = topicPass1Results.filter((topic): topic is NonNullable<typeof topic> => topic !== null);
@@ -465,7 +478,7 @@ export async function getArticleData(slug: string): Promise<Article | null> {
 
         combinedHtml += `\n\n<section data-footnotes class="footnotes mt-12 pt-8 border-t border-border">\n<h2 class="sr-only" id="footnotes-section-label">Footnotes</h2>\n<ol>\n${footnoteLiElements}\n</ol>\n</section>`;
          console.log(`[getArticleData V2] Appended footnote section with ${finalFootnotesMap.size} items.`);
-      } else {
+                } else {
           console.log(`[getArticleData V2] No footnotes found to append.`);
       }
 
@@ -491,7 +504,7 @@ export async function getArticleData(slug: string): Promise<Article | null> {
                 console.log(`[getArticleData V2 Standalone] Reading: ${standaloneFilePath}`);
                 const { data: metadata, content: markdown } = matter(fileContents);
 
-                if (!metadata.publish) {
+        if (!metadata.publish) {
                     console.log(`[getArticleData V2 Standalone] ${slug}${ext} not published.`);
                     continue; // Try next extension or fail
                 }
@@ -506,7 +519,7 @@ export async function getArticleData(slug: string): Promise<Article | null> {
 
                 const file = await standaloneProcessor.process(processedMarkdown);
                 let html = file.toString(); // .toString() uses the processor's stringify options
-                const toc = (file.data.toc || []) as TocEntry[];
+        const toc = (file.data.toc || []) as TocEntry[];
                 const extractedFootnotes = (file.data.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
 
                 // Append extracted footnotes (no renumbering, use original IDs/structure)
@@ -534,10 +547,10 @@ export async function getArticleData(slug: string): Promise<Article | null> {
                 }
 
                 console.log(`[getArticleData V2 Standalone] Successfully processed ${slug}${ext}.`);
-                return {
-                    slug,
+          return {
+            slug,
                     metadata: metadata as TopicMetadata, // Assuming standalone has TopicMetadata
-                    content: html,
+            content: html,
                     toc,
                 };
             } catch (error: any) {

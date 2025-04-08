@@ -11,7 +11,7 @@ const BrownianMotionSimulation = dynamic(() => import('@/components/interactive/
 });
 
 // Map component names (from data-component attribute) to the actual components
-const componentRegistry: { [key: string]: React.LazyExoticComponent<any> } = {
+const componentRegistry: { [key: string]: React.ComponentType<any> } = {
   BrownianMotionSimulation: BrownianMotionSimulation,
   // Add other interactive components here
 };
