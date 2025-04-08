@@ -1,69 +1,42 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { ProcessedContent } from '@/lib/markdown/types';
 import { processEmbeds } from '@/lib/content/embed-processor';
 import { processLatex } from '@/lib/content/latex-processor';
 import { processWikilinks } from '@/lib/content/wikilink-processor';
-import { processFootnotes } from '@/lib/content/footnote-processor';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
 interface MarkdownContentProps {
-  content: ProcessedContent;
+  htmlContent: string;
   basePath?: string;
+  assetBasePath?: string;
 }
 
-export function MarkdownContent({ content, basePath = '' }: MarkdownContentProps) {
+export const MarkdownContent: React.FC<MarkdownContentProps> = ({ htmlContent, basePath, assetBasePath }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!containerRef.current) return;
-
-    const container = containerRef.current;
-    
-    // Process embeds
-    processEmbeds(container, content.embeds, basePath);
-    
-    // Process LaTeX
-    processLatex(container);
-    
-    // Process wikilinks
-    processWikilinks(container, basePath);
-    
-    // Process footnotes
-    processFootnotes(container, content.footnotes);
-  }, [content, basePath]);
+    if (containerRef.current) {
+      console.log('[MarkdownContent] Running client-side processors...');
+      processEmbeds(containerRef.current, assetBasePath || '/content/assets');
+      processWikilinks(containerRef.current, basePath || '');
+      processLatex(containerRef.current);
+    }
+  }, [htmlContent, basePath, assetBasePath]);
 
   return (
     <article className="markdown-content">
-      {/* Metadata section */}
+      {/* Metadata section - without the redundant H1 title */}
       <header className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">{content.frontmatter.title}</h1>
-        <div className="text-gray-600">
-          {content.frontmatter.author && (
-            <p>By {content.frontmatter.author} • {new Date(content.frontmatter.date).toLocaleDateString()}</p>
-          )}
-          {content.frontmatter.tags.length > 0 && (
-            <div className="flex gap-2 mt-2">
-              {content.frontmatter.tags.map(tag => (
-                <span
-                  key={tag}
-                  className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Removed metadata section for brevity */}
       </header>
 
       {/* Main content */}
       <div 
         ref={containerRef}
         className="prose prose-slate dark:prose-invert max-w-none"
-        dangerouslySetInnerHTML={{ __html: content.html }}
+        dangerouslySetInnerHTML={{ __html: htmlContent }}
       />
 
       {/* Styling for various markdown elements */}
@@ -137,4 +110,4 @@ export function MarkdownContent({ content, basePath = '' }: MarkdownContentProps
       `}</style>
     </article>
   );
-} 
+}
