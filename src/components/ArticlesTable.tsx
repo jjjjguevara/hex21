@@ -24,7 +24,7 @@ const columns: Column[] = [
     sortable: true,
     render: (article) => (
       <Link 
-        href={`/articles/${article.slug}`}
+        href={`/articles/${article.metadata.slug || article.slug}`}
         className="text-blue-600 dark:text-blue-400 hover:underline font-medium"
       >
         {article.metadata.title || article.slug}
@@ -51,7 +51,8 @@ const columns: Column[] = [
       const author = article.metadata.author;
       if (!author) return 'Unknown';
       if (typeof author === 'string') return author;
-      return author.name || 'Unknown';
+      if (Array.isArray(author)) return author[0] || 'Unknown';
+      return 'object' === typeof author && author.name ? author.name : 'Unknown';
     }
   },
   { 

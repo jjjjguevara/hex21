@@ -22,6 +22,9 @@ import { toHtml } from 'hast-util-to-html';
 import { fromHtml } from 'hast-util-from-html';
 import { parseMetadata } from './metadata';
 import { VFile } from 'vfile';
+import { remarkObsidianCallouts } from './markdown/remark-obsidian-callouts';
+import { rehypeObsidianCallouts } from './markdown/rehype-obsidian-callouts';
+import rehypeRaw from 'rehype-raw'; // Add import for rehypeRaw
 
 // Cache for map metadata to avoid re-parsing
 const mapMetadataMap = new Map<string, MapMetadata>();
@@ -350,30 +353,161 @@ function stringifyNodeForLog(node: any): string {
   }, 2);
 }
 
+// Helper function to find a document by its custom slug metadata
+async function findDocByCustomSlug(targetSlug: string): Promise<string | null> {
+  console.log(`[DEBUG] findDocByCustomSlug called with targetSlug: "${targetSlug}"`);
+  
+  // Early exit for obviously non-custom slugs (containing paths)
+  if (targetSlug.includes('/')) {
+    console.log(`[DEBUG] Skipping custom slug search since it contains a path: ${targetSlug}`);
+    return null;
+  }
+  
+  try {
+    const articlesDir = path.join(process.cwd(), 'content/articles');
+    console.log(`[DEBUG] Searching for custom slug in articles directory: ${articlesDir}`);
+    
+    // Helper function to recursively search directories
+    async function scanForSlug(dir: string): Promise<string | null> {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      console.log(`[DEBUG] Scanning directory: ${dir} - Found ${entries.length} entries`);
+      
+      for (const entry of entries) {
+        const fullPath = path.join(dir, entry.name);
+        
+        if (entry.isDirectory()) {
+          // Recursively search subdirectories
+          console.log(`[DEBUG] Entering directory: ${entry.name}`);
+          const result = await scanForSlug(fullPath);
+          if (result) return result;
+        } else if ((entry.name.endsWith('.md') || entry.name.endsWith('.mdita'))) {
+          // Check if this file has the target slug in its metadata
+          try {
+            console.log(`[DEBUG] Checking file for custom slug: ${entry.name}`);
+            const content = await fs.readFile(fullPath, 'utf8');
+            const { data: metadata } = matter(content);
+            
+            console.log(`[DEBUG] File ${entry.name} has metadata slug: ${metadata?.slug || 'undefined'}`);
+            
+            if (metadata && metadata.slug === targetSlug) {
+              console.log(`[DEBUG] ✅ MATCH FOUND! File ${entry.name} has custom slug: ${targetSlug}`);
+              // Return the relative path from the articles directory
+              const relativePath = path.relative(articlesDir, fullPath).replace(/\.(md|mdita)$/, '');
+              console.log(`[DEBUG] Returning relative path: ${relativePath}`);
+              return relativePath;
+            }
+          } catch (error) {
+            console.error(`Error reading metadata from ${fullPath}:`, error);
+          }
+        }
+      }
+      
+      return null;
+    }
+    
+    const result = await scanForSlug(articlesDir);
+    console.log(`[DEBUG] Custom slug search result: ${result || 'null'}`);
+    return result;
+  } catch (error) {
+    console.error('Error searching for custom slug:', error);
+    return null;
+  }
+}
+
 // --- Main Function to Get Document Data ---
-export async function getDocData(slug: string): Promise<Doc | null> {
+export async function getDocData(slugOrPath: string): Promise<Doc | null> {
   // Reset Map Metadata for each document processing
   mapMetadataMap.clear();
 
-  const docsDir = path.join(process.cwd(), 'content/docs');
-  const mdPath = path.join(docsDir, `${slug}.md`);
+  // Handle arrays from catch-all routes
+  const normalizedSlug = Array.isArray(slugOrPath) ? slugOrPath.join('/') : slugOrPath;
+  
+  // First, try to see if this is a custom slug lookup
+  // We need to scan the articles directory to find any file with this slug in its metadata
+  let usingCustomSlug = false;
+  const customSlugMatch = await findDocByCustomSlug(normalizedSlug);
+  if (customSlugMatch) {
+    console.log(`Found document by custom slug: ${normalizedSlug} -> ${customSlugMatch}`);
+    // Use the actual file path instead of the slug for further processing
+    slugOrPath = customSlugMatch;
+    usingCustomSlug = true;
+  }
+  
+  // Determine which content directory to use based on the slug
+  // First, normalize the slug by removing any 'articles/' prefix and handle catch-all routes
+  let adjustedSlug = normalizedSlug;
+  if (adjustedSlug.startsWith('articles/')) {
+    adjustedSlug = adjustedSlug.substring('articles/'.length);
+  }
+  
+  // Determine the content type based on the path structure
+  const isArticle = !adjustedSlug.startsWith('docs/') && 
+                   (adjustedSlug.includes('/') || 
+                    adjustedSlug === 'sample-article' || 
+                    adjustedSlug.endsWith('.ditamap') ||
+                    ['papers', 'catoblepas', 'collaborative', 'el-catoblepas'].some(dir => 
+                      adjustedSlug.startsWith(dir) || adjustedSlug.includes('/' + dir)));
+  
+  // Setup content directories
+  const baseDir = path.join(process.cwd(), 'content');
+  const articlesDir = path.join(baseDir, 'articles');
+  const docsDir = path.join(baseDir, 'docs');
+  
+  // Determine the content directory to use
+  const contentDir = isArticle ? articlesDir : docsDir;
+  
+  // Adjust slug for docs prefix if needed
+  if (adjustedSlug.startsWith('docs/')) {
+    adjustedSlug = adjustedSlug.substring('docs/'.length);
+  }
+  
+  // Remove extension if present
+  adjustedSlug = adjustedSlug.replace(/\.(md|mdita|ditamap)$/, '');
+  
+  // Build potential file paths
+  let mdPath, mditaPath, ditamapPath;
+  
+  if (usingCustomSlug) {
+    // If we found a custom slug match, use the exact file path directly
+    mdPath = path.join(articlesDir, `${slugOrPath}.md`);
+    mditaPath = path.join(articlesDir, `${slugOrPath}.mdita`);
+    ditamapPath = path.join(articlesDir, `${slugOrPath}.ditamap`);
+  } else {
+    // Otherwise use the standard paths
+    mdPath = path.join(contentDir, `${adjustedSlug}.md`);
+    mditaPath = path.join(contentDir, `${adjustedSlug}.mdita`);
+    ditamapPath = path.join(contentDir, `${adjustedSlug}.ditamap`);
+  }
 
+  // Debug logging
+  console.log(`Attempting to load: ${mdPath}`);
+  
   let filePath: string | null = null;
   let fileContents: string | null = null;
 
+  // Try loading file with different extensions
   try {
+    // Try .md first
     fileContents = await fs.readFile(mdPath, 'utf8');
     filePath = mdPath;
+    console.log(`Successfully loaded: ${mdPath}`);
   } catch (mdError) {
-    console.error(`Documentation file not found: ${slug}.md`);
-    // Optionally try .mdita or other extensions if needed
-    // try {
-    //   const mditaPath = path.join(docsDir, `${slug}.mdita`);
-    //   fileContents = await fs.readFile(mditaPath, 'utf8');
-    //   filePath = mditaPath;
-    // } catch (mditaError) {
-    return null; // Not found
-    // }
+    try {
+      // Try .mdita next
+      fileContents = await fs.readFile(mditaPath, 'utf8');
+      filePath = mditaPath;
+      console.log(`Successfully loaded: ${mditaPath}`);
+    } catch (mditaError) {
+      try {
+        // Finally try .ditamap
+        fileContents = await fs.readFile(ditamapPath, 'utf8');
+        filePath = ditamapPath;
+        console.log(`Successfully loaded: ${ditamapPath}`);
+      } catch (ditamapError) {
+        console.error(`File not found for slug "${adjustedSlug}" - tried: .md, .mdita, .ditamap`);
+        return null; // Not found
+      }
+    }
   }
 
   if (!fileContents || !filePath) {
@@ -385,12 +519,12 @@ export async function getDocData(slug: string): Promise<Doc | null> {
 
   // If publish is explicitly set to false, return null
   if (metadata.publish === false) {
-    console.log('Doc not published:', slug);
+    console.log('Doc not published:', adjustedSlug);
     return null;
   }
 
   // --- Calculate Base Path Early ---
-  const basePath = slug.includes('/') ? `/docs/${slug.split('/').slice(0, -1).join('/')}` : '/docs';
+  const basePath = adjustedSlug.includes('/') ? `/docs/${adjustedSlug.split('/').slice(0, -1).join('/')}` : '/docs';
 
   // --- HAST Processing Helper Functions (Wikilinks and Embeds) ---
   
@@ -533,20 +667,23 @@ export async function getDocData(slug: string): Promise<Doc | null> {
   // 2b. Create processor for MDAST -> HAST + HAST Plugins
   const hastProcessor = unified()
     // Apply GFM and Math after our wikilink transforms were already applied
-    .use(remarkGfm)       
-    .use(remarkMath)
+    .use(remarkGfm)                       // Support GFM (tables, strikethrough, etc.)
+    .use(remarkObsidianCallouts)          // Add callout support
+    .use(remarkMath)                      // Support math syntax
     .use(remarkRehype, { // Convert to HAST, allowing generated elements through
       allowDangerousHtml: true,
       // passThrough: ['element'] // Removed due to type issues and potentially unneeded now
     } as any) // <<< Cast options to 'any' as a workaround for persistent type error
-    .use(rehypeSlug)                  // Add IDs to headings
+    .use(rehypeObsidianCallouts)         // Transform callouts BEFORE rehypeRaw
+    .use(rehypeRaw)                      // IMPORTANT: Process raw HTML potentially added by remark plugins or in source
+    .use(rehypeSlug)                     // Add IDs to headings
     .use(rehypeAutolinkHeadings, {
       behavior: 'append',
       content: h('span.heading-link', '#') // Use hastscript for content
     })
-    .use(rehypeExtractToc)           // Custom plugin to extract TOC
-    .use(rehypeHighlightCode, { hljs }) // Apply syntax highlighting BEFORE footnote processing
-    .use(rehypeProcessFootnotes);     // Custom plugin to EXTRACT footnote definitions
+    .use(rehypeExtractToc)               // Custom plugin to extract TOC
+    .use(rehypeHighlightCode, { hljs })  // Apply syntax highlighting BEFORE footnote processing
+    .use(rehypeProcessFootnotes);        // Custom plugin to EXTRACT footnote definitions
 
   // Run processor: MDAST Parse -> MDAST Transform -> HAST Convert -> HAST Transform
   let hastTree = await hastProcessor.run(processedMdast, file) as HastRoot; // Start with processed MDAST
@@ -576,7 +713,7 @@ export async function getDocData(slug: string): Promise<Doc | null> {
   // });
   // console.log('--- END DEBUG LOG 5 ---');
 
-  const toc = (file.data.toc || []) as TocEntry[];
+  let toc = (file.data.toc || []) as TocEntry[];
   const extractedFootnotes = (file.data.extractedFootnotes || []) as { originalId: string; contentHtml: string; backrefs: string[] }[];
 
   // --- Footnote Processing (Renumbering and Appending) ---
@@ -639,9 +776,130 @@ export async function getDocData(slug: string): Promise<Doc | null> {
   // console.log(stringifyNodeForLog(hastTree));
   // console.log('--- END DEBUG LOG 6 ---');
 
+  // Special handling for ditamaps - process and combine topic files
+  if (filePath && filePath.endsWith('.ditamap')) {
+    try {
+      console.log(`Processing ditamap file: ${filePath}`);
+      const ditamapContent = fileContents || '';
+      const hrefMatches = ditamapContent.match(/href=['"]([^'"]+)['"]\s+format=['"](markdown|md)['"]|href=['"](.*?\.md)['"]|href=['"](.*?\.mdita)['"]|href=['"](.*?\.dita)['"]|href=['"](.*?)['"]\s+format=['"](markdown|md)['"]|href=['"](.*?)['"]\s+format=['"](markdown|md)['"]\s+/g);
+      
+      if (hrefMatches) {
+        // Extract all topic references
+        const topicContents: {content: string, toc: TocEntry[]}[] = [];
+        const dirName = path.dirname(filePath);
+        
+        for (const match of hrefMatches) {
+          // Extract the href value
+          const hrefMatch = match.match(/href=['"]([^'"]+)['"]/); 
+          if (hrefMatch && hrefMatch[1]) {
+            let topicPath = hrefMatch[1];
+            
+            // Compute full path to the topic file relative to the ditamap
+            const topicFullPath = path.resolve(dirName, topicPath);
+            
+            console.log(`Loading topic from ditamap: ${topicFullPath}`);
+            
+            try {
+              // Try to load the topic directly
+              const topicContent = await fs.readFile(topicFullPath, 'utf8');
+              const { content: parsedContent, data: topicMetadata } = matter(topicContent);
+              
+              // Process the topic content
+              // Reuse the main document processing logic with a simplified interface
+              const tempDoc = await processMarkdownToHtml(parsedContent, path.dirname(topicFullPath), topicMetadata);
+              if (tempDoc) {
+                topicContents.push({
+                  content: tempDoc.content,
+                  toc: tempDoc.toc || []
+                });
+              }
+            } catch (topicError) {
+              console.error(`Error loading topic from ditamap: ${topicFullPath}`, topicError);
+            }
+          }
+        }
+        
+        // Combine all topic contents into a single HTML document
+        if (topicContents.length > 0) {
+          // Merge all contents and TOCs
+          let combinedContent = '';
+          let combinedToc: TocEntry[] = [];
+          let tocOffset = 0;
+          
+          topicContents.forEach((topic, index) => {
+            // Add a separator between topics
+            if (index > 0) {
+              combinedContent += '\n<hr class="topic-separator" />\n';
+            }
+            
+            // Add the topic content
+            combinedContent += topic.content;
+            
+            // Offset TOC entries and add to combined TOC
+            const adjustedToc = topic.toc.map(entry => ({
+              ...entry,
+              id: `topic-${index}-${entry.id}` // Make IDs unique across topics
+            }));
+            
+            combinedToc = [...combinedToc, ...adjustedToc];
+          });
+          
+          // Update the html variable to contain all merged content
+          html = combinedContent;
+          toc = combinedToc;
+        }
+      }
+    } catch (ditamapError) {
+      console.error(`Error processing ditamap file: ${filePath}`, ditamapError);
+    }
+  }
+  
+  // Helper function to process individual topic markdown to HTML
+  // This is used when processing ditamap topics
+  async function processMarkdownToHtml(markdownContent: string, baseDirPath: string, metadata: any): Promise<{ content: string, toc: TocEntry[] } | null> {
+    try {
+      // Create temporary VFile
+      const file = new VFile({ value: markdownContent });
+      
+      // Parse the markdown to MDAST
+      const mdast = baseProcessor.parse(file);
+      
+      // Use a simplified pipeline for processing topics
+      const hastResult = await unified()
+        .use(remarkGfm)
+        .use(remarkMath)
+        .use(remarkTransformWikilinks, {})
+        .use(remarkRehype, { allowDangerousHtml: true })
+        .use(rehypeSlug)
+        .use(rehypeAutolinkHeadings, {
+          behavior: 'append',
+          properties: { className: ['heading-link'] },
+          content: h('span', { className: ['heading-link-icon'], 'aria-hidden': 'true' }, '#')
+        })
+        .use(rehypeExtractToc)
+        // .use(rehypeRawHTML) - removed as it's not defined
+        .use(rehypeHighlightCode, { hljs })
+        .use(rehypeProcessFootnotes)
+        .use(rehypeStringify, { allowDangerousHtml: true })
+        .run(mdast);
+      
+      // Get the HTML string and TOC
+      const topicHtml = String(hastResult);
+      const topicToc = (file.data?.toc || []) as TocEntry[];
+      
+      return {
+        content: topicHtml,
+        toc: topicToc
+      };
+    } catch (error) {
+      console.error('Error processing topic markdown:', error);
+      return null;
+    }
+  }
+  
   // Return the final Doc object
   return {
-    slug,
+    slug: adjustedSlug, // Use the adjusted slug
     content: html, // Return the final HTML string
     metadata: metadata as TopicMetadata, // Assuming doc uses TopicMetadata structure
     toc,

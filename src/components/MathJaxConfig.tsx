@@ -7,7 +7,7 @@ export default function MathJaxConfig() {
     <>
       <Script
         id="mathjax-config"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
         dangerouslySetInnerHTML={{
           __html: `
             window.MathJax = {

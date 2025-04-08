@@ -317,6 +317,122 @@ For practical examples of these features in action, see:
 4. Include language specifiers in code blocks
 5. Test embedded content references
 
+## Callout Blocks
+
+Callouts are a special type of blockquote that are visually distinguished with colors and icons. They're great for highlighting important information, warnings, or notes.
+
+### Basic Syntax
+
+Callouts use the following syntax:
+
+```markdown
+> [!note] Optional Title
+> Content of the callout
+```
+
+The callout type (`note` in this example) determines the styling and icon of the callout.
+
+### Supported Callout Types
+
+- **Note**: General information
+  ```markdown
+  > [!note] 
+  > Important information that isn't critical.
+  ```
+
+- **Abstract/Summary**: Brief overview
+  ```markdown
+  > [!abstract] Summary
+  > Brief summary of a complex topic.
+  ```
+
+- **Info**: Informational content
+  ```markdown
+  > [!info] 
+  > Additional information that may be helpful.
+  ```
+
+- **Tip/Hint**: Helpful suggestions
+  ```markdown
+  > [!tip] Pro Tip
+  > A helpful piece of advice.
+  ```
+
+- **Success/Check/Done**: Confirmation or successful completion
+  ```markdown
+  > [!success] 
+  > A task that has been completed successfully.
+  ```
+
+- **Question/Help/FAQ**: Questions or help-related content
+  ```markdown
+  > [!question] 
+  > Questions that may need answers or clarification.
+  ```
+
+- **Warning/Caution/Attention/Disclaimer**: Cautionary information
+  ```markdown
+  > [!warning] Caution
+  > Warning that users should be careful about something.
+  ```
+
+- **Failure/Fail/Missing**: Failed processes or missing information
+  ```markdown
+  > [!failure] 
+  > A task that failed or is incomplete.
+  ```
+
+- **Danger/Error**: Critical warnings
+  ```markdown
+  > [!danger] 
+  > Critical information about dangerous actions or significant risks.
+  ```
+
+- **Bug**: Known issues
+  ```markdown
+  > [!bug] 
+  > Report of a known bug or issue.
+  ```
+
+- **Example**: Illustrative examples
+  ```markdown
+  > [!example] 
+  > An example demonstrating a concept or technique.
+  ```
+
+- **Quote/Cite**: Quotations or citations
+  ```markdown
+  > [!quote] 
+  > A quotation from a source.
+  ```
+
+### Callout Titles
+
+You can add a title to your callout by adding text after the callout type:
+
+```markdown
+> [!warning] Important Security Notice
+> Make sure to update your passwords regularly.
+```
+
+### Nested Content
+
+Callouts can contain any markdown content, including lists, code blocks, and even nested callouts:
+
+```markdown
+> [!tip] Advanced Formatting
+> You can include **bold text**, *italics*, or `code` within callouts.
+> 
+> - Lists work too
+> - Another item
+> 
+> ```python
+> # Even code blocks work!
+> def hello_world():
+>     print("Hello from a callout")
+> ```
+```
+
 ## Related Documentation
 
 - [[dita-integration|DITA Integration Guide]]

@@ -13,7 +13,7 @@ datalist: ["author", "date", "category", "tags"]
 
 # INVESTIGATIONS ON THE THEORY OF THE BROWNIAN MOVEMENT
 
-> _The contents presented here have been reproduced from Albert Einstein's works during his Annus Mirabilis. The source can be found [here](https://ia601603.us.archive.org/14/items/investigationont0000albe/investigationont0000albe.pdf)._
+> The contents presented here have been reproduced from Albert Einstein's works during his Annus Mirabilis. The source can be found [here](https://ia601603.us.archive.org/14/items/investigationont0000albe/investigationont0000albe.pdf).
 
 
 ## ON THE MOVEMENT OF SMALL PARTICLES SUSPENDED IN A STATIONARY LIQUID DEMANDED BY THE MOLECULAR-KINETIC THEORY OF HEAT

@@ -156,9 +156,11 @@ export default function CommandPalette({ isOpen, setIsOpen }: CommandPaletteProp
                   ))}
                 </Command.Group>
               ) : query ? (
-                <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
-                  No results found for "{query}"
-                </div>
+                <Command.Empty>
+                  <div className="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No results found for &quot;{query}&quot;
+                  </div>
+                </Command.Empty>
               ) : null}
             </Command.List>
           </Command>

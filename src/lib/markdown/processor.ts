@@ -12,6 +12,9 @@ import { visit } from 'unist-util-visit';
 import { ProcessedContent, Metadata, Footnote } from './types';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
+import { remarkObsidianCallouts } from './remark-obsidian-callouts';
+import { rehypeObsidianCallouts } from './rehype-obsidian-callouts';
+import { h } from 'hastscript';
 
 // Custom remark plugin for Obsidian-style footnotes
 function remarkObsidianFootnotes() {
@@ -109,11 +112,16 @@ export async function processMarkdown(content: string, basePath: string): Promis
   const file = await unified()
     .use(remarkParse)
     .use(remarkGfm)
+    .use(remarkObsidianCallouts) // Add callout support immediately after GFM
     .use(remarkMath)
     .use(remarkObsidianFootnotes)
     .use(remarkWikiLinks) // Add our custom wikilinks processor
-    .use(remarkRehype, { allowDangerousHtml: true })
-    .use(rehypeRaw)
+    .use(remarkRehype, {
+      handlers: {},
+      allowDangerousHtml: true,
+    })
+    .use(rehypeObsidianCallouts) // Process callouts immediately after MDAST->HAST conversion
+    .use(rehypeRaw) // Now process other raw HTML
     .use(rehypeKatex, {
       throwOnError: false,
       strict: false,
