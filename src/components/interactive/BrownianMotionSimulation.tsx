@@ -258,7 +258,7 @@ const BrownianMotionSimulation = () => {
     if (isRunning) {
        animationFrameIdRef.current = requestAnimationFrame(animate);
     }
-  }, [particleSize, isRunning, animate]); // Include dependencies
+  }, [particleSize, isRunning, animate, theme]); // Include dependencies
 
   // --- Initial Setup Effect ---
   useEffect(() => {
@@ -293,7 +293,7 @@ const BrownianMotionSimulation = () => {
     if (particlesRef.current.length === 0) return; 
     initializeSimulation(numParticles);
      // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [numParticles]); // Rerun only when numParticles changes
+   }, [numParticles, initializeSimulation]); // Rerun only when numParticles changes or theme changes
 
   // --- Drawing Functions ---
   // Remove the drawParticles function entirely
@@ -403,7 +403,7 @@ const BrownianMotionSimulation = () => {
     return () => {
       resizeObserver.unobserve(canvas);
     };
-  }, [numParticles]); // Re-run if numParticles changes
+  }, [numParticles, initializeSimulation]); // Re-run if numParticles changes
 
   // --- Render JSX ---
   // Ensure refs are correctly assigned
@@ -485,7 +485,7 @@ const BrownianMotionSimulation = () => {
         </div>
       </div>
       <div className="explanation text-sm p-4 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-600 dark:text-gray-300">
-        <strong className="text-gray-800 dark:text-gray-200">How it relates to Einstein's work:</strong> Einstein mathematically showed that the seemingly random movement (Brownian motion) of larger particles suspended in a fluid is caused by numerous collisions with smaller, unseen molecules of the fluid. The key prediction is that the average squared distance a particle travels is directly proportional to time. This simulation models the <em>effect</em> of those collisions by giving each particle a small, random "kick" (displacement) in each time step, leading to the characteristic random walk pattern. The 'Speed' control adjusts the average magnitude of these random kicks.
+        <strong className="text-gray-800 dark:text-gray-200">How it relates to Einstein&apos;s work:</strong> Einstein mathematically showed that the seemingly random movement (Brownian motion) of larger particles suspended in a fluid is caused by numerous collisions with smaller, unseen molecules of the fluid. The key prediction is that the average squared distance a particle travels is directly proportional to time. This simulation models the <em>effect</em> of those collisions by giving each particle a small, random &quot;kick&quot; (displacement) in each time step, leading to the characteristic random walk pattern. The &apos;Speed&apos; control adjusts the average magnitude of these random kicks.
       </div>
     </div>
   );

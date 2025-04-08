@@ -6,7 +6,7 @@ export interface TocEntry {
 
 export interface BaseMetadata {
   title: string;
-  author?: string | { name: string; affiliation?: string; email?: string };
+  author?: string | { name: string; affiliation?: string; email?: string } | string[];
   date?: string;
   audience?: string | string[];
   tags?: string[];
@@ -18,6 +18,8 @@ export interface BaseMetadata {
   datalist?: string[];
   status?: string;
   publish?: boolean;
+  featured?: boolean;
+  slug?: string; // Custom URL slug to override the filename-based slug
 }
 
 export interface TopicMetadata extends BaseMetadata {

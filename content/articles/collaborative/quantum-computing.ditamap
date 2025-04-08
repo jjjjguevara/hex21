@@ -1,0 +1,23 @@
+---
+title: "Quantum Computing: Principles and Applications"
+author: "Dr. Quantum Researcher"
+date: "2025-04-08"
+publish: true
+featured: true
+audience: "intermediate"
+category: "Computer Science"
+tags: ["quantum computing", "quantum mechanics", "qubits", "quantum algorithms", "quantum supremacy"]
+shortdesc: "A comprehensive overview of quantum computing principles, current developments, and future applications."
+datalist: ["author", "date", "category", "tags"]
+---
+
+<!-- This is the ditamap structure for our multi-topic quantum computing article -->
+<map>
+  <title>Quantum Computing: Principles and Applications</title>
+  <topicref href="quantum-computing-introduction.md" format="markdown"/>
+  <topicref href="quantum-computing-principles.md" format="markdown"/>
+  <topicref href="quantum-computing-algorithms.md" format="markdown"/>
+  <topicref href="quantum-computing-hardware.md" format="markdown"/>
+  <topicref href="quantum-computing-applications.md" format="markdown"/>
+  <topicref href="quantum-computing-future.md" format="markdown"/>
+</map>

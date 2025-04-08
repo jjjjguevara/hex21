@@ -18,25 +18,23 @@ function isMapMetadataWithFeatures(metadata: MapMetadata | TopicMetadata): metad
 }
 
 export default async function FeaturedPage() {
-  // Placeholder: Replace with actual logic to get featured slugs
-  const slugs = ['your-first-featured-slug', 'another-featured-slug']; // Example slugs
+  // Import getArticles function to get all articles
+  const { getArticles } = await import('@/lib/articles');
+  
+  // Get all articles
+  const allArticles = await getArticles();
 
-  // Fetch all articles, filter nulls, assert type
-  const articles = (await Promise.all(
-    slugs.map(slug => getDocData(slug))
-  )).filter(Boolean) as Article[]; 
-
-  // Filter for featured and published articles using the type guard
-  const featuredArticles = articles.filter(article => {
+  // Filter for featured and published articles
+  const featuredArticles = allArticles.filter(article => {
     // Basic check
     if (!article?.metadata) return false;
 
-    // Check if published (assuming publish exists on BaseMetadata or both)
+    // Check if published
     const isPublished = article.metadata.publish === true;
     if (!isPublished) return false;
 
-    // Use type guard to safely check for features.featured
-    const isFeatured = isMapMetadataWithFeatures(article.metadata) && article.metadata.features?.featured === true;
+    // Check for featured flag - using direct property rather than nested features
+    const isFeatured = article.metadata.featured === true;
     
     return isFeatured;
   });

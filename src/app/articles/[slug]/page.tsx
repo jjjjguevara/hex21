@@ -105,11 +105,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // --- Updated Article Page Component (Now a Server Component) ---
 export default async function ArticlePage({ params }: Props) {
   try {
+    // Since the [slug] parameter is a catch-all segment, we need to handle
+    // nested paths, like "papers/brownian-motion"
+    const slug = params.slug;
+    console.log(`Attempting to render article with slug: ${slug}`);
+    
     // Fetch data on the server
-    const rawData = await getDocData(params.slug);
+    const rawData = await getDocData(slug);
 
     // Check for null/undefined before assertion
     if (!rawData) {
+      console.error(`Article not found for slug: ${slug}`);
       notFound();
     }
 
