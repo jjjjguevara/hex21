@@ -1,18 +1,10 @@
 ---
-title: File Types and Structure in Hex21 CMS
-author: Hex21 Team
-publish: true
-audience: Content Authors
-categories:
-  - Documentation
-  - DITA
-keywords:
-  - dita
-  - lwdita
-  - file types
-  - structure
-  - markdown
-shortdesc: Detailed explanation of supported file types in Hex21 CMS, including DITA maps, Markdown, MDITA, and XML, along with best practices for organization.
+title: Supported File Types
+author: Hex21 DITA Team
+date: 2024-04-01
+tags: [documentation, guide, dita, file-types, markdown, xml]
+description: Information on the DITA-related file types supported by Hex21.
+id: dita-file-types
 ---
 
 # File Types and Structure

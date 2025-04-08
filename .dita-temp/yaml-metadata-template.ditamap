@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map title="The Physics of Sound: Exploring Acoustics in Everyday Life">
+  <!-- TODO: Add metadata elements based on mapMetadata -->
+  <topicref href="introduction.dita" format="dita"/>
+  <topicref href="sound-wave-basics.dita" format="dita"/>
+  <topicref href="frequency-wavelength.dita" format="dita"/>
+  <topicref href="amplitude-intensity.dita" format="dita"/>
+  <topicref href="interactive-simulations.dita" format="dita"/>
+  <topicref href="supplementary-materials.dita" format="dita"/>
+</map>

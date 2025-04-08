@@ -1,6 +1,10 @@
 ---
-title: DITA in Hex21 CMS - Overview
-author: Hex21 Team
+title: DITA Features Overview
+author: Hex21 DITA Team
+date: 2024-04-01
+tags: [documentation, guide, dita, features, overview]
+description: An overview of the DITA standard and its implementation in Hex21.
+id: dita-overview
 publish: true
 audience: Content Authors
 categories:

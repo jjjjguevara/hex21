@@ -1,0 +1,11 @@
+---
+title: Content Management Topics
+description: Guide to creating and managing content within Hex21 CMS.
+# Map for the /docs/content section
+---
+
+# Content Management
+
+- [[article-creation.md|Creating Articles]]
+- [[metadata-guidelines.md|Metadata Guidelines]]
+- [[working-with-dita-maps.md|Working with DITA Maps]]

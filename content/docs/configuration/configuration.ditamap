@@ -1,0 +1,10 @@
+---
+title: Configuration Guide
+description: How to configure the Hex21 CMS.
+# Map for the /docs/configuration section
+---
+
+# Configuration Guide
+
+- [[configuration.md|CMS Configuration]]
+- [[installation.md|Installation Guide]]

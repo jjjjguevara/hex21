@@ -1,10 +1,13 @@
 ---
-title: Installation
-description: Learn how to install and set up Hex 21 CMS
-author: Hex 21 Team
+title: Installation Guide
+author: Hex21 Setup Team
+date: 2024-04-01
+tags: [documentation, guide, installation, setup, prerequisites]
+description: Step-by-step guide to installing the Hex21 CMS.
+id: installation-guide
 ---
 
-# Installation
+# Installation Guide
 
 Setting up Hex 21 CMS is straightforward. Follow these steps to get started with your scientific content management system.
 

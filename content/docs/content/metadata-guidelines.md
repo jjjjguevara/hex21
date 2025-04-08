@@ -2,8 +2,9 @@
 title: Metadata Guidelines
 author: Hex21 CMS Team
 date: 2024-04-01
-tags: [documentation, guide, metadata]
-description: Comprehensive guidelines for using metadata in the Hex21 CMS, including supported fields and best practices.
+tags: [documentation, guide, metadata, dita]
+description: Detailed guidelines for using YAML frontmatter metadata in Hex21 CMS topics and maps.
+id: metadata-guidelines
 ---
 
 # Metadata Guidelines for Content

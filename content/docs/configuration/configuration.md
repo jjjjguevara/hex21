@@ -1,10 +1,13 @@
 ---
-title: Configuration
-description: Configure Hex 21 CMS for your needs
-author: Hex 21 Team
+title: CMS Configuration
+author: Hex21 Config Team
+date: 2024-04-01
+tags: [documentation, guide, configuration, settings]
+description: Guide to configuring various aspects of the Hex21 CMS.
+id: configuration-guide
 ---
 
-# Configuration
+# CMS Configuration
 
 Learn how to configure Hex 21 CMS to match your specific requirements and workflow.
 
