@@ -1,4 +1,4 @@
-import { getArticleData } from '@/lib/content.server';
+import { getDocData } from '@/lib/content.server';
 import { NextResponse } from 'next/server';
 
 export async function GET(
@@ -6,7 +6,7 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const article = await getArticleData(params.slug);
+    const article = await getDocData(params.slug);
     
     if (!article) {
       return new NextResponse(null, { status: 404 });

@@ -5,6 +5,8 @@ import { notFound } from 'next/navigation';
 import { getDocData } from '@/lib/content.server'; // Import the shared function
 import { Doc } from '@/types/content'; 
 import ArticleRenderer from '@/components/ArticleRenderer'; // Import renderer
+import { ObsidianContent } from '@/components/ObsidianContent'; // Import Obsidian-specific renderer
+import { ProcessedContent, Frontmatter, Metadata as ContentMetadata } from '@/lib/markdown/types'; // Import the correct types
 
 // Helper to get content paths/slugs
 async function getContentSlugs() {
@@ -76,10 +78,50 @@ export default async function DocPage({ params }: Props) {
   }
   const { metadata, content: htmlContent, toc } = data; // toc is fetched but not used directly here
 
+  // Create properly typed objects for ProcessedContent
+  const frontmatter: Frontmatter = {
+    title: metadata?.title || '',
+    description: metadata?.shortdesc || '',
+    date: metadata?.date || new Date().toISOString(),
+    tags: Array.isArray(metadata?.tags) ? metadata.tags : [],
+    publish: Boolean(metadata?.publish),
+    audience: Array.isArray(metadata?.audience) ? metadata.audience.join(', ') : String(metadata?.audience || ''),
+    author: typeof metadata?.author === 'object' ? metadata.author.name || 'Unknown' : String(metadata?.author || '')
+  };
+  
+  // Create compatible metadata object
+  const contentMetadata: ContentMetadata = {
+    title: metadata?.title,
+    author: frontmatter.author,
+    category: metadata?.category,
+    audience: frontmatter.audience,
+    publish: Boolean(metadata?.publish),
+    tags: Array.isArray(metadata?.tags) ? metadata.tags : [],
+    shortdesc: metadata?.shortdesc,
+    date: metadata?.date
+  };
+
+  // Create a properly typed ProcessedContent object
+  const processedContent: ProcessedContent = {
+    html: htmlContent,
+    metadata: contentMetadata,
+    embeds: [],
+    frontmatter: frontmatter
+  };
+
+  // Determine the basePath for resolving wiki links
+  const basePath = params.slug && params.slug.length > 0 
+    ? `/${params.slug.slice(0, -1).join('/')}` 
+    : '/docs';
+
   return (
-      // Apply prose class here, ensure ArticleRenderer doesn't duplicate it
+      // Apply prose class here, ensure proper styling
       <div className="prose dark:prose-invert *:first:mt-0">
-         <ArticleRenderer htmlContent={htmlContent} />
+         <ObsidianContent 
+           content={htmlContent} 
+           metadata={contentMetadata}
+           basePath={basePath} 
+         />
       </div>
   );
 } 

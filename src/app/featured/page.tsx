@@ -1,4 +1,4 @@
-import { getContentSlugs, getArticleData } from '@/lib/content.server';
+import { getDocData } from '@/lib/content.server';
 import { Article, MapMetadata, TopicMetadata } from '@/types/content';
 import { Card } from '@radix-ui/themes';
 import Link from 'next/link';
@@ -18,10 +18,12 @@ function isMapMetadataWithFeatures(metadata: MapMetadata | TopicMetadata): metad
 }
 
 export default async function FeaturedPage() {
-  const slugs = await getContentSlugs();
+  // Placeholder: Replace with actual logic to get featured slugs
+  const slugs = ['your-first-featured-slug', 'another-featured-slug']; // Example slugs
+
   // Fetch all articles, filter nulls, assert type
   const articles = (await Promise.all(
-    slugs.map(slug => getArticleData(slug))
+    slugs.map(slug => getDocData(slug))
   )).filter(Boolean) as Article[]; 
 
   // Filter for featured and published articles using the type guard

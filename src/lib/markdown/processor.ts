@@ -9,7 +9,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import { visit } from 'unist-util-visit';
-import { ProcessedContent, Metadata } from './types';
+import { ProcessedContent, Metadata, Footnote } from './types';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
 
@@ -111,6 +111,7 @@ export async function processMarkdown(content: string, basePath: string): Promis
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkObsidianFootnotes)
+    .use(remarkWikiLinks) // Add our custom wikilinks processor
     .use(remarkRehype, { allowDangerousHtml: true })
     .use(rehypeRaw)
     .use(rehypeKatex, {
@@ -147,16 +148,88 @@ export async function processMarkdown(content: string, basePath: string): Promis
   };
 }
 
+// Custom remark plugin for Obsidian-style wiki links
+function remarkWikiLinks() {
+  return (tree: any) => {
+    const wikiLinks: Array<{ target: string; alias?: string }> = [];
+    
+    visit(tree, 'text', (node: any, index, parent) => {
+      if (!parent || index === undefined) return;
+      
+      const text = node.value;
+      const wikiLinkRegex = /\[\[([^\]\|]+)(?:\|([^\]]+))?\]\]/g;
+      let match;
+      let lastIndex = 0;
+      const newChildren = [];
+      
+      while ((match = wikiLinkRegex.exec(text)) !== null) {
+        const [fullMatch, target, alias] = match;
+        
+        // Add the text before the wikilink
+        if (match.index > lastIndex) {
+          newChildren.push({
+            type: 'text',
+            value: text.slice(lastIndex, match.index)
+          });
+        }
+        
+        // Add the wikilink node
+        wikiLinks.push({ target, alias });
+        newChildren.push({
+          type: 'link',
+          url: `#wiki-${target.replace(/\s+/g, '-').toLowerCase()}`,
+          data: {
+            hProperties: {
+              className: ['wiki-link'],
+              'data-target': target,
+              'data-alias': alias || ''
+            }
+          },
+          children: [{
+            type: 'text',
+            value: alias || target
+          }]
+        });
+        
+        lastIndex = match.index + fullMatch.length;
+      }
+      
+      // Add any remaining text
+      if (lastIndex < text.length) {
+        newChildren.push({
+          type: 'text',
+          value: text.slice(lastIndex)
+        });
+      }
+      
+      if (newChildren.length > 0) {
+        parent.children.splice(index, 1, ...newChildren);
+        return index + newChildren.length;
+      }
+    });
+  };
+}
+
 // Helper function to extract embed references
 function extractEmbeds(html: string): Array<string | { source: string; section?: string }> {
+  // Extract both ![[file.png]] syntax from HTML and <img> tags with data-embed attribute
   const embedRegex = /!\[\[([^\]]+)\]\]/g;
+  const imgRegex = /<img[^>]*data-embed="([^"]+)"[^>]*>/g;
+  
   const embeds: Array<string | { source: string; section?: string }> = [];
   let match;
 
+  // Extract from ![[file.png]] syntax
   while ((match = embedRegex.exec(html)) !== null) {
     const [_, reference] = match;
     const [source, section] = reference.split('#');
     embeds.push(section ? { source, section } : source);
+  }
+  
+  // Extract from <img> tags
+  while ((match = imgRegex.exec(html)) !== null) {
+    const [_, source] = match;
+    embeds.push(source);
   }
 
   return embeds;

@@ -1,5 +1,5 @@
 ---
-title: Obsidian-Style Markdown Support
+title: Obsidian-flavored Markdown Support
 author: Dr. Hex
 date: 2024-04-02
 publish: true
@@ -7,9 +7,11 @@ audience: content-author
 tags: [documentation, markdown, obsidian]
 ---
 
-# Obsidian-Style Markdown Support
+# Obsidian-flavored Markdown
 
-Our CMS supports an extended version of Markdown that includes many features found in Obsidian. This guide explains the available syntax and features.
+> A key feature of our CMS is its ability to seamlessly integrate with well known `.md` file editors such as [Obsidian](https://obsidian.md/). Along with Vercel and GitHub actions, this allows for one the smoothest web publishing experiences avaliable! 
+
+The following guide explains the available syntax and features, specific to Obsidian.
 
 ## Basic Text Formatting
 
@@ -20,16 +22,144 @@ Our CMS supports an extended version of Markdown that includes many features fou
 - ==Highlighted Text==: Use double equals: `==highlighted text==`
 - ~~Strikethrough~~: Use double tildes: `~~strikethrough~~`
 
+## Wikilinks
+
+Obsidian's distinctive feature is the ability to create links between notes using double-bracket syntax, known as "wikilinks".
+
+### Basic Wikilinks
+
+To create a link to another page in your vault, simply wrap the page name in double brackets:
+
+```markdown
+[[page-name]]
+```
+
+This creates a link to the page named "page-name". 
+
+Example: This is a link to the [[installation]] page.
+
+### Wikilinks with Custom Text
+
+You can specify custom display text by using the pipe character:
+
+```markdown
+[[page-name|Custom Display Text]]
+```
+
+Example: Check out our [[configuration|configuration guide]].
+
+### External Links
+
+You can use the same syntax to link to external URLs:
+
+```markdown
+[[https://example.com|Visit Example]]
+```
+
+Example: Visit our [[https://hex21.org|main website]].
+
+## Image Embeds
+
+Obsidian allows embedding images directly in your documents using the exclamation point followed by wikilink syntax.
+
+### Basic Image Embeds
+
+To embed an image, use this syntax:
+
+```markdown
+![[image-name.png]]
+```
+
+Example: 
+
+![[cat-band-1.png]]
+
+### Image Embeds with Alt Text
+
+You can provide alternative text for accessibility using the pipe character:
+
+```markdown
+![[image-name.png|Alternative text description]]
+```
+
+Example:
+
+![[cat-band-1.png|Cats playing in a band]]
+
 ### Headings
 Use 1-6 hash symbols for different heading levels:
 ```markdown
 # Heading 1
 ## Heading 2
 ### Heading 3
-#### Heading 4
+#### Heading 4// Extract and protect fenced code blocks
+html = html.replace(/(<pre><code[^>]*>[\s\S]*?<\/code><\/pre>)/g, (match) => {
+  const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+  codeBlocks.push(match);
+  return id;
+});
+
+// Then protect inline code blocks separately
+html = html.replace(/(<code[^>]*>[\s\S]*?<\/code>)/g, (match) => {
+  const id = `__CODE_BLOCK_${codeBlocks.length}__`;
+  codeBlocks.push(match);
+  return id;
+});
 ##### Heading 5
 ###### Heading 6
 ```
+
+## Wikilinks
+
+A powerful feature of Obsidian is the ability to link between documents using wikilinks:
+
+### Basic Wikilinks
+Use double square brackets to link to another document:
+```markdown
+[[another-document]]
+```
+
+This creates a link to `another-document.md` in your content folder.
+
+### Wikilinks with Custom Text
+You can customize the display text by adding a pipe character:
+```markdown
+[[another-document|Custom Link Text]]
+```
+
+### Linking to External Resources
+Wikilinks also work for external URLs by adding the full URL:
+```markdown
+[[https://example.com|Visit Example]]
+```
+
+## Image Embeds
+
+Obsidian supports embedding images using a special syntax:
+
+### Basic Image Embed
+Use an exclamation mark before the wikilink syntax to embed an image:
+```markdown
+![[cat-band-1.png]]
+```
+
+This will embed the image `cat-band-1.png` from your assets folder.
+
+### Image Embed with Alt Text
+Add alt text using the pipe character:
+```markdown
+![[cat-band-1.png|A band of musical cats]]
+```
+
+### Image Embed with Attributes
+You can add attributes like width and height:
+```markdown
+![[cat-band-1.png|A band of musical cats|width=100]]
+```
+
+Here's an example of the cat band image embedded in this document:
+
+![[cat-band-1.png|Cat band playing musical instruments|width=100]]
 
 ## Lists
 
@@ -55,7 +185,7 @@ Use numbers followed by periods:
 Create checkboxes using `- [ ]` for unchecked and `- [x]` for checked items:
 ```markdown
 - [ ] Unchecked task
-- [x] Completed task
+- [x] Completed task 
   - [ ] Nested task
 ```
 

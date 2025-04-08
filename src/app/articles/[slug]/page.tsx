@@ -4,7 +4,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { notFound } from 'next/navigation';
-import { getArticleData } from '@/lib/content.server';
+import { getDocData } from '@/lib/content.server';
 // Import Article type directly from its definition file
 import { Article, TocEntry } from '@/types/content'; 
 import { Metadata } from 'next';
@@ -57,13 +57,16 @@ async function getArticleSlugs() {
   }
 }
 
-// --- generateStaticParams remains the same --- 
+// 
+/*
+// Generate static paths for all articles
 export async function generateStaticParams() {
   const slugs = await getArticleSlugs();
   console.log('Generated slugs:', slugs);
   // Ensure DITA transformation runs before this if not done elsewhere
   return slugs.map((slug) => ({ slug }));
 }
+*/
 
 // --- Props type remains the same ---
 type Props = {
@@ -72,7 +75,7 @@ type Props = {
 
 // --- generateMetadata remains the same --- 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = await getArticleData(params.slug);
+  const data = await getDocData(params.slug);
   
   if (!data) {
     return {
@@ -103,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ArticlePage({ params }: Props) {
   try {
     // Fetch data on the server
-    const rawData = await getArticleData(params.slug);
+    const rawData = await getDocData(params.slug);
 
     // Check for null/undefined before assertion
     if (!rawData) {

@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "node scripts/build-search-index.mjs && next build",
+    "dev": "node scripts/copy-assets.mjs && next dev",
+    "build": "node scripts/copy-assets.mjs && node scripts/build-search-index.mjs && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "copy-assets": "node scripts/copy-assets.mjs"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",
