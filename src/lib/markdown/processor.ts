@@ -15,6 +15,7 @@ import yaml from 'js-yaml';
 import remarkObsidianCallouts from './remark-obsidian-callouts';
 import { rehypeObsidianCallouts } from './rehype-obsidian-callouts';
 import { h } from 'hastscript';
+import { rehypeCleanFootnotes } from '../rehype-plugins/rehype-clean-footnotes';
 
 // Custom remark plugin for Obsidian-style footnotes
 function remarkObsidianFootnotes() {
@@ -111,17 +112,22 @@ export async function processMarkdown(content: string, basePath: string): Promis
   // Process markdown content
   const file = await unified()
     .use(remarkParse)
+    // Options should be passed as a second argument
+    // remark-gfm v4+ has different option structure
     .use(remarkGfm)
-    .use(remarkObsidianCallouts) // Add callout support immediately after GFM
+    .use(remarkObsidianCallouts) 
     .use(remarkMath)
     .use(remarkObsidianFootnotes)
-    .use(remarkWikiLinks) // Add our custom wikilinks processor
+    .use(remarkWikiLinks) 
     .use(remarkRehype, {
       handlers: {},
       allowDangerousHtml: true,
+      footnoteLabel: '', // Empty string for no label
+      footnoteLabelTagName: 'span', // Use a span instead of h2
+      footnoteLabelProperties: {} // No properties (no sr-only class)
     })
-    .use(rehypeObsidianCallouts) // Process callouts immediately after MDAST->HAST conversion
-    .use(rehypeRaw) // Now process other raw HTML
+    .use(rehypeObsidianCallouts) 
+    .use(rehypeRaw) 
     .use(rehypeKatex, {
       throwOnError: false,
       strict: false,
@@ -132,6 +138,7 @@ export async function processMarkdown(content: string, basePath: string): Promis
     })
     .use(rehypeSlug)
     .use(rehypeAutolinkHeadings)
+    .use(rehypeCleanFootnotes)
     .use(rehypeStringify)
     .process(markdownContent);
 

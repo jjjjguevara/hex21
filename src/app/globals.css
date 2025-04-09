@@ -333,9 +333,15 @@ h6:hover .heading-link {
    @apply text-gray-600 dark:text-gray-300; /* Darken pilcrow on its hover */
 }
 
-/* Remove old icon class style if it exists - .heading-link-icon might be unused now */
 .heading-link-icon {
-  /* display: none; /* or remove entirely if not used elsewhere */
+  @apply inline-block align-middle;
+}
+
+/* Remove top margin from first heading inside prose */
+.prose h1:first-child,
+.prose h2:first-child,
+.prose :where(h1, h2):first-child {
+  @apply mt-0;
 }
 
 /* Footnotes section styling */
@@ -345,53 +351,46 @@ h6:hover .heading-link {
 
 .footnotes h2 {
   @apply sr-only;
+  display: none !important; /* Hide completely */
+}
+
+/* Hide all horizontal rules around footnotes */
+.footnotes + hr,
+hr + .footnotes,
+.footnotes hr {
+  display: none !important;
 }
 
 .footnotes ol {
   @apply pl-5;
+  list-style: none; /* Remove default numbering */
+  padding-left: 0; /* Remove default padding */
 }
 
 .footnotes li {
   @apply text-sm text-gray-600 dark:text-gray-400 mb-2;
+  padding-left: 2em; /* Space for the number, adjust as needed */
+  position: relative; /* Needed for absolute positioning of the number */
 }
 
-.footnotes a {
-  @apply text-blue-600 dark:text-blue-400 hover:underline;
+.footnotes li p {
+  @apply inline; /* Allow number and text on same line if possible, may need adjustment */
+  margin-left: 0; /* Ensure no extra margin */
 }
 
-/* Footnote references in text */
-sup[id^="user-content-fnref-"] {
-  @apply ml-0.5 text-xs;
+.footnotes li::marker {
+  /* Double ensure default marker is hidden */
+  content: '';
+  display: none;
 }
 
-sup[id^="user-content-fnref-"] a {
-  @apply text-blue-600 dark:text-blue-400 no-underline hover:underline;
-}
-
-/* Blinking highlight animation for footnotes */
-@keyframes footnote-highlight {
-  0% { background-color: transparent; }
-  25% { background-color: rgba(255, 255, 0, 0.3); } /* Yellow highlight */
-  100% { background-color: transparent; }
-}
-
-/* Target footnote when clicked from reference */
-:target[id^="user-content-fn-"] {
-  animation: footnote-highlight 2s ease-in-out;
-}
-
-/* Target reference when clicked from footnote */
-:target[id^="user-content-fnref-"] {
-  animation: footnote-highlight 2s ease-in-out;
-}
-
-/* --- Footnote Enhancements --- */
-
-/* Highlight animation */
-@keyframes footnote-highlight {
-  0% { background-color: transparent; }
-  25% { background-color: rgba(255, 255, 0, 0.3); } /* Yellow highlight */
-  100% { background-color: transparent; }
+/* Highlight effect for footnotes */
+.footnote-highlight {
+  outline: 2px solid rgba(96, 165, 250, 0.5) !important;
+  outline-offset: 2px !important;
+  transition: outline 0.3s ease-in-out !important;
+  border-radius: 4px !important;
+  background-color: rgba(96, 165, 250, 0.1) !important;
 }
 
 /* Target the specific list item when it's the URL fragment target */
@@ -403,7 +402,7 @@ section[data-footnotes] ol > li:target {
 /* Target reference when clicked from footnote */
 :target[id^="user-content-fnref-"] {
   animation: footnote-highlight 1.5s ease-in-out;
-   scroll-margin-top: 40vh; /* Add margin to help center vertically */
+  scroll-margin-top: 40vh; /* Add margin to help center vertically */
 }
 
 /* Style for the back-arrow link inside footnote items */
@@ -433,11 +432,6 @@ section[data-footnotes] ol > li:target {
 a.data-footnote-backref {
   text-decoration: none;
   margin-left: 0.25em; /* Add some space before the arrow */
-}
-
-a.data-footnote-backref::before {
-  content: " \21A9"; /* Unicode for leftwards arrow with hook (↩) */
-  display: inline-block;
 }
 
 a.data-footnote-backref:hover {
@@ -663,7 +657,7 @@ a[data-footnote-backref]::after {
 }
 
 /* Only show back arrow when parent footnote is highlighted */
-li.footnote-highlight a[data-footnote-backref] {
+li.footnote-item-highlighted a[data-footnote-backref] {
   visibility: visible !important;
   opacity: 1 !important;
 }
@@ -676,3 +670,42 @@ li.footnote-highlight a[data-footnote-backref] {
   border-radius: 4px !important;
   background-color: rgba(96, 165, 250, 0.1) !important;
 }
+
+/* == End Footnote Back Reference == */
+
+/* == START: Styles for Clickable Footnote Numbers == */
+.footnote-number-link {
+  cursor: pointer;
+  color: theme('colors.blue.600'); /* Use a link color, adjust if needed */
+  font-weight: bold; /* Optional: make it stand out */
+  margin-right: 0.25em; /* Add some space after the number */
+  position: absolute;
+  left: 0;
+  top: 0; /* Align with the top of the line */
+  width: 1.8em; /* Adjust width as needed */
+  text-align: right; /* Align number to the right within its box */
+}
+
+.dark .footnote-number-link {
+  color: theme('colors.blue.400'); /* Link color for dark mode */
+}
+
+.footnote-number-link:hover {
+  text-decoration: underline;
+}
+/* == END: Styles for Clickable Footnote Numbers == */
+
+/* == START: Highlight for jumped-to reference link in text == */
+.footnote-ref-highlighted {
+  /* Use outline or background, ensure visible in light/dark modes */
+  background-color: theme('colors.yellow.200');
+  outline: 2px solid theme('colors.yellow.400');
+  border-radius: 3px;
+  transition: background-color 0.3s ease-out, outline-color 0.3s ease-out;
+}
+
+.dark .footnote-ref-highlighted {
+  background-color: theme('colors.yellow.700');
+  outline-color: theme('colors.yellow.500');
+}
+/* == END: Highlight for jumped-to reference link in text == */

@@ -54,7 +54,8 @@ function rehypeExtractToc() {
         }
 
         // Only add to TOC if we have an ID and non-empty text
-        if (id && text) {
+        // Skip the footnotes heading (which has id "footnote-label")
+        if (id && text && id !== 'footnote-label') {
           toc.push({ id, text, level });
         }
       }
