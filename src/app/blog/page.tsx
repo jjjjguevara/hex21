@@ -105,7 +105,13 @@ export default async function BlogPage() {
               <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {post.author && (
                   <span>
-                    By {typeof post.author === 'string' ? post.author : post.author.name}
+                    By {typeof post.author === 'string'
+                      ? post.author
+                      : Array.isArray(post.author)
+                      ? post.author.join(', ')
+                      : typeof post.author === 'object' && post.author !== null && 'name' in post.author
+                      ? post.author.name
+                      : 'Unknown Author'}
                   </span>
                 )}
                 {post.date && (

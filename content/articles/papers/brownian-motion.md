@@ -1,5 +1,6 @@
 ---
 title: "Investigations on the Theory of the Brownian Movement"
+slug: brownian-motion
 author: "Albert Einstein"
 date: "1905-05-11"
 publish: true

@@ -4,6 +4,7 @@ import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import parse, { domToReact, HTMLReactParserOptions, Element, attributesToProps } from 'html-react-parser';
 import { processCallouts } from '@/lib/content/callout-processor';
+import { processFootnotes } from '@/lib/content/footnote-processor';
 
 // Dynamically import interactive components
 const BrownianMotionSimulation = dynamic(() => import('@/components/interactive/BrownianMotionSimulation'), {
@@ -25,6 +26,7 @@ interface ArticleRendererProps {
 const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const didProcessMathJax = useRef<boolean>(false);
+  const CONTAINER_ID = "article-content-area"; // Define a constant for the ID
 
   const parserOptions: HTMLReactParserOptions = {
     replace: (domNode) => {
@@ -101,10 +103,12 @@ const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
       console.error('[ArticleRenderer] useEffect Mount: Container ref not found.');
       return;
     }
-    
-    // Process callouts first
-    processCallouts(container);
-    
+
+    console.log(`[ArticleRenderer] useEffect running for container: #${CONTAINER_ID}`);
+
+    // Pass the actual container element to processCallouts
+    processCallouts(container); 
+
     // Then handle MathJax typesetting
     const mathJax = (window as any).MathJax;
     if (mathJax?.startup?.promise) {
@@ -126,6 +130,11 @@ const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
           // Log completion only if typesetting was attempted (or handle skipped case)
           if (didProcessMathJax.current) { // Check if we actually ran it (or intended to)
                console.log('[ArticleRenderer] MathJax typesetting process finished (may have been skipped).');
+               // --- PROCESS FOOTNOTES AFTER MATHJAX --- 
+               console.log('[ArticleRenderer] Processing footnotes after MathJax...');
+               processFootnotes(container);
+               console.log('[ArticleRenderer] Footnote processing after MathJax complete.');
+               // ----------------------------------------
           }
         })
         .catch((err: any) => console.error('[ArticleRenderer] MathJax process failed:', err));
@@ -138,7 +147,7 @@ const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
   const elements = parse(htmlContent, parserOptions);
 
   return (
-    <div ref={contentRef} className="prose dark:prose-invert max-w-none">
+    <div ref={contentRef} id={CONTAINER_ID} className="prose dark:prose-invert max-w-none">
       {elements}
     </div>
   );

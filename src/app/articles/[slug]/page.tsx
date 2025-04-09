@@ -87,7 +87,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = data.metadata?.shortdesc;
   const keywords = Array.isArray(data.metadata?.tags) ? data.metadata.tags : undefined;
   const author = data.metadata?.author;
-  const authorName = typeof author === 'string' ? author : author?.name;
+  // Handle string, array of strings, or object for author
+  const authorName = typeof author === 'string'
+    ? author
+    : Array.isArray(author)
+    ? author.join(', ')
+    : typeof author === 'object' && author !== null && 'name' in author
+    ? author.name
+    : undefined;
 
   return {
     title: `${title}`,

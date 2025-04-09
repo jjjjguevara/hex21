@@ -55,6 +55,20 @@
   }
   body {
     @apply bg-background text-foreground;
+    /* Ensure default sans-serif font */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  }
+
+  /* Apply base font to headings within prose and remove underline */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    font-family: inherit; /* Use body font */
+    text-decoration: none; /* Remove underline */
+    /* scroll-mt-20 is already applied */
   }
 }
 
@@ -290,28 +304,38 @@ pre > code {
   gap: 0.5rem;
 }
 
-.anchor-link {
-  opacity: 0;
-  color: theme('colors.gray.400');
-  text-decoration: none;
-  transition: opacity 0.2s ease-in-out;
+/* Heading Anchor Link Styles (Updated for Pilcrow) */
+.heading-link {
+  /* Keep existing positioning/opacity */
+  @apply text-gray-400 dark:text-gray-600 no-underline ml-2 opacity-0 transition-opacity duration-200 ease-in-out;
+  /* Remove position: relative and vertical-align: middle if they cause issues */
+  /* position: relative; */
+  /* vertical-align: middle; */
 }
 
-.anchor-link:hover {
-  color: theme('colors.gray.600');
+.heading-link::before {
+  content: "\00B6"; /* Add the pilcrow symbol */
+  display: inline-block;
+  /* Ensure it inherits color and doesn't affect layout when hidden */
+  color: inherit;
 }
 
-.dark .anchor-link:hover {
-  color: theme('colors.gray.300');
+h1:hover .heading-link,
+h2:hover .heading-link,
+h3:hover .heading-link,
+h4:hover .heading-link,
+h5:hover .heading-link,
+h6:hover .heading-link {
+  @apply opacity-100; /* Show on heading hover */
 }
 
-h1:hover .anchor-link,
-h2:hover .anchor-link,
-h3:hover .anchor-link,
-h4:hover .anchor-link,
-h5:hover .anchor-link,
-h6:hover .anchor-link {
-  opacity: 1;
+.heading-link:hover {
+   @apply text-gray-600 dark:text-gray-300; /* Darken pilcrow on its hover */
+}
+
+/* Remove old icon class style if it exists - .heading-link-icon might be unused now */
+.heading-link-icon {
+  /* display: none; /* or remove entirely if not used elsewhere */
 }
 
 /* Footnotes section styling */
@@ -346,12 +370,9 @@ sup[id^="user-content-fnref-"] a {
 
 /* Blinking highlight animation for footnotes */
 @keyframes footnote-highlight {
-  0%, 100% {
-    @apply bg-transparent;
-  }
-  20%, 80% {
-    @apply bg-yellow-100 dark:bg-yellow-900;
-  }
+  0% { background-color: transparent; }
+  25% { background-color: rgba(255, 255, 0, 0.3); } /* Yellow highlight */
+  100% { background-color: transparent; }
 }
 
 /* Target footnote when clicked from reference */
@@ -362,6 +383,65 @@ sup[id^="user-content-fnref-"] a {
 /* Target reference when clicked from footnote */
 :target[id^="user-content-fnref-"] {
   animation: footnote-highlight 2s ease-in-out;
+}
+
+/* --- Footnote Enhancements --- */
+
+/* Highlight animation */
+@keyframes footnote-highlight {
+  0% { background-color: transparent; }
+  25% { background-color: rgba(255, 255, 0, 0.3); } /* Yellow highlight */
+  100% { background-color: transparent; }
+}
+
+/* Target the specific list item when it's the URL fragment target */
+section[data-footnotes] ol > li:target {
+  animation: footnote-highlight 1.5s ease-in-out;
+  scroll-margin-top: 40vh; /* Add margin to help center vertically */
+}
+
+/* Target reference when clicked from footnote */
+:target[id^="user-content-fnref-"] {
+  animation: footnote-highlight 1.5s ease-in-out;
+   scroll-margin-top: 40vh; /* Add margin to help center vertically */
+}
+
+/* Style for the back-arrow link inside footnote items */
+.footnote-back-arrow {
+  display: inline-block; /* Allow transform */
+  margin-left: 0.5em;
+  text-decoration: none;
+  color: var(--primary); /* Use theme primary color */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-10px); /* Start hidden slightly to the left */
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+/* Style for when the back-arrow should be visible */
+.footnote-back-arrow.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0); /* Slide into view */
+}
+
+.footnote-back-arrow:hover {
+  text-decoration: underline;
+}
+
+/* Style the actual backref links found by the script */
+a.data-footnote-backref {
+  text-decoration: none;
+  margin-left: 0.25em; /* Add some space before the arrow */
+}
+
+a.data-footnote-backref::before {
+  content: " \21A9"; /* Unicode for leftwards arrow with hook (↩) */
+  display: inline-block;
+}
+
+a.data-footnote-backref:hover {
+  text-decoration: underline;
 }
 
 /* Heading Anchor Link Styles */
@@ -534,4 +614,65 @@ section[data-footnotes] ol > li:target {
   @apply bg-gray-100 border-gray-400 text-gray-900;
   @apply dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100;
   border-left-width: 4px;
+}
+
+/* --- Footnotes --- */
+/* Footnote reference in text */
+sup[id^="user-content-fnref"] {
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+}
+
+sup[id^="user-content-fnref"] a[data-footnote-ref] {
+  text-decoration: none;
+  color: var(--text-link) !important;
+  position: relative;
+  z-index: 1;
+  pointer-events: auto !important;
+}
+
+/* Make the entire sup area clickable */
+sup[id^="user-content-fnref"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+/* Back reference in footnotes section */
+a[data-footnote-backref] {
+  text-decoration: none;
+  color: var(--text-link);
+  display: inline-block;
+  margin-left: 0.25rem;
+  /* Hide by default */
+  visibility: hidden;
+  opacity: 0;
+  position: relative;
+  transition: visibility 0s, opacity 0.3s ease-in-out;
+}
+
+/* Use ::after for the back arrow symbol */
+a[data-footnote-backref]::after {
+  content: "↵"; /* Return symbol */
+  font-size: 1rem;
+}
+
+/* Only show back arrow when parent footnote is highlighted */
+li.footnote-highlight a[data-footnote-backref] {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Highlight effect for footnotes */
+.footnote-highlight {
+  outline: 2px solid rgba(96, 165, 250, 0.5) !important;
+  outline-offset: 2px !important;
+  transition: outline 0.3s ease-in-out !important;
+  border-radius: 4px !important;
+  background-color: rgba(96, 165, 250, 0.1) !important;
 }
