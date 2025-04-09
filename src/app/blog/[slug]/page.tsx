@@ -32,7 +32,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${metadata.title} - Hex 21 Blog`,
     description: metadata.shortdesc,
-    authors: metadata.author ? [{ name: typeof metadata.author === 'string' ? metadata.author : metadata.author.name }] : undefined,
+    authors: metadata.author ? [{
+      name: typeof metadata.author === 'string'
+        ? metadata.author
+        : Array.isArray(metadata.author)
+        ? metadata.author.join(', ')
+        : typeof metadata.author === 'object' && metadata.author !== null && 'name' in metadata.author
+        ? metadata.author.name
+        : undefined
+    }] : undefined,
     openGraph: {
       title: metadata.title,
       description: metadata.shortdesc,
@@ -107,7 +115,13 @@ export default async function BlogPost({ params }: Props) {
           </h1>
           {metadata.author && (
             <p className="text-gray-600 dark:text-gray-400 mb-2">
-              By {typeof metadata.author === 'string' ? metadata.author : metadata.author.name}
+              By {typeof metadata.author === 'string'
+                ? metadata.author
+                : Array.isArray(metadata.author)
+                ? metadata.author.join(', ')
+                : typeof metadata.author === 'object' && metadata.author !== null && 'name' in metadata.author
+                ? metadata.author.name
+                : 'Unknown Author'}
             </p>
           )}
           {metadata.date && (

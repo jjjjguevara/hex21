@@ -86,7 +86,13 @@ export default async function DocPage({ params }: Props) {
     tags: Array.isArray(metadata?.tags) ? metadata.tags : [],
     publish: Boolean(metadata?.publish),
     audience: Array.isArray(metadata?.audience) ? metadata.audience.join(', ') : String(metadata?.audience || ''),
-    author: typeof metadata?.author === 'object' ? metadata.author.name || 'Unknown' : String(metadata?.author || '')
+    author: typeof metadata?.author === 'string'
+      ? metadata.author
+      : Array.isArray(metadata.author)
+      ? metadata.author.join(', ')
+      : typeof metadata.author === 'object' && metadata.author !== null && 'name' in metadata.author
+      ? metadata.author.name
+      : 'Unknown Author' // Fallback for object or other types
   };
   
   // Create compatible metadata object

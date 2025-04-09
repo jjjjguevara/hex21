@@ -15,6 +15,7 @@ datalist: ["author", "published", "source", "category", "tags"]
 > [!disclaimer] Descargo de responsabilidad
 > Los contenidos presentados en este documento han sido reproducidos con fines educativos y de investigación. En ningún caso deben considerarse como una infracción a los derechos de autor del titular original.
 
+
 # Didáctica de las Matemáticas desde un enfoque materialista: Investigaciones para una didáctica constructivista e histórica
 
 > - Separata de la revista *El Catoblepas* • ISSN 1579-3974 publicada por Nódulo Materialista • nodulo.org impresa el lunes 7 de abril de 2025 desde: https://www.nodulo.org/ec/2015/n161p01.htm

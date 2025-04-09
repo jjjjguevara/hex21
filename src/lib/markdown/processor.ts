@@ -12,7 +12,7 @@ import { visit } from 'unist-util-visit';
 import { ProcessedContent, Metadata, Footnote } from './types';
 import matter from 'gray-matter';
 import yaml from 'js-yaml';
-import { remarkObsidianCallouts } from './remark-obsidian-callouts';
+import remarkObsidianCallouts from './remark-obsidian-callouts';
 import { rehypeObsidianCallouts } from './rehype-obsidian-callouts';
 import { h } from 'hastscript';
 

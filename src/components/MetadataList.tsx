@@ -55,7 +55,13 @@ const MetadataList: React.FC<MetadataListProps> = ({ metadata }) => {
 
     switch (field) {
       case 'author':
-        value = typeof metadata.author === 'string' ? metadata.author : metadata.author?.name || 'N/A';
+        value = typeof metadata.author === 'string'
+          ? metadata.author
+          : Array.isArray(metadata.author)
+          ? metadata.author.join(', ')
+          : typeof metadata.author === 'object' && metadata.author !== null && 'name' in metadata.author
+          ? metadata.author.name
+          : 'N/A'; // Fallback for object or other types
         break;
       case 'date':
         value = formatDate(metadata.date);

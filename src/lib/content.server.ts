@@ -557,7 +557,16 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
     // Add other rehype plugins AFTER raw HTML and callouts are processed
     .use(rehypeHighlightCode, { hljs })
     .use(rehypeSlug)
-    .use(rehypeAutolinkHeadings, { behavior: 'wrap' })
+    .use(rehypeAutolinkHeadings, { 
+      behavior: 'prepend',
+      properties: {
+        className: ['pilcrow-link'], 
+        'aria-hidden': 'true',
+        tabIndex: -1,
+        'data-heading-link': true, 
+      },
+      content: [] // EXPLICITLY set empty content
+    })
     .use(rehypeExtractToc)
     .use(rehypeProcessFootnotes)
     .use(rehypeRenumberFootnoteRefsPlugin, { footnoteMap: new Map() })
@@ -645,6 +654,10 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
 
   console.log(`[getDocData] About to call processor.process() for file: ${file.path}`);
   const processedResult = await processor.process(file); // Use the single processor
+  console.log('--- Processed HTML Start ---');
+  console.log(processedResult.value);
+  console.log('--- Processed HTML End ---');
+
   const contentHtml = String(processedResult); // Get the final HTML string
 
   // Extract Footnotes after processing
