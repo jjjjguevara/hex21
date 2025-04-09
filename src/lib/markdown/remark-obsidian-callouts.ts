@@ -6,6 +6,7 @@
 import { visit } from 'unist-util-visit';
 import type { Root, Blockquote, Paragraph, Text } from 'mdast';
 import type { Data } from 'unist';
+import type { Plugin } from 'unified';
 
 // Define the expected structure for callout metadata
 interface CalloutData extends Data {
@@ -48,12 +49,12 @@ const CALLOUT_TYPES = {
 const DEFAULT_CALLOUT = { icon: 'ℹ️', className: 'callout-default' };
 
 /**
- * Remark plugin to identify Obsidian-style callouts and add metadata.
+ * Remark plugin (conforming to Plugin signature) to identify Obsidian-style callouts.
  */
-export function remarkObsidianCallouts() {
-  return (tree: Root) => {
+const remarkObsidianCallouts: Plugin<[], Root, Root> = () => {
+  // The Plugin function returns the Transformer function
+  return (tree: Root): void => { 
     visit(tree, 'blockquote', (node: Blockquote) => {
-      console.log('[Remark Callouts] Visited a blockquote node. Children count:', node.children.length);
       if (!node.children || node.children.length === 0) {
         return;
       }
@@ -75,11 +76,9 @@ export function remarkObsidianCallouts() {
       // Regex to match callout syntax on the FIRST line only.
       // Captures type and optional title.
       const calloutRegex = /^\s*\[!(\w+)\](?:\s+(.*))?\s*$/;
-      console.log('[Remark Callouts] Checking first line:', JSON.stringify(firstLine));
       const match = firstLine.match(calloutRegex);
 
       if (!match) {
-        console.log('[Remark Callouts] Regex did not match first line.');
         return; // Not a callout
       }
 
@@ -104,17 +103,19 @@ export function remarkObsidianCallouts() {
 
       // Add metadata to the blockquote node for the rehype plugin
       node.data = node.data || {}; // Initialize data if it doesn't exist
-      node.data = {
-        ...node.data, // Now safe to spread
-        hProperties: {
-          ...((node.data?.hProperties as Record<string, unknown>) || {}),
-          'data-callout-type': calloutType.toLowerCase(),
-          'data-callout-title': title?.trim() || '', // Use empty string if title is undefined
-          'data-callout-icon': calloutInfo.icon,
-          'data-callout-className': calloutInfo.className
-        }
-      } as CalloutData; // Assert the type
-      console.log('[Remark Callouts] Added hProperties:', node.data.hProperties);
+      node.data.hProperties = {
+        'data-callout-type': calloutType.toLowerCase(),
+        'data-callout-title': title?.trim() || '', // Use empty string if title is undefined
+        'data-callout-icon': calloutInfo.icon,
+        'data-callout-className': calloutInfo.className
+      };
+
+      // Optionally: Remove the first line `[!type] Title` from the blockquote content
+      if (node.children.length > 0 && node.children[0].type === 'paragraph') {
+        // ... rest of the code remains the same ...
+      }
     });
   };
-}
+};
+
+export default remarkObsidianCallouts; // Export the plugin function directly

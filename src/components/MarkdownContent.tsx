@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { processEmbeds } from '@/lib/content/embed-processor';
 import { processLatex } from '@/lib/content/latex-processor';
 import { processWikilinks } from '@/lib/content/wikilink-processor';
+import { processCallouts } from '@/lib/content/callout-processor';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
@@ -19,6 +20,8 @@ export const MarkdownContent: React.FC<MarkdownContentProps> = ({ htmlContent, b
   useEffect(() => {
     if (containerRef.current) {
       console.log('[MarkdownContent] Running client-side processors...');
+      // Process callouts first so other processors work with processed elements
+      processCallouts(containerRef.current);
       processEmbeds(containerRef.current, assetBasePath || '/content/assets');
       processWikilinks(containerRef.current, basePath || '');
       processLatex(containerRef.current);

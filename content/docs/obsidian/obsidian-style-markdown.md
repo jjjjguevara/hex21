@@ -43,7 +43,7 @@ Example: This is a link to the [[installation]] page.
 You can specify custom display text by using the pipe character:
 
 ```markdown
-[[page-name|Custom Display Text]]
+[[page-name|Custom Display Text]]He
 ```
 
 Example: Check out our [[configuration|configuration guide]].
@@ -330,95 +330,133 @@ Callouts use the following syntax:
 > Content of the callout
 ```
 
-The callout type (`note` in this example) determines the styling and icon of the callout.
+The callout type determines the styling and icon of the callout. Below are examples of all supported callout types.
 
-### Supported Callout Types
+### Callout Examples
 
-- **Note**: General information
-  ```markdown
-  > [!note] 
-  > Important information that isn't critical.
-  ```
+> [!note] Note
+> Important information that isn't critical.
 
-- **Abstract/Summary**: Brief overview
-  ```markdown
-  > [!abstract] Summary
-  > Brief summary of a complex topic.
-  ```
-
-- **Info**: Informational content
-  ```markdown
-  > [!info] 
-  > Additional information that may be helpful.
-  ```
-
-- **Tip/Hint**: Helpful suggestions
-  ```markdown
-  > [!tip] Pro Tip
-  > A helpful piece of advice.
-  ```
-
-- **Success/Check/Done**: Confirmation or successful completion
-  ```markdown
-  > [!success] 
-  > A task that has been completed successfully.
-  ```
-
-- **Question/Help/FAQ**: Questions or help-related content
-  ```markdown
-  > [!question] 
-  > Questions that may need answers or clarification.
-  ```
-
-- **Warning/Caution/Attention/Disclaimer**: Cautionary information
-  ```markdown
-  > [!warning] Caution
-  > Warning that users should be careful about something.
-  ```
-
-- **Failure/Fail/Missing**: Failed processes or missing information
-  ```markdown
-  > [!failure] 
-  > A task that failed or is incomplete.
-  ```
-
-- **Danger/Error**: Critical warnings
-  ```markdown
-  > [!danger] 
-  > Critical information about dangerous actions or significant risks.
-  ```
-
-- **Bug**: Known issues
-  ```markdown
-  > [!bug] 
-  > Report of a known bug or issue.
-  ```
-
-- **Example**: Illustrative examples
-  ```markdown
-  > [!example] 
-  > An example demonstrating a concept or technique.
-  ```
-
-- **Quote/Cite**: Quotations or citations
-  ```markdown
-  > [!quote] 
-  > A quotation from a source.
-  ```
-
-### Callout Titles
-
-You can add a title to your callout by adding text after the callout type:
-
+Syntax:
 ```markdown
-> [!warning] Important Security Notice
-> Make sure to update your passwords regularly.
+> [!note] Note
+> Important information that isn't critical.
 ```
 
-### Nested Content
+> [!abstract] Abstract/Summary
+> Brief summary of a complex topic.
 
-Callouts can contain any markdown content, including lists, code blocks, and even nested callouts:
+Syntax:
+```markdown
+> [!abstract] Abstract/Summary
+> Brief summary of a complex topic.
+```
 
+> [!info] Information
+> Additional information that may be helpful.
+
+Syntax:
+```markdown
+> [!info] Information
+> Additional information that may be helpful.
+```
+
+> [!tip] Pro Tip
+> A helpful piece of advice.
+
+Syntax:
+```markdown
+> [!tip] Pro Tip
+> A helpful piece of advice.
+```
+
+> [!success] Success
+> A task that has been completed successfully.
+
+Syntax:
+```markdown
+> [!success] Success
+> A task that has been completed successfully.
+```
+
+> [!question] Frequently Asked Question
+> Questions that may need answers or clarification.
+
+Syntax:
+```markdown
+> [!question] Frequently Asked Question
+> Questions that may need answers or clarification.
+```
+
+> [!warning] Caution
+> Warning that users should be careful about something.
+
+Syntax:
+```markdown
+> [!warning] Caution
+> Warning that users should be careful about something.
+```
+
+> [!failure] Failed Task
+> A task that failed or is incomplete.
+
+Syntax:
+```markdown
+> [!failure] Failed Task
+> A task that failed or is incomplete.
+```
+
+> [!danger] Critical Warning
+> Critical information about dangerous actions or significant risks.
+
+Syntax:
+```markdown
+> [!danger] Critical Warning
+> Critical information about dangerous actions or significant risks.
+```
+
+> [!bug] Known Issue
+> Report of a known bug or issue.
+
+Syntax:
+```markdown
+> [!bug] Known Issue
+> Report of a known bug or issue.
+```
+
+> [!example] Code Example
+> An example demonstrating a concept or technique.
+
+Syntax:
+```markdown
+> [!example] Code Example
+> An example demonstrating a concept or technique.
+```
+
+> [!quote] Famous Quote
+> "The best way to predict the future is to invent it." - Alan Kay
+
+Syntax:
+```markdown
+> [!quote] Famous Quote
+> "The best way to predict the future is to invent it." - Alan Kay
+```
+
+### Callout with Rich Content
+
+> [!tip] Advanced Formatting
+> You can include **bold text**, *italics*, or `code` within callouts.
+> 
+> - Lists work too
+> - Another item
+> 
+> ```python
+> # Even code blocks work!
+> def hello_world():
+>     print("Hello from a callout")
+> ```
+
+Syntax:
 ```markdown
 > [!tip] Advanced Formatting
 > You can include **bold text**, *italics*, or `code` within callouts.
@@ -431,6 +469,15 @@ Callouts can contain any markdown content, including lists, code blocks, and eve
 > def hello_world():
 >     print("Hello from a callout")
 > ```
+```
+
+> [!disclaimer] Legal Disclaimer
+> The content provided is for informational purposes only and does not constitute legal advice.
+
+Syntax:
+```markdown
+> [!disclaimer] Legal Disclaimer
+> The content provided is for informational purposes only and does not constitute legal advice.
 ```
 
 ## Related Documentation

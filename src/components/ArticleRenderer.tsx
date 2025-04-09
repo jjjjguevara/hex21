@@ -3,6 +3,7 @@
 import React, { lazy, Suspense, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import parse, { domToReact, HTMLReactParserOptions, Element, attributesToProps } from 'html-react-parser';
+import { processCallouts } from '@/lib/content/callout-processor';
 
 // Dynamically import interactive components
 const BrownianMotionSimulation = dynamic(() => import('@/components/interactive/BrownianMotionSimulation'), {
@@ -42,6 +43,8 @@ const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
                 return <div className="border border-dashed border-red-500 p-2 text-red-500">{`Unknown component: ${componentName}`}</div>;
             }
         }
+        
+        // Note: Callouts are now handled by the shared callout-processor
 
         // *** Handle custom data-component divs ***
         if (domNode.name === 'div' && domNode.attribs['data-component']) {
@@ -91,40 +94,45 @@ const ArticleRenderer: React.FC<ArticleRendererProps> = ({ htmlContent }) => {
     },
   };
 
-  // Restore main useEffect for typesetting the whole container - RUN ONLY ONCE
+  // Process callouts AND typeset math on container mount
   useEffect(() => {
-    // Let the effect body run, but guard the typesetting logic
-      const mathJax = (window as any).MathJax;
-      const container = contentRef.current;
-
-      if (container && mathJax?.startup?.promise) {
-        console.log('[ArticleRenderer] useEffect Mount: Found MathJax, waiting for startup...');
-        mathJax.startup.promise
-          .then(() => {
-            console.log('[ArticleRenderer] Startup complete. Typesetting container...');
-            // Check the flag *before* typesetting
-            if (!didProcessMathJax.current) {
-                console.log('[ArticleRenderer] Container innerHTML before typesetting:', container.innerHTML);
-                didProcessMathJax.current = true; // Set flag immediately before call
-                return mathJax.typesetPromise([container]);
-            } else {
-                console.log('[ArticleRenderer] Skipping typeset, already processed.');
-                return Promise.resolve(); // Resolve promise if skipping
-            }
-          })
-          .then(() => {
-            // Log completion only if typesetting was attempted (or handle skipped case)
-            if (didProcessMathJax.current) { // Check if we actually ran it (or intended to)
-                 console.log('[ArticleRenderer] MathJax typesetting process finished (may have been skipped).');
-            }
-          })
-          .catch((err: any) => console.error('[ArticleRenderer] MathJax process failed:', err));
-      } else {
-         if (!container) console.error('[ArticleRenderer] useEffect Mount: Container ref not found.');
-         else console.warn('[ArticleRenderer] useEffect Mount: MathJax not ready.');
-      }
-    // No cleanup needed as we only set a flag
-  }, []); // Empty dependency array ensures this runs only once on mount
+    const container = contentRef.current;
+    if (!container) {
+      console.error('[ArticleRenderer] useEffect Mount: Container ref not found.');
+      return;
+    }
+    
+    // Process callouts first
+    processCallouts(container);
+    
+    // Then handle MathJax typesetting
+    const mathJax = (window as any).MathJax;
+    if (mathJax?.startup?.promise) {
+      console.log('[ArticleRenderer] useEffect Mount: Found MathJax, waiting for startup...');
+      mathJax.startup.promise
+        .then(() => {
+          console.log('[ArticleRenderer] Startup complete. Typesetting container...');
+          // Check the flag *before* typesetting
+          if (!didProcessMathJax.current) {
+              console.log('[ArticleRenderer] Container innerHTML before typesetting:', container.innerHTML);
+              didProcessMathJax.current = true; // Set flag immediately before call
+              return mathJax.typesetPromise([container]);
+          } else {
+              console.log('[ArticleRenderer] Skipping typeset, already processed.');
+              return Promise.resolve(); // Resolve promise if skipping
+          }
+        })
+        .then(() => {
+          // Log completion only if typesetting was attempted (or handle skipped case)
+          if (didProcessMathJax.current) { // Check if we actually ran it (or intended to)
+               console.log('[ArticleRenderer] MathJax typesetting process finished (may have been skipped).');
+          }
+        })
+        .catch((err: any) => console.error('[ArticleRenderer] MathJax process failed:', err));
+    } else {
+       console.warn('[ArticleRenderer] useEffect Mount: MathJax not ready.');
+    }
+  }, [htmlContent]); // Run when htmlContent changes
 
   console.log('[ArticleRenderer] Rendering RAW HTML:', htmlContent.substring(0, 200) + '...');
   const elements = parse(htmlContent, parserOptions);

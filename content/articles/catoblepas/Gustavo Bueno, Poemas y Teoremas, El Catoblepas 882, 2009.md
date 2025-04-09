@@ -4,12 +4,13 @@ slug: el-catoblepas-88_2
 source: "https://www.nodulo.org/ec/2009/n088p02.htm"
 author: Gustavo Bueno
 publish: true
-created: 2009-04-07
+published: 2009-04-07
 description: "Gustavo Bueno, Poemas y Teoremas, publicado en El Catoblepas, revista crítica del presente"
 tags:
-  - "clippings"
+  - "Filomat"
 featured: true
 category: "Philosophy"
+datalist: ["author", "published", "source", "category", "tags"]
 ---
 
 > [!disclaimer] Descargo de responsabilidad

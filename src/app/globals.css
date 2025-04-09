@@ -436,7 +436,7 @@ section[data-footnotes] ol > li:target {
 
 /* Obsidian-style Callouts */
 .obsidian-callout {
-  @apply rounded-md border p-4 my-4 relative overflow-hidden;
+  @apply rounded-md border p-2 my-4 relative overflow-hidden;
   @apply bg-opacity-10 border-opacity-30;
   margin-left: 0;
   margin-right: 0;
