@@ -4,13 +4,12 @@ slug: el-catoblepas-161_1
 source: "https://www.nodulo.org/ec/2015/n161p01.htm"
 author: Sergio Vicente Burguillo
 published: 2015-07-01
-created: 2025-04-07
 description: "Sergio Vicente Burguillo, Didáctica de las Matemáticas desde un enfoque materialista: Investigaciones para una didáctica constructivista e histórica, publicado en El Catoblepas, revista crítica del presente"
 tags: ["Philosophy", "Mathematics"]
 publish: true
 featured: true
 category: ["Education" ]
-datalist: ["author", "date", "source", "category", "tags"]
+datalist: ["author", "published", "source", "category", "tags"]
 ---
 
 > [!disclaimer] Descargo de responsabilidad
@@ -61,9 +60,9 @@ Ha merecido la pena extenderse algo más en la corriente constructivista, que ll
 
 ## 2.2. Revisión de distintas maneras de entender las Matemáticas
 
-El mundo de los hombres, del que hemos hablado en el punto de partida, está constituido por todo aquello que el hombre puede de alguna manera transformar y organizar, siendo las manos el principal agente operador y el cuerpo humano la unidad de medida. Teniendo esto presente, se pueden clasificar las cosas del mundo en tres grandes grupos: las cosas espaciales y temporales (cuerpos, bultos, ondas, fuerzas electromagnéticas), que llamaremos, siguiendo a Bueno [^14], M <sub>1</sub>. Un segundo tipo de realidades, temporales, pero no espaciales (dolor de muelas, realidades psicológicas en general), que llamaremos M <sub>2</sub>; y un tercer tipo de realidades que no son propiamente espaciales ni temporales (relaciones entre cuerpos, verdades, etc.), que llamaremos M <sub>3</sub>.
+El mundo de los hombres, del que hemos hablado en el punto de partida, está constituido por todo aquello que el hombre puede de alguna manera transformar y organizar, siendo las manos el principal agente operador y el cuerpo humano la unidad de medida. Teniendo esto presente, se pueden clasificar las cosas del mundo en tres grandes grupos: las cosas espaciales y temporales (cuerpos, bultos, ondas, fuerzas electromagnéticas), que llamaremos, siguiendo a Bueno [^14], M <sub>1$. Un segundo tipo de realidades, temporales, pero no espaciales (dolor de muelas, realidades psicológicas en general), que llamaremos M <sub>2$; y un tercer tipo de realidades que no son propiamente espaciales ni temporales (relaciones entre cuerpos, verdades, etc.), que llamaremos M <sub>3$.
 
-Pues bien, resulta que son tres las grandes rúbricas en las que se suelen clasificar [^15] las concepciones o visiones sobre las Matemáticas, a saber: formalismo, intuicionismo y platonismo (o *pitagorismo*, otras veces *logicismo* ), algo que tiene que ver precisamente con la reducción de lo sustancial de las Matemáticas a M <sub>1</sub>, M <sub>2</sub> y M <sub>3</sub>, respectivamente.
+Pues bien, resulta que son tres las grandes rúbricas en las que se suelen clasificar [^15] las concepciones o visiones sobre las Matemáticas, a saber: formalismo, intuicionismo y platonismo (o *pitagorismo*, otras veces *logicismo* ), algo que tiene que ver precisamente con la reducción de lo sustancial de las Matemáticas a $M^1$, $M^2$ y $M^3$, respectivamente.
 
 En efecto, dentro de la categoría formalista, encontramos a Hilbert, Bernays, Zermelo, von Neumann o Curry [^16], de los que podemos decir que tienen en común la negación de las matemáticas como algo que posea existencia real o subsistente, identificando las matemáticas con las marcas físicas en el papel.
 
@@ -99,7 +98,7 @@ Si tomamos como referencia la Geometría de Euclides, distinguimos un eje sintá
 
 <table width="490"><caption><span>Tabla 2. Ejemplos de figuras gnoseológicas en el campo de las Matemáticas. Elaboración propia, basada en (Madrid, 2009b)</span></caption><tbody><tr><th colspan="2"><p>Eje sintáctico</p></th></tr><tr><td><p><b>Términos</b></p></td><td><p>Números, rectas, curvas, conjuntos, figuras planas, cuerpos espaciales…</p></td></tr><tr><td><p><b>Operaciones</b></p></td><td><p>Funciones aritméticas, aplicaciones entre conjuntos, uso de regla y compás, manipulación de programas TICs, sumar, restar, multiplicar, dividir, derivar, integrar…</p></td></tr><tr><td><p><b>Relaciones</b></p></td><td><p>Identidades notables, ecuaciones algebraicas, distancias, relaciones geométricas…</p></td></tr><tr><th colspan="2"><p>Eje semántico</p></th></tr><tr><td><p><b>Referenciales</b></p></td><td><p>Signos tipográficos, rayas, líneas, sólidos, ordenador, pizarra, cartulinas, goniómetro, compás…</p></td></tr><tr><td><p><b>Fenómenos</b></p></td><td><p>Dibujos, diagramas, ejemplos, contraejemplos, conjeturas, hipótesis…</p></td></tr><tr><td><p><b>Esencias</b> (Estructuras)</p></td><td><p>Definiciones, teoremas, clasificaciones</p></td></tr><tr><th colspan="2"><p>Eje pragmático</p></th></tr><tr><td><p><b>Normas</b></p></td><td><p>Leyes de la lógica, reglas matemáticas, aº=1, 0!=1, prohibición de dividir por cero, indeterminaciones…</p></td></tr><tr><td><p><b>Autologismos</b></p></td><td><p>Ocurrencias, ideas felices, recuerdo de problemas resueltos o análogos….</p></td></tr><tr><td><p><b>Dialogismos</b></p></td><td><p>Congresos, conferencias, libros, debates, trabajos en grupo…</p></td></tr></tbody></table>
 
-Como se puede observar, los términos que hemos llamado M <sub>1</sub>, M <sub>2</sub> y M <sub>3</sub> quedan entretejidos en el cuerpo de la ciencia, en cada uno de los tres ejes. El eje semántico, por ejemplo, se compone de referenciales, que son entidades M <sub>1</sub>, fenómenos, M <sub>2</sub> (pues tienen una carga subjetiva o psicológica importante), y las estructuras o esencias, M <sub>3</sub>, donde se anudan los demás componentes de las ciencias.
+Como se puede observar, los términos que hemos llamado $M^1$, $M^2$ y $M^3$ quedan entretejidos en el cuerpo de la ciencia, en cada uno de los tres ejes. El eje semántico, por ejemplo, se compone de referenciales, que son entidades $M^1$, fenómenos, $M^2$ (pues tienen una carga subjetiva o psicológica importante), y las estructuras o esencias, M <sub>3$, donde se anudan los demás componentes de las ciencias.
 
 Solo mencionar, para terminar este punto, que podemos reorganizar el cuerpo de las ciencias en torno a unas partes materiales y unas partes formales, que envuelven un contexto determinante donde se produce la **verdad científica**. Veamos esto con un ejemplo. La verdad del teorema de Pitágoras se produce en el contexto determinante formado por el triángulo y los cuadrados que se dibujan sobre los lados. Están involucrados términos, relaciones y operaciones, así como el resto de figuras gnoseológicas, que serían las partes materiales del teorema que se pretende demostrar. Ahora bien, esas operaciones involucradas en ese contexto determinante segregan una identidad (identidad sintética, por tanto), a saber, que la suma de los cuadrados de los catetos es igual al cuadrado de la hipotenusa. Esta sería la forma que se desprende del teorema, que neutraliza las operaciones del sujeto o sujetos que han llegado a ella. Pero no es una forma absoluta, sino que será materia de nuevos teoremas que usarán este resultado en otro contexto determinante. Y así, sucesivamente, se va construyendo la ciencia geométrica de Euclides.
 
@@ -117,53 +116,53 @@ No se debe olvidar que una vez que se ha resuelto el problema, hay que «bajar a
 
 Si nos apoyamos en los de los tres ejes del espacio gnoseológico, podemos decir que los problemas se han de plantear, para la EMR, con una gran riqueza fenoménica y contextual, es decir, relativa al eje semántico. El nivel horizontal se desplaza sobre todo alrededor de este eje. Se deben manejar situaciones en las que aparezcan fenómenos de todo tipo, se manipulen referenciales fisicalistas (es decir, cuerpos), se opere con diagramas, se hagan dibujos o representaciones de índole muy variada. En el tratamiento de este campo o eje semántico no se dejan de lado los otros dos, sino que están muy presentes. En el trabajo de manipulación, dibujo, representación, es conveniente poner peso en el eje pragmático, a través de los dialogismos con otros compañeros (discusión de propuestas, estrategias de resolución, visualización de los problemas desde distintos puntos de vista), teniendo siempre en cuenta las normas (regla de los signos, operaciones de matrices, algoritmos). Para trabajar el eje pragmático, el aprendizaje cooperativo es una de las metodologías más eficientes, que se complementa con la EMR, puesto que la interacción entre compañeros permite diversidad de visualización, comprensión, y análisis de situaciones problemáticas suficientemente enriquecidas. Y no olvidamos el eje sintáctico, que tendrá más importancia quizá en el nivel vertical, donde deben quedar los problemas planteados y resueltos en un lenguaje matemático y simbólico correcto.
 
-Referencias bibliográficas
+## Referencias bibliográficas
 
 Algunas referencias se han ido incluyendo en notas a pie de página, que tienen un carácter lateral con respecto al centro de la investigación. Se incluyen aquí las referencias bibliográficas principales que han vertebrado el trabajo:
 
-–Apostol, T. M (1996). *Análisis Matemático*. Barcelona: Reverté. Segunda edición.
+– Apostol, T. M (1996). *Análisis Matemático*. Barcelona: Reverté. Segunda edición.
 
-–Aristóteles, *Física*. En español la edición de Gredos es probablemente la mejor. Se ha citado por la edición de Bekker.
+– Aristóteles, *Física*. En español la edición de Gredos es probablemente la mejor. Se ha citado por la edición de Bekker.
 
-–Dou, Alberto (1990). Las matemáticas en la España de los Austrias (comunicación al segundo Simposio sobre Julio Rey Pastor, Logroño 1988), en Luis Español (ed.), *Estudios sobre Julio Rey Pastor*, 151–172. Instituto de Estudios Riojanos, Logroño, 1990.
+– Dou, Alberto (1990). Las matemáticas en la España de los Austrias (comunicación al segundo Simposio sobre Julio Rey Pastor, Logroño 1988), en Luis Español (ed.), *Estudios sobre Julio Rey Pastor*, 151–172. Instituto de Estudios Riojanos, Logroño, 1990.
 
-–Boyer, Carl Benjamin (1949). *The History of the Calculus and its Conceptual Develpment*. Nueva York: Dover.
+– Boyer, Carl Benjamin (1949). *The History of the Calculus and its Conceptual Develpment*. Nueva York: Dover.
 
-–Boyer, Carl Benjamin (1993). *Tópicos de História da matemática*. Sao Paulo: Atual.
+– Boyer, Carl Benjamin (1993). *Tópicos de História da matemática*. Sao Paulo: Atual.
 
 –Boyer, Carl Benjamin (2003). *Historia de la matemática*. Madrid: Alianza Editorial.
 
 –Bueno, Gustavo (1972). *Ensayos Materialistas*. Madrid: Taurus.
 
-–Bueno, Gustavo (1974). *La Metafísica Presocrática*. Oviedo: Pentalfa. Disponible en línea: [http://www.fgbueno.es/gbm/gb74mp.htm](http://www.fgbueno.es/gbm/gb74mp.htm)
+– Bueno, Gustavo (1974). *La Metafísica Presocrática*. Oviedo: Pentalfa. Disponible en línea: [http://www.fgbueno.es/gbm/gb74mp.htm](http://www.fgbueno.es/gbm/gb74mp.htm)
 
-–Bueno, Gustavo (1979). Operaciones autoformantes y heteroformantes. Ensayo de un criterio de demarcación gnoseológica entre la Lógica formal y la Matemática. Oviedo: *Revista el Basilisco*, núms. 7 y 8. En Línea: [http://fgbueno.es/bas/bas10702.htm](http://fgbueno.es/bas/bas10702.htm)
+– Bueno, Gustavo (1979). Operaciones autoformantes y heteroformantes. Ensayo de un criterio de demarcación gnoseológica entre la Lógica formal y la Matemática. Oviedo: *Revista el Basilisco*, núms. 7 y 8. En Línea: [http://fgbueno.es/bas/bas10702.htm](http://fgbueno.es/bas/bas10702.htm)
 
-–Bueno, Gustavo (1990). *Materia*. Oviedo: Pentalfa.
+– Bueno, Gustavo (1990). *Materia*. Oviedo: Pentalfa.
 
-–Bueno, Gustavo (1992-93), *Teoría del Cierre Categorial*. Oviedo: Pentalfa. Obra editada en 5 volúmenes.
+– Bueno, Gustavo (1992-93), *Teoría del Cierre Categorial*. Oviedo: Pentalfa. Obra editada en 5 volúmenes.
 
-–Bueno, Gustavo (1995). *¿Qué es la ciencia?* Oviedo: Pentalfa. En línea: [http://www.filosofia.org/aut/gbm/1995qc.htm](http://www.filosofia.org/aut/gbm/1995qc.htm)
+– Bueno, Gustavo (1995). *¿Qué es la ciencia?* Oviedo: Pentalfa. En línea: [http://www.filosofia.org/aut/gbm/1995qc.htm](http://www.filosofia.org/aut/gbm/1995qc.htm)
 
-–Puig, Luis (2001) traducción de *Didactical Phenomenology of Mathematical Structures* (Hans Freudenthal). Publicada en *Fenomenología didáctica de las estructuras matemáticas. Textos seleccionados.* México: CINVESTAV.
+– Puig, Luis (2001) traducción de *Didactical Phenomenology of Mathematical Structures* (Hans Freudenthal). Publicada en *Fenomenología didáctica de las estructuras matemáticas. Textos seleccionados.* México: CINVESTAV.
 
 –García Cruz, Juan Antonio. La didáctica de las Matemáticas: una visión general. En línea: [http://www.gobiernodecanarias.org/educacion/rtee/didmat.htm](http://www.gobiernodecanarias.org/educacion/rtee/didmat.htm).
 
 –Grabiner, Judith V. (1983). The Changing Concept of Change: The Derivative from Fermat to Weierstrass. *Mathematics Magazine*, 56:195 – 206,
 
-–Guzmán, Miguel (1993). La enseñanza de la matemática. Texto digital en línea: [http://www.oei.es/edumat.htm](http://www.oei.es/edumat.htm)
+– Guzmán, Miguel (1993). La enseñanza de la matemática. Texto digital en línea: [http://www.oei.es/edumat.htm](http://www.oei.es/edumat.htm)
 
-–Madrid Casado, Carlos (2009a). Cómo hacer ciencia con aparatos. Un enfoque materialista de la física cuántica. UNED, Empiria. Disponible en línea: [http://revistas.uned.es/index.php/empiria/article/view/2003](http://revistas.uned.es/index.php/empiria/article/view/2003)
+– Madrid Casado, Carlos (2009a). Cómo hacer ciencia con aparatos. Un enfoque materialista de la física cuántica. UNED, Empiria. Disponible en línea: [http://revistas.uned.es/index.php/empiria/article/view/2003](http://revistas.uned.es/index.php/empiria/article/view/2003)
 
-–Madrid Casado, Carlos (2009b). El cierre de la Topología y la Teoría del Caos. Oviedo: Revista *El Basilisco*, segunda época, núm. 41.
+– Madrid Casado, Carlos (2009b). El cierre de la Topología y la Teoría del Caos. Oviedo: Revista *El Basilisco*, segunda época, núm. 41.
 
-–Pérez, Javier (2012). Cálculo diferencial e integral de funciones de una variable. (Profesor de la Universidad de Granada, cuyo libro puede consultarse en línea): [http://www.ugr.es/~fjperez/apuntes.html](http://www.ugr.es/~fjperez/apuntes.html)
+– Pérez, Javier (2012). Cálculo diferencial e integral de funciones de una variable. (Profesor de la Universidad de Granada, cuyo libro puede consultarse en línea): [http://www.ugr.es/~fjperez/apuntes.html](http://www.ugr.es/~fjperez/apuntes.html)
 
-–Spivak, M. (1988). Calculus. Barcelona: Reverté.
+– Spivak, M. (1988). Calculus. Barcelona: Reverté.
 
-–Velarde, Julián (1992). Teoría del «Cierre Categorial» aplicado a las Matemáticas. Revista Meta, Congreso sobre la filosofía de Gustavo Bueno (enero de 1982). Editorial Complutense 1992. En línea: [http://www.fgbueno.es/med/dig/meta89e.pdf](http://www.fgbueno.es/med/dig/meta89e.pdf)
+– Velarde, Julián (1992). Teoría del «Cierre Categorial» aplicado a las Matemáticas. Revista Meta, Congreso sobre la filosofía de Gustavo Bueno (enero de 1982). Editorial Complutense 1992. En línea: [http://www.fgbueno.es/med/dig/meta89e.pdf](http://www.fgbueno.es/med/dig/meta89e.pdf)
 
-Notas
+## Notas
 
 [^1]: Cf. Por ejemplo, (Dou, 1990, p. 153).
 

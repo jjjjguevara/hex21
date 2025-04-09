@@ -55,8 +55,9 @@ export interface Article {
 export interface Doc {
   slug: string;
   content: string;
-  metadata: MapMetadata | TopicMetadata;
+  metadata: TopicMetadata;
   toc: TocEntry[];
+  footnotes: any[]; // Add footnotes extracted during processing
 }
 
 export interface SearchResult {
@@ -82,4 +83,4 @@ export type Category = {
   name: string;
   description?: string;
   parentId?: string;
-} 
+}
