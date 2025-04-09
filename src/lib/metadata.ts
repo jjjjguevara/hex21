@@ -1,6 +1,45 @@
+import path from 'path';
+import { promises as fs } from 'fs';
 import matter from 'gray-matter';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
+import rehypeStringify from 'rehype-stringify';
+import rehypeSlug from 'rehype-slug';
 import { BaseMetadata, TopicMetadata, MapMetadata } from '@/types/content';
-import { marked } from 'marked';
+
+// Custom plugin to mark LaTeX code blocks for client-side highlighting
+function rehypeMarkLaTeX() {
+  return function (tree: any) {
+    // Visit all pre > code elements
+    const visit = (node: any) => {
+      if (node.tagName === 'pre' && node.children && node.children.length > 0) {
+        const codeNode = node.children.find((child: any) => child.tagName === 'code');
+        if (codeNode && codeNode.properties && codeNode.properties.className) {
+          // Check if this is a LaTeX code block
+          const isLatex = codeNode.properties.className.some(
+            (cls: string) => cls === 'language-latex' || cls === 'language-tex'
+          );
+          
+          if (isLatex) {
+            // Mark for client-side processing by adding a data attribute
+            codeNode.properties.className = ['no-highlight', 'latex-block'];
+            codeNode.properties.dataLatex = true;
+          }
+        }
+      }
+      
+      // Recursively visit children
+      if (node.children) {
+        node.children.forEach(visit);
+      }
+    };
+    
+    visit(tree);
+  };
+}
 
 function extractXMLValue(content: string, tag: string): string | undefined {
   // First try to find it in topicmeta
@@ -144,8 +183,18 @@ export async function parseMetadata(content: string, type: 'map' | 'topic' = 'to
     shortdesc: data.shortdesc || data.description
   };
 
-  // Convert markdown content to HTML
-  const htmlContent = await marked.parse(mdContent);
+  // Convert markdown content to HTML using unified
+  const file = await unified()
+    .use(remarkParse) // Parse markdown
+    .use(remarkGfm) // Add GFM support (tables, strikethrough, etc.)
+    .use(remarkRehype, { allowDangerousHtml: true }) // Convert to Rehype AST
+    .use(rehypeRaw) // Handle raw HTML in markdown
+    .use(rehypeMarkLaTeX) // Mark LaTeX code blocks for client-side processing
+    .use(rehypeSlug) // Add IDs to headings for linking
+    .use(rehypeStringify) // Convert Rehype AST to HTML string
+    .process(mdContent);
+
+  const htmlContent = String(file);
 
   return { metadata, content: htmlContent };
 }
@@ -220,4 +269,4 @@ export function isTopicCompatibleWithMap(
   }
 
   return { compatible: true };
-} 
+}

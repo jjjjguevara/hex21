@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
 import { Inter } from "next/font/google";
 import "./globals.css";
+// Import custom LaTeX block styling
+import '@/styles/latex-blocks.css';
 import Script from "next/script";
-import 'highlight.js/styles/github.css';
-import 'highlight.js/styles/github-dark.css';
 import { Theme } from '@radix-ui/themes';
 import '@radix-ui/themes/styles.css';
 import ClientLayout from '@/components/ClientLayout';

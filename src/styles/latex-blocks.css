@@ -1,0 +1,61 @@
+/* Custom LaTeX styling for code blocks */
+
+/* !important is needed to override Tailwind's prose styles */
+.prose pre {
+  padding: 0.5rem !important;
+  margin: 0.5rem 0 !important;
+  background-color: #f7f7f7 !important;
+  border-radius: 4px !important;
+  overflow-x: auto !important;
+}
+
+.prose pre code {
+  padding: 0 !important;
+  background-color: transparent !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 0.9rem !important;
+  line-height: 1.4 !important;
+  white-space: pre !important;
+  tab-size: 2 !important;
+}
+
+/* Custom styles for LaTeX blocks specifically */
+.prose pre code.latex-block,
+.prose pre code.hex21-latex-block {
+  color: #333 !important;
+  padding: 0 !important;
+  display: block !important;
+}
+
+/* Specific styling for our hex21 containers */
+.prose pre.hex21-latex-container {
+  padding: 1rem !important;
+  background-color: #f7f7f7 !important;
+  border: 1px solid #e0e0e0 !important;
+}
+
+/* Add custom styling for block equations to make them stand out */
+.prose p:has(mjx-container[display="true"]) {
+  margin: 1.5rem 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+}
+
+/* Syntax highlighting colors based on the table - EXACTLY matching the table colors */
+/* Using extremely high specificity selectors with !important to override any other styles */
+html body pre code span.latex-command { color: #2a9d8f !important; } /* Commands (teal) */
+html body pre code span.latex-operator { color: #f4a261 !important; } /* Operators (orange) */
+html body pre code span.latex-structure { color: #264653 !important; } /* Structures (dark blue-green) */
+html body pre code span.latex-delimiter { color: #6c5b7b !important; } /* Delimiters (purple) */
+html body pre code span.latex-brace { color: #1d3557 !important; } /* Braces (dark blue) */
+html body pre code span.latex-spacing { color: #e9c46a !important; } /* Spacing (yellow) */
+html body pre code span.latex-number, 
+html body pre code span.latex-symbol { color: #e76f51 !important; } /* Numbers/Symbols (red-orange) */
+html body pre code span.latex-text { color: #d4a5a5 !important; } /* Text (light brown) */
+html body pre code span.latex-font { color: #f1faee !important; } /* Fonts (very light blue) */
+
+/* Make sure highlighted code blocks are properly marked */
+pre code.latex-code-highlighted {
+  color: inherit !important; /* Reset the basic text color to allow spans to control their colors */
+  background-color: #f5f5f5 !important;
+}
