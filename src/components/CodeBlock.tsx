@@ -3,7 +3,10 @@
 import { useEffect, useRef } from 'react';
 import CopyButton from './CopyButton';
 import hljs from 'highlight.js';
-import { initLatexHighlighting } from '@/lib/latex-highlight';
+import latex from 'highlight.js/lib/languages/latex';
+
+hljs.registerLanguage('latex', latex);
+hljs.registerLanguage('tex', latex);
 
 interface CodeBlockProps {
   children: string;
@@ -15,11 +18,6 @@ export default function CodeBlock({ children, language, className = '' }: CodeBl
   const codeRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    // Initialize LaTeX highlighting if needed
-    if (language === 'latex' || language === 'tex') {
-      initLatexHighlighting();
-    }
-    
     if (codeRef.current) {
       hljs.highlightElement(codeRef.current);
     }
