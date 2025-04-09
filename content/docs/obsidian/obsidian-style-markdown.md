@@ -319,7 +319,7 @@ For practical examples of these features in action, see:
 
 ## Callout Blocks
 
-Callouts are a special type of blockquote that are visually distinguished with colors and icons. They're great for highlighting important information, warnings, or notes.
+Callouts—sometimes referred to as **admonitions**—are a special type of blockquote that are visually distinguished with colors and icons. They're great for highlighting important information, warnings, or notes.
 
 ### Basic Syntax
 
