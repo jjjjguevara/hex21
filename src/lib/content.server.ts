@@ -397,6 +397,9 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
   // Handle arrays from catch-all routes
   const normalizedSlug = Array.isArray(slugOrPath) ? slugOrPath.join('/') : slugOrPath;
   
+  // Initialize adjustedSlug with the normalized value to ensure it's always defined
+  let adjustedSlug = normalizedSlug;
+  
   // --- HAST Processing Helper Functions (Wikilinks and Embeds) ---
   
   // Caching mechanism for resolved wikilink slugs to avoid redundant searches
@@ -411,6 +414,7 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
       return wikilinkSlugCache.get(cacheKey)!;
     }
 
+    // For targets with path separators, maintain the existing path structure
     if (normalizedTarget.includes('/')) {
       // If it's already a path, assume it's correct relative to docs root
       // TODO: Could still validate this path exists?
@@ -418,9 +422,37 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
       return normalizedTarget;
     }
 
+    // For wiki-style links, check all article subfolders
+    const fileBaseName = path.basename(normalizedTarget);
+    const articlesDir = path.join(process.cwd(), 'content/articles');
+    
+    try {
+      // Get all subdirectories in articles
+      const subdirs = await fs.readdir(articlesDir, { withFileTypes: true });
+      for (const subdir of subdirs) {
+        if (subdir.isDirectory()) {
+          const subfolderPath = path.join(articlesDir, subdir.name);
+          const potentialPath = path.join(subfolderPath, `${fileBaseName}.md`);
+          
+          try {
+            // Check if file exists in this subfolder
+            await fs.access(potentialPath);
+            const slug = `articles/${subdir.name}/${fileBaseName}`;
+            wikilinkSlugCache.set(cacheKey, slug);
+            console.log(`Resolved wikilink target '${target}' to article slug: ${slug}`);
+            return slug;
+          } catch (err) {
+            // File not found in this subfolder, continue to next
+          }
+        }
+      }
+    } catch (err) {
+      console.log(`Error checking article subdirectories for '${target}':`, err);
+    }
+
     // Search within content/docs for the filename
     const docsDir = path.join(process.cwd(), 'content', 'docs');
-    const searchPattern = path.join(docsDir, '**', `${normalizedTarget}.md`).replace(/\//g, '/'); // Ensure forward slashes for glob
+    const searchPattern = path.join(docsDir, '**', `${normalizedTarget}.md`).replace(/\//g, '/');
 
     try {
       const matchingFiles = await glob(searchPattern, { nodir: true, nocase: true }); // Corrected option
@@ -435,6 +467,26 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
       }
     } catch (err) {
       console.error(`Error searching for wikilink target '${target}' with pattern '${searchPattern}':`, err);
+    }
+
+    // If not found in docs or specific article folders, try searching the entire content directory
+    const contentDir = path.join(process.cwd(), 'content');
+    const fullSearchPattern = path.join(contentDir, '**', `${normalizedTarget}.md`).replace(/\//g, '/');
+    
+    try {
+      const allMatches = await glob(fullSearchPattern, { nodir: true, nocase: true });
+      
+      if (allMatches.length > 0) {
+        // Take the first match
+        const fullPath = allMatches[0];
+        const relativePath = path.relative(contentDir, fullPath);
+        const slug = relativePath.replace(/\.md$/i, '').replace(/\//g, '/');
+        wikilinkSlugCache.set(cacheKey, slug);
+        console.log(`Resolved wikilink target '${target}' to content slug: ${slug}`);
+        return slug;
+      }
+    } catch (err) {
+      console.error(`Error searching entire content directory for wikilink target '${target}':`, err);
     }
 
     console.warn(`Wikilink target '${target}' could not be resolved to a slug.`);
@@ -479,14 +531,52 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
       properties['data-target'] = target; // Store original target
 
       if (resolvedSlug) {
-        // Use the resolved slug if found
-        url = `/docs/${resolvedSlug}${section}`;
+        // Use the resolved slug if found - handle different content types
+        if (resolvedSlug.startsWith('articles/')) {
+          // For any article under the articles directory
+          url = `/${resolvedSlug.replace(/\.md(ita)?$/, '')}${section}`;
+        } else if (resolvedSlug.startsWith('docs/')) {
+          // For docs content
+          url = `/${resolvedSlug.replace(/\.md(ita)?$/, '')}${section}`;
+        } else {
+          // For other content types
+          url = `/${resolvedSlug.replace(/\.md(ita)?$/, '')}${section}`;
+        }
       } else {
         // Fallback if not resolved (e.g., render differently or link to search?)
-        // For now, link to a non-existent path based on original target to indicate failure
         console.warn(`Using fallback URL for unresolved wikilink: ${target}`);
-        const slugifiedTarget = target.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9-_]/g, '');
-        url = `/docs/unresolved/${slugifiedTarget}${section}`;
+        
+        // Check if target has a .md extension - in which case it might be a file in the same directory
+        if (target.toLowerCase().endsWith('.md')) {
+          // This is likely a relative reference to another markdown file in the same directory
+          const targetSlug = target.replace(/\.md$/, '').replace(/\s+/g, '-').toLowerCase();
+          
+          // Try to determine route from context
+          if (normalizedSlug.includes('articles/')) {
+            // Keep the article in the same directory as the current slug
+            const currentDir = normalizedSlug.substring(0, normalizedSlug.lastIndexOf('/'));
+            url = `/${currentDir}/${targetSlug}${section}`;
+          } else if (normalizedSlug.includes('docs/')) {
+            url = `/docs/${targetSlug}${section}`;
+          } else {
+            url = `/${targetSlug}${section}`;
+          }
+        } else {
+          // General fallback for wiki-style references
+          const slugifiedTarget = target.replace(/\s+/g, '-').toLowerCase().replace(/[^a-z0-9-_]/g, '');
+          
+          // Use content type hint from current slug if possible
+          if (normalizedSlug.includes('articles/')) {
+            // Keep the article in the same directory as the current slug
+            const currentDir = normalizedSlug.substring(0, normalizedSlug.lastIndexOf('/'));
+            url = `/${currentDir}/${slugifiedTarget}${section}`;
+          } else if (normalizedSlug.includes('docs/')) {
+            url = `/docs/${slugifiedTarget}${section}`;
+          } else {
+            url = `/unresolved/${slugifiedTarget}${section}`;
+          }
+        }
+        
         properties.className += ' unresolved-link'; // Add class to style differently
       }
       properties.href = url;
@@ -581,63 +671,170 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
   const articlesDir = path.join(process.cwd(), 'content', 'articles');
   const extensionsToTry = ['.md', '.mdita', '.ditamap']; // Prioritize .md
 
-  // Determine the base path for relative link resolution *before* finding the file
-  // This assumes the slug structure mirrors the directory structure under docs/
-  const slugParts = slugOrPath.split('/');
-  slugParts.pop(); // Remove filename part
-  const basePath = path.posix.join('/docs', ...slugParts); // Base URL path for relative links
-
-  // Check if a custom slug maps to this path
-  const customSlugMatch = await findDocByCustomSlug(slugOrPath);
-  const adjustedSlug = customSlugMatch || slugOrPath;
-  const usingCustomSlug = !!customSlugMatch;
-
-  if (usingCustomSlug) {
-    // If custom slug, it points directly to a file (likely in articles)
-    // We need the full path to read it, even if the slug is custom.
-    const potentialPathBase = path.join(articlesDir, adjustedSlug); // Assume custom slugs are for articles
+  // Special handling for articles in subfolders (not just collaborative)
+  if (slugOrPath.includes('articles/')) {
+    console.log(`Processing article in subfolder: ${slugOrPath}`);
+    console.log(`Setting adjustedSlug = ${slugOrPath}`);
+    adjustedSlug = slugOrPath; // Use the existing variable, don't redefine it
+    
+    // Try the simplest approach first: direct file path
+    // For example, if slug is 'articles/other/quantum-computing',
+    // try loading 'content/articles/other/quantum-computing.ditamap' directly
+    
+    let found = false;
+    
+    // 1. Try direct file path first with each possible extension
     for (const ext of extensionsToTry) {
-      const potentialPath = potentialPathBase + ext;
+      const exactPath = path.join(process.cwd(), 'content', `${slugOrPath}${ext}`);
+      console.log(`ATTEMPT 1: Trying exact path with ${ext}: ${exactPath}`);
+      
       try {
-        fileContents = await fs.readFile(potentialPath, 'utf8');
-        filePath = potentialPath;
-        console.log(`Successfully loaded custom slug match: ${filePath}`);
-        break; 
-      } catch (e: any) {
-        if (e.code !== 'ENOENT') console.error(`Error reading ${potentialPath}:`, e);
+        await fs.access(exactPath);
+        fileContents = await fs.readFile(exactPath, 'utf8');
+        filePath = exactPath;
+        console.log(`SUCCESS: Direct file found at ${filePath}`);
+        found = true;
+        break;
+      } catch (error) {
+        // Continue to next extension
       }
     }
-    if (!filePath) {
-       console.error(`Custom slug match file not found for slug "${slugOrPath}" -> "${adjustedSlug}"`);
-       return null;
-    }
-  } else {
-    // Try loading from docsDir first, then articlesDir
-    const dirsToTry = [docsDir, articlesDir];
-    console.log(`Attempting to load slug "${adjustedSlug}" from docs/ then articles/`);
     
-    outerLoop: // Label for breaking out of nested loops
-    for (const dir of dirsToTry) {
+    // 2. If not found, try to handle ditamap and topic reference
+    if (!found) {
+      // Try with ditamap extension first
+      const ditamapPath = path.join(process.cwd(), 'content', `${slugOrPath}.ditamap`);
+      console.log(`ATTEMPT 2: Looking for ditamap at: ${ditamapPath}`);
+      
+      try {
+        // Check if the ditamap exists
+        await fs.access(ditamapPath);
+        fileContents = await fs.readFile(ditamapPath, 'utf8');
+        filePath = ditamapPath;
+        console.log(`SUCCESS: Found ditamap at ${filePath}`);
+        
+        // Extract wiki links to find the first topic
+        const { data: ditamapMetadata, content: mapBody } = matter(fileContents);
+        const wikiLinkRegex = /\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g;
+        const wikiLinks = Array.from(mapBody.matchAll(wikiLinkRegex)).map(match => 
+          match[1]?.trim() || ''
+        );
+        
+        console.log(`Found ${wikiLinks.length} wiki links in ditamap:`, wikiLinks);
+        
+        // If we have topic references, try to load the first one
+        if (wikiLinks.length > 0) {
+          // Use the first topic as the main content
+          const firstTopicRef = wikiLinks[0];
+          console.log(`Using first topic reference: ${firstTopicRef}`);
+          
+          // Split the slug to get the directory path
+          const slugParts = slugOrPath.split('/');
+          slugParts.pop(); // Remove the last part (the filename)
+          const articleDir = path.join(process.cwd(), 'content', ...slugParts);
+          
+          // Try to find the topic file using various approaches
+          const topicPaths = [
+            // Try exact reference
+            path.join(articleDir, firstTopicRef),
+            // Try without extension
+            path.join(articleDir, firstTopicRef.replace(/\.(md|mdita)$/, '')),
+            // Try with .md extension
+            path.join(articleDir, firstTopicRef.replace(/\.(md|mdita)$/, '') + '.md')
+          ];
+          
+          // Try each potential path
+          for (const topicPath of topicPaths) {
+            console.log(`ATTEMPT: Trying to load topic from: ${topicPath}`);
+            try {
+              const topicContent = await fs.readFile(topicPath, 'utf8');
+              fileContents = topicContent;
+              filePath = topicPath;
+              console.log(`SUCCESS: Found topic at ${filePath}`);
+              found = true;
+              break;
+            } catch (error) {
+              // Continue to next path
+            }
+          }
+          
+          // If still not found, log the paths we tried
+          if (!found) {
+            console.error(`ERROR: Could not find any of these topic paths:`, topicPaths);
+          }
+        }
+      } catch (error) {
+        console.warn(`Ditamap not found at ${ditamapPath}, trying other approaches`);
+      }
+    }
+    
+    // If we still haven't found the file, try other approaches
+    if (!found) {
+      console.log(`WARNING: File not found through primary approaches, trying fallback methods`);
+      // Continue with other file loading logic...
+    }
+  }
+
+  // If we haven't found the file yet through special handling, proceed with normal lookup
+  if (!filePath || !fileContents) {
+    // Determine the base path for relative link resolution *before* finding the file
+    // This assumes the slug structure mirrors the directory structure under docs/
+    const slugParts = slugOrPath.split('/');
+    slugParts.pop(); // Remove filename part
+    const basePath = path.posix.join('/docs', ...slugParts); // Base URL path for relative links
+
+    // Check if a custom slug maps to this path
+    const customSlugMatch = await findDocByCustomSlug(slugOrPath);
+    adjustedSlug = customSlugMatch || slugOrPath;
+    const usingCustomSlug = !!customSlugMatch;
+
+    if (usingCustomSlug) {
+      // If custom slug, it points directly to a file (likely in articles)
+      // We need the full path to read it, even if the slug is custom.
+      const potentialPathBase = path.join(articlesDir, adjustedSlug); // Assume custom slugs are for articles
       for (const ext of extensionsToTry) {
-        const potentialPath = path.join(dir, `${adjustedSlug}${ext}`);
+        const potentialPath = potentialPathBase + ext;
         try {
           fileContents = await fs.readFile(potentialPath, 'utf8');
           filePath = potentialPath;
-          console.log(`Successfully loaded: ${filePath}`);
-          break outerLoop; // File found, exit both loops
-        } catch (error: any) {
-          if (error.code !== 'ENOENT') { // Log errors other than 'file not found'
-            console.error(`Error reading ${potentialPath}:`, error);
-          }
-          // Continue to next extension or directory
+          console.log(`Successfully loaded custom slug match: ${filePath}`);
+          break; 
+        } catch (e: any) {
+          if (e.code !== 'ENOENT') console.error(`Error reading ${potentialPath}:`, e);
         }
       }
-    }
+      if (!filePath) {
+         console.error(`Custom slug match file not found for slug "${slugOrPath}" -> "${adjustedSlug}"`);
+         return null;
+      }
+    } else {
+      // Try loading from docsDir first, then articlesDir
+      const dirsToTry = [docsDir, articlesDir];
+      console.log(`Attempting to load slug "${adjustedSlug}" from docs/ then articles/`);
+      
+      outerLoop: // Label for breaking out of nested loops
+      for (const dir of dirsToTry) {
+        for (const ext of extensionsToTry) {
+          const potentialPath = path.join(dir, `${adjustedSlug}${ext}`);
+          try {
+            fileContents = await fs.readFile(potentialPath, 'utf8');
+            filePath = potentialPath;
+            console.log(`Successfully loaded: ${filePath}`);
+            break outerLoop; // File found, exit both loops
+          } catch (error: any) {
+            if (error.code !== 'ENOENT') { // Log errors other than 'file not found'
+              console.error(`Error reading ${potentialPath}:`, error);
+            }
+            // Continue to next extension or directory
+          }
+        }
+      }
 
-    // Check if file was found after trying all options
-    if (!filePath || !fileContents) {
-      console.error(`File not found for slug "${adjustedSlug}" in docs/ or articles/ - tried extensions: ${extensionsToTry.join(', ')}`);
-      return null; // Not found
+      // Check if file was found after trying all options
+      if (!filePath || !fileContents) {
+        console.error(`File not found for slug "${adjustedSlug}" in docs/ or articles/ - tried extensions: ${extensionsToTry.join(', ')}`);
+        return null; // Not found
+      }
     }
   }
 
@@ -668,6 +865,14 @@ export async function getDocData(slugOrPath: string): Promise<Doc | null> {
   const toc = (file.data.toc || []) as TocEntry[];
 
   // Return the final Doc object
+  console.log(`Returning Doc with slug: ${adjustedSlug}, content length: ${contentHtml.length}, metadata: ${JSON.stringify(metadata)}`);
+  
+  // Validate that all required fields are present
+  if (!adjustedSlug) {
+    console.error('adjustedSlug is undefined or empty - using fallback');
+    adjustedSlug = slugOrPath || 'unknown';
+  }
+  
   return {
     slug: adjustedSlug, // Use the adjusted slug
     content: contentHtml, // Return the final HTML string
