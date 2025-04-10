@@ -68,5 +68,5 @@ $$\int_{0}^{\infty} \left( \frac{e^{-\pi x^2}}{\sum_{i=1}^{n} \frac{1}{i^2}} \ri
 
 ## Takeaways
 
-- Start incorporating sophisticated mathematics into your content today! Curious about the full implementation?
-- Visit our [[docs]] to learn more.
+- Start incorporating sophisticated mathematics into your content today! 
+- Curious about the full implementation? Visit our [[docs]] to learn more.

@@ -47,10 +47,11 @@ export async function GET() {
         try {
           const content = await fs.readFile(filePath, 'utf8');
           const result = await parseMetadata(content, 'map');
-          const { metadata, topics } = result as { 
+          const { metadata } = result as { 
             metadata: MapMetadata; 
             topics: string[] 
           };
+          let topics = (result as any).topics || [];
           
           // Extract slug from filename, preserving the directory structure for articles
           const relativePath = path.relative(process.cwd(), filePath);
@@ -115,7 +116,7 @@ export async function GET() {
             slug,
             content: firstTopicContent,
             metadata,
-            topics: topics.map(id => ({ id }))
+            topics: topics.map((id: string) => ({ id }))
           } as ArticleWithRequiredTopics;
         } catch (error) {
           console.error(`Error processing map ${filePath}:`, error);

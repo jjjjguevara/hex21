@@ -199,7 +199,7 @@ The CMS implements conditional processing based on metadata flags, a common DITA
 
 ### Scientific Notation and Equation Support
 
-MathJax provides robust support for rendering LaTeX equations (like $S = \\frac{\\bar{E}}{T} + 2x \\lg\\int e^{-\\frac{E}{2xT}}dp_1 ... dp_l$ in [[brownian-motion]]) directly within the browser, ensuring accurate display of complex mathematical notation essential for scientific content. This is configured in `src/components/MathJaxConfig.tsx` and applied during rendering.
+MathJax provides robust support for rendering LaTeX equations - as seen in [[brownian-motion]] - directly within the browser, ensuring accurate display of complex mathematical notation essential for scientific content. This is configured in `src/components/MathJaxConfig.tsx` and applied during rendering.
 
 ### Multi-Format Export Capabilities
 
