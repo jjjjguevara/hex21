@@ -75,12 +75,13 @@ Quantum gates are the building blocks of quantum circuits, analogous to classica
 
 The controlled-NOT (CNOT) gate is a fundamental two-qubit gate:
 
-$$CNOT = \begin{pmatrix} 
+$CNOT = \begin{pmatrix} 
 1 & 0 & 0 & 0 \\
 0 & 1 & 0 & 0 \\
 0 & 0 & 0 & 1 \\
 0 & 0 & 1 & 0
-\end{pmatrix}$$
+\end{pmatrix}$
+
 
 > [!IMPORTANT]
 > The CNOT gate, combined with single-qubit gates, forms a universal set for quantum computation, meaning any quantum operation can be approximated using these gates.

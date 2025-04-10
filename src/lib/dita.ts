@@ -31,55 +31,98 @@ interface Metadata {
 export async function parseMap(content: string): Promise<{ metadata: Metadata; topics: string[] }> {
   try {
     // Parse YAML front matter
-    const { data: rawMetadata, content: xmlContent } = matter(content);
-    console.log('Raw parsed XML:', { rawMetadata, xmlContent });
+    const { data: rawMetadata, content: mapContent } = matter(content);
+    console.log('Raw parsed content:', { rawMetadata, mapContentLength: mapContent.length });
 
-    // Parse XML content
-    const parser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: '_',
-    });
-    const result = parser.parse(xmlContent);
-    console.log('Raw parsed XML:', result);
-
-    // Extract topics from the map
     const topics: string[] = [];
-    if (result.map?.topicref) {
-      const extractTopics = (topicref: any): void => {
-        if (typeof topicref === 'object') {
-          if (Array.isArray(topicref)) {
-            topicref.forEach(t => extractTopics(t));
-          } else {
-            if (topicref._href) {
-              topics.push(topicref._href);
-            }
-            if (topicref.topicref) {
-              extractTopics(topicref.topicref);
+
+    // First try to parse as XML (for traditional DITA maps)
+    try {
+      const parser = new XMLParser({
+        ignoreAttributes: false,
+        attributeNamePrefix: '_',
+      });
+      const result = parser.parse(mapContent);
+      console.log('Parsed XML result:', result);
+
+      // Extract topics from XML map
+      if (result.map?.topicref) {
+        const extractTopics = (topicref: any): void => {
+          if (typeof topicref === 'object') {
+            if (Array.isArray(topicref)) {
+              topicref.forEach(t => extractTopics(t));
+            } else {
+              if (topicref._href) {
+                topics.push(topicref._href);
+              }
+              if (topicref.topicref) {
+                extractTopics(topicref.topicref);
+              }
             }
           }
+        };
+        extractTopics(result.map.topicref);
+      }
+    } catch (xmlError) {
+      console.log('Not a valid XML map, trying Markdown format:', xmlError);
+      
+      // If XML parsing fails, try Markdown wiki-links format (used in docs)
+      const wikiLinkRegex = /\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g;
+      const matches = Array.from(mapContent.matchAll(wikiLinkRegex));
+      
+      console.log('Found wiki links:', matches.length);
+      
+      for (const match of matches) {
+        if (match[1]) {
+          // Extract the file path part (before the pipe if there is one)
+          const filePath = match[1].trim();
+          console.log(`Adding topic from wiki link: ${filePath}`);
+          topics.push(filePath);
         }
-      };
-      extractTopics(result.map.topicref);
+      }
+      
+      // Also try bullet list format with standard markdown links
+      const bulletLinkRegex = /^\s*-\s*\[([^\]]+)\]\(([^)]+)\)/gm;
+      const bulletMatches = Array.from(mapContent.matchAll(bulletLinkRegex));
+      
+      console.log('Found bullet links:', bulletMatches.length);
+      
+      for (const match of bulletMatches) {
+        if (match[2]) {
+          const filePath = match[2].trim();
+          console.log(`Adding topic from bullet link: ${filePath}`);
+          topics.push(filePath);
+        }
+      }
     }
+
+    // Log extracted topics
+    console.log('Extracted topics:', topics);
 
     // Normalize metadata for our front-end
     const metadata: Metadata = {
-      title: rawMetadata.title || result.map?.title || '',
+      title: rawMetadata.title || '',
       slug: rawMetadata.slug || '',
       publish: rawMetadata.publish ?? true,  // Default to true if not specified
-      featured: rawMetadata.features?.featured ?? false,
+      featured: rawMetadata.featured ?? rawMetadata.features?.featured ?? false,
       // Optional fields
-      date: rawMetadata['publication-date'],
+      date: rawMetadata.date || rawMetadata['publication-date'],
       lastEdited: rawMetadata['last-edited'],
       categories: rawMetadata.categories || [],
-      authors: (rawMetadata.authors || []).map((author: any) => ({
-        name: author.name || '',
-        conref: author.conref || ''
-      })),
+      authors: typeof rawMetadata.author === 'string' 
+        ? [{ name: rawMetadata.author, conref: '' }]
+        : (rawMetadata.authors || []).map((author: any) => ({
+            name: typeof author === 'string' ? author : (author.name || ''),
+            conref: typeof author === 'string' ? '' : (author.conref || '')
+          })),
       editor: rawMetadata.editor,
       reviewer: rawMetadata.reviewer,
-      keywords: rawMetadata.keywords || [],
-      audience: Array.isArray(rawMetadata.audience) ? rawMetadata.audience : [],
+      keywords: rawMetadata.keywords || rawMetadata.tags || [],
+      audience: Array.isArray(rawMetadata.audience) 
+        ? rawMetadata.audience 
+        : typeof rawMetadata.audience === 'string' 
+          ? [rawMetadata.audience] 
+          : [],
       language: rawMetadata.language,
       version: rawMetadata.version,
       // Store raw metadata for future use

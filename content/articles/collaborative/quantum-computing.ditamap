@@ -1,6 +1,6 @@
 ---
 title: "Quantum Computing: Principles and Applications"
-author: "Dr. Quantum Researcher"
+author: "Dr. Hex"
 date: "2025-04-08"
 publish: true
 featured: true
@@ -11,13 +11,11 @@ shortdesc: "A comprehensive overview of quantum computing principles, current de
 datalist: ["author", "date", "category", "tags"]
 ---
 
-<!-- This is the ditamap structure for our multi-topic quantum computing article -->
-<map>
-  <title>Quantum Computing: Principles and Applications</title>
-  <topicref href="quantum-computing-introduction.md" format="markdown"/>
-  <topicref href="quantum-computing-principles.md" format="markdown"/>
-  <topicref href="quantum-computing-algorithms.md" format="markdown"/>
-  <topicref href="quantum-computing-hardware.md" format="markdown"/>
-  <topicref href="quantum-computing-applications.md" format="markdown"/>
-  <topicref href="quantum-computing-future.md" format="markdown"/>
-</map>
+# Quantum Computing: Principles and Applications
+
+- [[quantum-computing-introduction.md|Introduction to Quantum Computing]]
+- [[quantum-computing-principles.md|Quantum Computing Principles]]
+- [[quantum-computing-algorithms.md|Quantum Algorithms]]
+- [[quantum-computing-hardware.md|Quantum Hardware]]
+- [[quantum-computing-applications.md|Applications of Quantum Computing]]
+- [[quantum-computing-future.md|Future of Quantum Computing]]

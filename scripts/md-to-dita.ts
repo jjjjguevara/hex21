@@ -16,6 +16,9 @@ import type { Root, Content, Table, TableRow, TableCell, Link, Paragraph, Footno
 import type { Element as HastElement } from 'hast'; 
 import { toString } from 'mdast-util-to-string';
 
+// Add the standard fs module for sync operations
+import * as fsSync from 'fs';
+
 const CONTENT_DIR = path.join(process.cwd(), 'content');
 const MAPS_DIR = path.join(CONTENT_DIR, 'maps');
 const TOPICS_DIR = path.join(CONTENT_DIR, 'topics'); 
@@ -457,10 +460,45 @@ async function parseMarkdownMap(mapFilePath: string) {
     const fileContent = await fs.readFile(mapFilePath, 'utf8');
     const { data: metadata, content: mapBody } = matter(fileContent);
 
-    const topicRefs = mapBody.split('\n').filter(line => line.trim().startsWith('- [')).map(line => {
-        const match = line.match(/\(([^)]+)\)/);
-        return match ? match[1] : null;
-    }).filter(ref => ref !== null);
+    let topicRefs: (string | null)[] = [];
+    
+    // Try to extract wiki-links first
+    const wikiLinks = extractWikiLinks(mapBody);
+    if (wikiLinks.length > 0) {
+        topicRefs = wikiLinks.map(link => link.path);
+    } else {
+        // If no wiki-links, try Markdown link format
+        const mdLinkMatches = mapBody.match(/\[([^\]]+)\]\(([^)]+)\)/g);
+        if (mdLinkMatches) {
+            topicRefs = mdLinkMatches.map(match => {
+                const parts = match.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                return parts ? parts[2] : null;
+            }).filter(ref => ref !== null);
+        }
+        
+        // If still no links, try bullet list items
+        if (topicRefs.length === 0) {
+            topicRefs = mapBody.split('\n').filter(line => line.trim().startsWith('- [')).map(line => {
+                const match = line.match(/\(([^)]+)\)/);
+                return match ? match[1] : null;
+            }).filter(ref => ref !== null);
+        }
+        
+        // Finally, try plain bullet list format
+        if (topicRefs.length === 0) {
+            topicRefs = mapBody.split('\n')
+                .filter(line => line.trim().startsWith('- ') || line.trim().startsWith('* '))
+                .map(line => {
+                    const trimmedLine = line.trim().substring(2).trim();
+                    // Skip lines that are just headings or empty
+                    if (trimmedLine.startsWith('#') || !trimmedLine) {
+                        return null;
+                    }
+                    return trimmedLine;
+                })
+                .filter(ref => ref !== null);
+        }
+    }
 
     console.log('Map Metadata:', metadata);
     console.log('Topic Refs:', topicRefs);
@@ -470,11 +508,57 @@ async function parseMarkdownMap(mapFilePath: string) {
 
 async function generateIntermediateDitaMap(mapMetadata: any, topicRefs: string[], targetMapPath: string) {
     console.log(`Generating intermediate DITA map: ${targetMapPath}`);
+    
+    // Better metadata handling
+    const metadataElements = [];
+    if (mapMetadata.title) metadataElements.push(`<title>${escapeXml(mapMetadata.title)}</title>`);
+    
+    // Add all metadata as topicmeta elements
+    const topicmetaElements = [];
+    if (mapMetadata.author) topicmetaElements.push(`<author>${escapeXml(mapMetadata.author)}</author>`);
+    if (mapMetadata.audience) topicmetaElements.push(`<audience type="${escapeXml(mapMetadata.audience)}"/>`);
+    if (mapMetadata.category) topicmetaElements.push(`<category>${escapeXml(mapMetadata.category)}</category>`);
+    
+    // Add tags as keywords
+    if (mapMetadata.tags && Array.isArray(mapMetadata.tags)) {
+        for (const tag of mapMetadata.tags) {
+            topicmetaElements.push(`<keyword>${escapeXml(tag)}</keyword>`);
+        }
+    }
+    
+    // Add custom data elements
+    if (mapMetadata.publish !== undefined) topicmetaElements.push(`<data name="publish" value="${mapMetadata.publish}"/>`);
+    if (mapMetadata.featured !== undefined) topicmetaElements.push(`<data name="featured" value="${mapMetadata.featured}"/>`);
+    if (mapMetadata.shortdesc) topicmetaElements.push(`<shortdesc>${escapeXml(mapMetadata.shortdesc)}</shortdesc>`);
+    
+    const topicmetaSection = topicmetaElements.length > 0 ? `  <topicmeta>\n    ${topicmetaElements.join('\n    ')}\n  </topicmeta>` : '';
+    
+    // Handle path conversion intelligently
+    const topicRefsMarkup = topicRefs.map(ref => {
+        if (!ref) return '';
+        
+        // Get just the filename without path for the target
+        const fileName = path.basename(ref);
+        const targetPath = fileName.replace(/\.md(ita)?$/, '.dita');
+        
+        // Try to extract a title from the filename or use the ref
+        let title = fileName.replace(/\.md(ita)?$/, '').replace(/-/g, ' ');
+        // Capitalize the first letter of each word
+        title = title.replace(/\b\w/g, l => l.toUpperCase());
+        
+        return `<topicref href="${targetPath}" format="dita">
+    <topicmeta>
+      <navtitle>${escapeXml(title)}</navtitle>
+    </topicmeta>
+  </topicref>`;
+    }).join('\n  ');
+    
     const ditaMapContent = `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
-<map title="${mapMetadata.title || 'Untitled Map'}">
-  <!-- TODO: Add metadata elements based on mapMetadata -->
-  ${topicRefs.map(ref => `<topicref href="${ref?.replace(/\.md(ita)?$/, '.dita')}" format="dita"/>`).join('\n  ')}
+<map>
+${metadataElements.length > 0 ? '  ' + metadataElements.join('\n  ') + '\n' : ''}${topicmetaSection}
+
+  ${topicRefsMarkup}
 </map>`;
 
     await fs.writeFile(targetMapPath, ditaMapContent);
@@ -527,11 +611,172 @@ async function convertMarkdownTopicToDita(sourceTopicPath: string, targetDitaPat
 
 function runDitaOT(intermediateMapPath: string, format: string = 'html5') {
     console.log(`Running DITA-OT for ${intermediateMapPath}, format: ${format}`);
-    const command = `${DITA_OT_COMMAND} -i "${intermediateMapPath}" -f ${format} -o "${FINAL_OUTPUT_DIR}"`;
+    
+    // Create additional parameters for better HTML output
+    const params = [
+        '-i', `"${intermediateMapPath}"`,
+        '-f', format,
+        '-o', `"${FINAL_OUTPUT_DIR}"`,
+        '--propertyfile=args.properties'
+    ];
+    
+    // Create a custom args.properties file to control HTML output
+    const propsContent = `
+# Enable full rendering of HTML pages
+args.gen.task.lbl=YES
+args.breadcrumbs=yes
+args.copycss=yes
+args.css=custom.css
+args.csspath=css
+args.cssroot=${FINAL_OUTPUT_DIR}
+args.ftr=common/footer.xml
+args.hdf=yes
+args.hdr=common/header.xml
+args.outext=.html
+args.tablelink.style=FULL
+args.xhtml.classattr=yes
+`;
+    
+    // Write custom properties file
+    const propsPath = path.join(process.cwd(), 'args.properties');
+    try {
+        fsSync.writeFileSync(propsPath, propsContent);
+        console.log('Created custom properties file for DITA-OT');
+    } catch (error) {
+        console.warn('Failed to create custom properties file:', error);
+    }
+    
+    const command = `${DITA_OT_COMMAND} ${params.join(' ')}`;
     console.log(`Executing: ${command}`);
+    
     try {
         execSync(command, { stdio: 'inherit' }); 
         console.log('DITA-OT processing complete.');
+        
+        // Create custom CSS file for styling the output
+        const cssDir = path.join(FINAL_OUTPUT_DIR, 'css');
+        const cssPath = path.join(cssDir, 'custom.css');
+        try {
+            if (!fsSync.existsSync(cssDir)) {
+                fsSync.mkdirSync(cssDir, { recursive: true });
+            }
+            
+            const customCss = `
+/* Enhanced styling for DITA HTML output */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    line-height: 1.6;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    color: #333;
+}
+
+.topictitle1 {
+    font-size: 2.5em;
+    margin-bottom: 0.5em;
+    color: #2c3e50;
+}
+
+.topictitle2 {
+    font-size: 1.8em;
+    margin-top: 1.5em;
+    color: #3498db;
+}
+
+.topictitle3 {
+    font-size: 1.5em;
+    margin-top: 1.2em;
+    color: #2980b9;
+}
+
+pre.codeblock {
+    background-color: #f5f7f9;
+    border: 1px solid #e1e4e8;
+    padding: 15px;
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+.note {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-left: 4px solid #3498db;
+    margin: 20px 0;
+}
+
+.warning {
+    background-color: #fef5f5;
+    padding: 15px;
+    border-left: 4px solid #e74c3c;
+    margin: 20px 0;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+th {
+    background-color: #f5f7f9;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 20px auto;
+}
+
+code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background-color: #f5f7f9;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+/* Navigation styling */
+nav.toc {
+    margin-bottom: 30px;
+}
+
+nav.toc ul {
+    padding-left: 20px;
+}
+
+nav.toc li {
+    margin: 8px 0;
+}
+
+nav.toc a {
+    color: #3498db;
+    text-decoration: none;
+}
+
+nav.toc a:hover {
+    text-decoration: underline;
+}
+
+/* Math equations */
+.equation {
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+}
+`;
+            
+            fsSync.writeFileSync(cssPath, customCss);
+            console.log(`Created custom CSS file at ${cssPath}`);
+        } catch (cssError) {
+            console.warn('Failed to create custom CSS file:', cssError);
+        }
     } catch (error) {
         console.error('DITA-OT processing failed:', error);
         throw error; 
@@ -544,38 +789,272 @@ async function main() {
     await ensureDirectoryExists(INTERMEDIATE_DITA_DIR);
     await ensureDirectoryExists(FINAL_OUTPUT_DIR);
 
-    const mapFileName = 'yaml-metadata-template.ditamap'; 
-    const sourceMapPath = path.join(MAPS_DIR, mapFileName);
-    const intermediateMapPath = path.join(INTERMEDIATE_DITA_DIR, mapFileName.replace(/\.ditamap$/, '.ditamap')); 
-
-    const { metadata: mapMetadata, topicRefs } = await parseMarkdownMap(sourceMapPath);
-
-    if (!topicRefs || topicRefs.length === 0) {
-        console.warn(`No topic references found in ${sourceMapPath}. Skipping map generation.`);
-        return;
-    }
-
-    await generateIntermediateDitaMap(mapMetadata, topicRefs as string[], intermediateMapPath);
-
-    for (const topicRef of topicRefs) {
-        if (!topicRef) continue;
-        const sourceTopicPath = path.join(TOPICS_DIR, topicRef); 
-        const targetDitaPath = path.join(INTERMEDIATE_DITA_DIR, topicRef.replace(/\.md(ita)?$/, '.dita'));
-
-        try {
-            await convertMarkdownTopicToDita(sourceTopicPath, targetDitaPath);
-        } catch (error: any) {
-            if (error.code === 'ENOENT') {
-                console.warn(`Skipping missing topic file: ${sourceTopicPath}`);
-            } else {
-                console.error(`Failed to convert topic ${sourceTopicPath}:`, error);
-            }
-        }
-    }
-
-    runDitaOT(intermediateMapPath, 'html5'); 
+    // Process maps from the maps directory
+    await processMapDirectory(MAPS_DIR);
+    
+    // Process ditamaps in the articles directory
+    await processArticleDitamaps();
 
     console.log('Markdown to DITA conversion finished.');
+}
+
+// Add this helper function for smart path resolution
+async function resolveTopicPath(topicRef: string, mapPath: string): Promise<string> {
+    // If it's an absolute path or already has proper directory reference, use it directly
+    if (path.isAbsolute(topicRef) || topicRef.startsWith('../') || topicRef.startsWith('./')) {
+        return path.resolve(path.dirname(mapPath), topicRef);
+    }
+    
+    // Otherwise, try multiple possible locations
+    
+    // 1. First check if it exists in the same directory as the map
+    const sameDirectoryPath = path.join(path.dirname(mapPath), topicRef);
+    if (await fileExists(sameDirectoryPath)) {
+        return sameDirectoryPath;
+    }
+    
+    // 2. Check if it exists in the topics directory
+    const topicsPath = path.join(TOPICS_DIR, topicRef);
+    if (await fileExists(topicsPath)) {
+        return topicsPath;
+    }
+    
+    // 3. If the map is in articles/collaborative, look for the file there too
+    if (mapPath.includes('articles/collaborative')) {
+        const collaborativePath = path.join(
+            process.cwd(), 
+            'content/articles/collaborative',
+            path.basename(topicRef)
+        );
+        if (await fileExists(collaborativePath)) {
+            return collaborativePath;
+        }
+    }
+    
+    // 4. Return the relative path and let the caller handle missing files
+    return path.resolve(path.dirname(mapPath), topicRef);
+}
+
+async function processMapDirectory(mapDir: string) {
+    console.log(`Processing maps in directory: ${mapDir}`);
+    
+    try {
+        const mapFiles = await fs.readdir(mapDir);
+        const ditaMapFiles = mapFiles.filter(file => file.endsWith('.ditamap'));
+        
+        console.log(`Found ${ditaMapFiles.length} ditamap files in ${mapDir}`);
+        
+        for (const mapFileName of ditaMapFiles) {
+            const sourceMapPath = path.join(mapDir, mapFileName);
+            const intermediateMapPath = path.join(INTERMEDIATE_DITA_DIR, mapFileName); 
+
+            const { metadata: mapMetadata, topicRefs } = await parseMarkdownMap(sourceMapPath);
+
+            if (!topicRefs || topicRefs.length === 0) {
+                console.warn(`No topic references found in ${sourceMapPath}. Skipping map generation.`);
+                continue;
+            }
+
+            await generateIntermediateDitaMap(mapMetadata, topicRefs as string[], intermediateMapPath);
+
+            for (const topicRef of topicRefs) {
+                if (!topicRef) continue;
+                
+                // Resolve the topic path relative to the map's location
+                const sourceTopicPath = await resolveTopicPath(topicRef, sourceMapPath);
+                const targetDitaPath = path.join(INTERMEDIATE_DITA_DIR, path.basename(topicRef).replace(/\.md(ita)?$/, '.dita'));
+
+                try {
+                    await convertMarkdownTopicToDita(sourceTopicPath, targetDitaPath);
+                } catch (error: any) {
+                    if (error.code === 'ENOENT') {
+                        console.warn(`Skipping missing topic file: ${sourceTopicPath}`);
+                    } else {
+                        console.error(`Failed to convert topic ${sourceTopicPath}:`, error);
+                    }
+                }
+            }
+
+            runDitaOT(intermediateMapPath, 'html5');
+        }
+    } catch (error) {
+        console.error(`Error processing map directory ${mapDir}:`, error);
+    }
+}
+
+// Helper function to extract wiki links from markdown content
+function extractWikiLinks(content: string): { path: string; title: string }[] {
+    const wikiLinkRegex = /\[\[([^|\]]+)(?:\|([^\]]+))?\]\]/g;
+    const matches = Array.from(content.matchAll(wikiLinkRegex));
+    
+    return matches.map(match => {
+        const path = match[1]?.trim() || '';
+        const title = match[2]?.trim() || path.replace(/\.md$/, '');
+        return { path, title };
+    });
+}
+
+async function processArticleDitamaps() {
+    console.log('Processing ditamaps in articles directory...');
+    
+    const ARTICLES_PATH = path.join(process.cwd(), 'content/articles');
+    
+    // Function to recursively find ditamap files
+    async function findDitamaps(dirPath: string, ditamaps: string[] = []): Promise<string[]> {
+        const entries = await fs.readdir(dirPath, { withFileTypes: true });
+        
+        for (const entry of entries) {
+            const fullPath = path.join(dirPath, entry.name);
+            
+            if (entry.isDirectory()) {
+                await findDitamaps(fullPath, ditamaps);
+            } else if (entry.isFile() && entry.name.endsWith('.ditamap')) {
+                ditamaps.push(fullPath);
+            }
+        }
+        
+        return ditamaps;
+    }
+    
+    try {
+        const ditamapPaths = await findDitamaps(ARTICLES_PATH);
+        console.log(`Found ${ditamapPaths.length} ditamaps in articles directory:`, ditamapPaths);
+        
+        for (const ditamapPath of ditamapPaths) {
+            // Read the ditamap
+            const content = await fs.readFile(ditamapPath, 'utf8');
+            
+            // Extract YAML front matter and content
+            const { data: metadata, content: mapContent } = matter(content);
+            
+            console.log(`Processing ditamap: ${ditamapPath}`);
+            console.log(`Metadata:`, metadata);
+            
+            // Extract topic references - handle both wiki-link and list formats
+            const wikiLinks = extractWikiLinks(mapContent);
+            console.log(`Found ${wikiLinks.length} wiki-links in ${ditamapPath}:`, wikiLinks);
+            
+            if (wikiLinks.length === 0) {
+                // Try XML format with topicrefs as fallback
+                const hrefMatches = mapContent.match(/<topicref\s+[^>]*href\s*=\s*["']([^"']+)["']/g);
+                
+                if (hrefMatches) {
+                    for (const match of hrefMatches) {
+                        const hrefMatch = match.match(/href\s*=\s*["']([^"']+)["']/);
+                        if (hrefMatch && hrefMatch[1]) {
+                            const path = hrefMatch[1].trim();
+                            const navtitleMatch = match.match(/<navtitle>([^<]+)<\/navtitle>/);
+                            const title = navtitleMatch ? navtitleMatch[1] : path;
+                            wikiLinks.push({ path, title });
+                        }
+                    }
+                } else {
+                    // Try bullet list format as last resort
+                    const listItems = mapContent.split('\n')
+                        .filter(line => line.trim().startsWith('- ') || line.trim().startsWith('* '))
+                        .map(line => line.trim().substring(2).trim());
+                    
+                    for (const item of listItems) {
+                        const mdLinkMatch = item.match(/\[([^\]]+)\]\(([^)]+)\)/);
+                        if (mdLinkMatch) {
+                            const title = mdLinkMatch[1];
+                            const path = mdLinkMatch[2];
+                            wikiLinks.push({ path, title });
+                        }
+                    }
+                }
+            }
+            
+            if (wikiLinks.length === 0) {
+                console.warn(`No topic references found in ${ditamapPath}. Skipping.`);
+                continue;
+            }
+            
+            // Extract the file paths only for processing
+            const topicRefs = wikiLinks.map(link => link.path);
+            
+            // Create intermediate ditamap
+            const ditamapFileName = path.basename(ditamapPath);
+            const intermediateMapPath = path.join(INTERMEDIATE_DITA_DIR, ditamapFileName);
+            
+            // Enhanced intermediate DITA map generation with full metadata
+            const metadataElements = [];
+            if (metadata.title) metadataElements.push(`<title>${escapeXml(metadata.title)}</title>`);
+            
+            // Add all metadata as topicmeta elements
+            const topicmetaElements = [];
+            if (metadata.author) topicmetaElements.push(`<author>${escapeXml(metadata.author)}</author>`);
+            if (metadata.audience) topicmetaElements.push(`<audience type="${escapeXml(metadata.audience)}"/>`);
+            if (metadata.category) topicmetaElements.push(`<category>${escapeXml(metadata.category)}</category>`);
+            
+            // Add tags as keywords
+            if (metadata.tags && Array.isArray(metadata.tags)) {
+                for (const tag of metadata.tags) {
+                    topicmetaElements.push(`<keyword>${escapeXml(tag)}</keyword>`);
+                }
+            }
+            
+            // Add custom data elements
+            if (metadata.publish !== undefined) topicmetaElements.push(`<data name="publish" value="${metadata.publish}"/>`);
+            if (metadata.featured !== undefined) topicmetaElements.push(`<data name="featured" value="${metadata.featured}"/>`);
+            if (metadata.shortdesc) topicmetaElements.push(`<shortdesc>${escapeXml(metadata.shortdesc)}</shortdesc>`);
+            
+            const topicmetaSection = topicmetaElements.length > 0 ? `  <topicmeta>\n    ${topicmetaElements.join('\n    ')}\n  </topicmeta>` : '';
+            
+            const ditaMapContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+${metadataElements.length > 0 ? '  ' + metadataElements.join('\n  ') + '\n' : ''}${topicmetaSection}
+
+  ${wikiLinks.map(link => `<topicref href="${link.path.replace(/\.md(ita)?$/, '.dita')}" format="dita">
+    <topicmeta>
+      <navtitle>${escapeXml(link.title)}</navtitle>
+    </topicmeta>
+  </topicref>`).join('\n  ')}
+</map>`;
+
+            await fs.writeFile(intermediateMapPath, ditaMapContent);
+            console.log(`Enhanced intermediate map written to ${intermediateMapPath}`);
+            
+            // Convert each topic
+            const ditamapDir = path.dirname(ditamapPath);
+            
+            for (const topicRef of topicRefs) {
+                // Resolve the topic path relative to the map's location
+                const sourceTopicPath = await resolveTopicPath(topicRef, ditamapPath);
+                const topicFileName = path.basename(topicRef);
+                const targetDitaPath = path.join(INTERMEDIATE_DITA_DIR, topicFileName.replace(/\.md(ita)?$/, '.dita'));
+                
+                console.log(`Processing topic reference: ${topicRef} => ${sourceTopicPath}`);
+                
+                try {
+                    if (await fileExists(sourceTopicPath)) {
+                        await convertMarkdownTopicToDita(sourceTopicPath, targetDitaPath);
+                        console.log(`Successfully converted topic: ${sourceTopicPath} -> ${targetDitaPath}`);
+                    } else {
+                        console.warn(`Topic file not found: ${sourceTopicPath}`);
+                    }
+                } catch (error: any) {
+                    console.error(`Failed to convert topic ${sourceTopicPath}:`, error);
+                }
+            }
+            
+            // Run DITA-OT transformation
+            runDitaOT(intermediateMapPath, 'html5');
+        }
+    } catch (error) {
+        console.error('Error processing article ditamaps:', error);
+    }
+}
+
+// Helper function to check if a file exists
+async function fileExists(path: string): Promise<boolean> {
+    try {
+        await fs.access(path);
+        return true;
+    } catch {
+        return false;
+    }
 }
 
 main().catch(error => {

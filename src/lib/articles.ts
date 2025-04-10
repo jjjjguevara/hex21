@@ -1,5 +1,6 @@
 import path from 'path';
 import { promises as fs } from 'fs';
+import { existsSync } from 'fs';
 import { Article, Doc, MapMetadata, TopicMetadata } from '@/types/content';
 import { getDocData } from './content.server';
 
@@ -38,7 +39,42 @@ async function getArticleSlugs(): Promise<string[]> {
             // Now read the ditamap file to find topic references
             try {
               const content = await fs.readFile(fullPath, 'utf8');
-              // Extract href attributes from topicref elements
+              
+              // First, try XML parsing approach for topicrefs
+              const topicRefsXml = content.match(/<topicref\s+[^>]*href\s*=\s*["']([^"']+)["']/g);
+              
+              if (topicRefsXml) {
+                for (const match of topicRefsXml) {
+                  const hrefMatch = match.match(/href\s*=\s*["']([^"']+)["']/);
+                  if (hrefMatch && hrefMatch[1]) {
+                    processTopicRef(hrefMatch[1], fullPath);
+                  }
+                }
+              }
+              
+              // Then check for Markdown wiki link syntax ([[path|title]])
+              const wikiLinkMatches = content.match(/\[\[([^|\]]+)(?:\|[^\]]+)?\]\]/g);
+              if (wikiLinkMatches) {
+                for (const match of wikiLinkMatches) {
+                  const linkMatch = match.match(/\[\[([^|\]]+)/);
+                  if (linkMatch && linkMatch[1]) {
+                    processTopicRef(linkMatch[1], fullPath);
+                  }
+                }
+              }
+              
+              // Also check for regular Markdown links [title](path)
+              const mdLinkMatches = content.match(/\[([^\]]+)\]\(([^)]+)\)/g);
+              if (mdLinkMatches) {
+                for (const match of mdLinkMatches) {
+                  const linkMatch = match.match(/\]\(([^)]+)\)/);
+                  if (linkMatch && linkMatch[1]) {
+                    processTopicRef(linkMatch[1], fullPath);
+                  }
+                }
+              }
+              
+              // Legacy regex for mixed formats
               const hrefMatches = content.match(/href=['"]([^'"]+)['"]\s+format=['"](markdown|md)['"]|href=['"](.*?\.md)['"]|href=['"](.*?\.mdita)['"]|href=['"](.*?\.dita)['"]|href=['"](.*?)['"]\s+format=['"](markdown|md)['"]|href=['"](.*?)['"]\s+format=['"](markdown|md)['"]\s+/g);
               
               if (hrefMatches) {
@@ -46,16 +82,7 @@ async function getArticleSlugs(): Promise<string[]> {
                   // Extract the href value
                   const hrefMatch = match.match(/href=['"](.*?)['"]/);
                   if (hrefMatch && hrefMatch[1]) {
-                    let topicPath = hrefMatch[1];
-                    
-                    // Handle relative paths to the ditamap
-                    const dirName = path.dirname(fullPath);
-                    const topicFullPath = path.join(dirName, topicPath);
-                    const topicRelPath = path.relative(ARTICLES_PATH, topicFullPath);
-                    
-                    // Remove extension if present
-                    const topicSlug = topicRelPath.replace(/\.(md|mdita|dita)$/, '');
-                    topicSlugs.add(topicSlug);
+                    processTopicRef(hrefMatch[1], fullPath);
                   }
                 }
               }
@@ -71,6 +98,52 @@ async function getArticleSlugs(): Promise<string[]> {
       }
     } catch (error) {
       console.error(`Error scanning directory ${dirPath}:`, error);
+    }
+    
+    // Helper function to process topic references
+    function processTopicRef(topicPath: string, ditamapPath: string) {
+      // Handle relative paths to the ditamap
+      console.log(`Processing topic reference: ${topicPath} from ${ditamapPath}`);
+      
+      // Clean up any format attributes that might be in the path
+      let cleanPath = topicPath.split(/\s+format=/)[0].trim();
+      
+      // Remove quotes if they exist
+      cleanPath = cleanPath.replace(/^["'](.+)["']$/, '$1');
+      
+      const dirName = path.dirname(ditamapPath);
+      let topicFullPath;
+      
+      // Handle special cases for paths
+      if (cleanPath.startsWith('../') || cleanPath.startsWith('./')) {
+        // Relative path
+        topicFullPath = path.resolve(dirName, cleanPath);
+      } else if (path.isAbsolute(cleanPath)) {
+        // Absolute path
+        topicFullPath = cleanPath;
+      } else {
+        // Assume path is relative to the ditamap location
+        topicFullPath = path.join(dirName, cleanPath);
+      }
+      
+      // Try to find the file with or without extension
+      let fileToCheck = topicFullPath;
+      if (!fileToCheck.endsWith('.md') && !fileToCheck.endsWith('.mdita') && !fileToCheck.endsWith('.dita')) {
+        fileToCheck = `${topicFullPath}.md`;
+        if (!existsSync(fileToCheck)) {
+          fileToCheck = `${topicFullPath}.mdita`;
+          if (!existsSync(fileToCheck)) {
+            fileToCheck = `${topicFullPath}.dita`;
+          }
+        }
+      }
+      
+      const topicRelPath = path.relative(ARTICLES_PATH, topicFullPath);
+      
+      // Remove extension if present
+      const topicSlug = topicRelPath.replace(/\.(md|mdita|dita|xml)$/, '');
+      console.log(`Added topic slug: ${topicSlug}`);
+      topicSlugs.add(topicSlug);
     }
   }
 

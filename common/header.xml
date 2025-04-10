@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<header class="header">
+  <div class="navigation">
+    <nav class="breadcrumbs">
+      <!-- Breadcrumbs will be inserted here -->
+    </nav>
+  </div>
+  <div class="logo">
+    <h1>Hex21 CMS</h1>
+  </div>
+</header> 
