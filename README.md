@@ -2,7 +2,7 @@
 
   
 
-The application is a **lightweight, scalable Content Management System (CMS)** designed to streamline the publication of **scientific content**—such as articles, research papers, and mixed media like images and videos—using a **docs-as-code workflow** that integrates **version control** for systematic tracking and propagation of changes. Its **key features** include robust version control for revision history, metadata management for efficient content organization and tagging, and support for **exportable formats** like PDF, ePub, and HTML to ensure accessibility. The CMS is powered by a modern **tech stack**: **Lightweight DITA (LwDITA)** for structured content authoring, **Git and GitHub** for version control, **Next.js (React)** for a dynamic yet statically generated front-end, **GitHub Actions** for automated builds and deployments, and **Vercel or Netlify** for global hosting. It’s further enhanced with **MathJax** for rendering LaTeX equations, **Lunr.js** for client-side search functionality, and **custom React components** for interactive elements, making it an ideal tool for researchers and content creators to collaborate on and publish precise, technical documentation with ease.
+The application is a **lightweight, scalable Content Management System (CMS)** designed to streamline the publication of **scientific content**—such as articles, research papers, and mixed media like images and videos—using a **docs-as-code workflow** that integrates **version control** for systematic tracking and propagation of changes. Its **key features** include robust version control for revision history, metadata management for efficient content organization and tagging, and support for **exportable formats** like PDF, ePub, and HTML to ensure accessibility. The CMS is powered by a modern **tech stack**: **Lightweight DITA (LwDITA)** for structured content authoring, **Git and GitHub** for version control, **Next.js (React)** for a dynamic yet statically generated front-end, **GitHub Actions** for automated builds and deployments, and **Vercel or Netlify** for global hosting. It's further enhanced with **MathJax** for rendering LaTeX equations, **Lunr.js** for client-side search functionality, and **custom React components** for interactive elements, making it an ideal tool for researchers and content creators to collaborate on and publish precise, technical documentation with ease.
 
   
   
@@ -111,7 +111,7 @@ Each domain contains specific modules and submodules to implement the required f
 
   
 
-These standalone services power the system’s core operations:
+These standalone services power the system's core operations:
 
   
 
@@ -221,7 +221,7 @@ The domains and services interact in a clear workflow:
 
   
 
-Let’s zoom in on the key features you highlighted: metadata and data-driven indexes/dashboards, and prop/metadata-based conditional rendering.
+Let's zoom in on the key features you highlighted: metadata and data-driven indexes/dashboards, and prop/metadata-based conditional rendering.
 
   
 
@@ -359,7 +359,7 @@ return metadata.publish ? (
 
   
 
-Here’s a simplified visual representation of the system:
+Here's a simplified visual representation of the system:
 
   
 
@@ -1364,6 +1364,339 @@ git push
 * `/src/components/charts/` (Example)
 
 * Updated build scripts/workflows for exports.
+
+  
+
+---
+
+  
+## Phase 5.5: DITA Feature Integration
+
+  
+
+**Objective:** Enhance the Markdown-centric workflow with powerful DITA capabilities for content reuse, conditional processing, and version control while maintaining the simplicity and flexibility of Markdown.
+
+  
+
+**Tasks:**
+
+  
+
+1. **Enhanced YAML Frontmatter for DITA Attributes:**
+
+* Extend frontmatter schema to support DITA-specific attributes:
+
+```yaml
+
+---
+
+title: Example Document
+
+audience: [beginner, intermediate, expert]
+
+platform: [web, mobile, desktop]
+
+product: product-x
+
+otherprops: 
+
+  confidentiality: internal
+
+  review-status: draft
+
+revision:
+
+  version: "1.2.0"
+
+  modified: "2024-04-10"
+
+---
+
+```
+
+* Update the `md-to-dita.ts` converter to map these attributes to proper DITA attributes during transformation.
+
+* Modify `src/lib/dita.ts` to intelligently use these attributes for filtering during rendering.
+
+  
+
+2. **Content Reuse System:**
+
+* Implement a conref-like syntax within Markdown:
+
+```markdown
+
+{{conref:path/to/file.md#section-id}}
+
+```
+
+* Create a preprocessing step in `md-to-dita.ts` that resolves these references before DITA-OT processing.
+
+* Build a content fragment library with commonly reused content blocks.
+
+* Add validation to ensure referenced content exists and is accessible.
+
+  
+
+3. **Key References and Variables:**
+
+* Create a central `keys.yml` configuration file for defining global variables:
+
+```yaml
+
+product-name: "Hex21 CMS"
+
+version: "2.0"
+
+company: "HexTech Industries"
+
+support-email: "support@example.com"
+
+```
+
+* Implement inline variable syntax:
+
+```markdown
+
+Contact {{key:support-email}} for assistance with {{key:product-name}}.
+
+```
+
+* Update `md-to-dita.ts` to resolve these references during preprocessing.
+
+  
+
+4. **Conditional Processing:**
+
+* Implement block-level conditional syntax:
+
+```markdown
+
+:::if audience="expert" platform="desktop":::
+
+This content is only visible to expert users on desktop platforms.
+
+::::::
+
+```
+
+* Create a rich ditaval-like configuration system:
+
+```yaml
+
+# conditional-config.yml
+
+include:
+
+  audience: [beginner, intermediate]
+
+  platform: [web, mobile]
+
+exclude:
+
+  otherprops:
+
+    confidentiality: [classified]
+
+```
+
+* Build a preprocessing step that applies these conditions during conversion.
+
+* Add UI controls in the web interface to toggle different output versions.
+
+  
+
+5. **Version Control and Branch Filtering:**
+
+* Implement Git-integrated versioning that leverages DITA branch filtering concepts:
+
+```yaml
+
+# version-config.yml
+
+versions:
+
+  - id: "2.0"
+
+    branch: "main"
+
+    status: "current"
+
+  - id: "1.5"
+
+    branch: "v1.5"
+
+    status: "supported"
+
+  - id: "1.0"
+
+    branch: "v1.0"
+
+    status: "archived"
+
+```
+
+* Modify build scripts to generate version-specific outputs.
+
+* Add version dropdown in the web UI for readers to select documentation versions.
+
+* Implement automatic comparison to highlight changes between versions.
+
+  
+
+6. **DITA Specialization via Markdown Extensions:**
+
+* Create custom domain-specific extensions through special syntax:
+
+```markdown
+
+:::api-endpoint method="GET" url="/api/users":::
+
+Returns a list of users.
+
+
+**Parameters:**
+
+- `limit`: Maximum number of results
+
+:::query-params:::
+
+| Name | Type | Required | Description |
+
+|------|------|----------|-------------|
+
+| limit | number | No | Max results |
+
+::::::
+
+::::::
+
+```
+
+* Build specialized renderers for these custom elements.
+
+* Create a plugin system for organizations to define their own specializations.
+
+  
+
+7. **Metadata Exchange and Round-Trip Editing:**
+
+* Implement a system to preserve DITA metadata during the round-trip between:
+
+```
+
+DITA → Markdown → Editing → DITA
+
+```
+
+* Store complex DITA attributes as specially formatted comments in Markdown.
+
+* Build tooling to validate that manual edits maintain structural integrity.
+
+  
+
+8. **Interactive Version Flyout Menu:**
+
+* Implement a Read the Docs-style floating menu component for dynamic version switching:
+
+```jsx
+
+// Example web component implementation
+
+<version-flyout 
+  position="bottom-right"
+  current-version="2.0"
+  show-downloads="true">
+</version-flyout>
+
+```
+
+* Create a comprehensive menu that includes:
+
+  * Version switcher showing all active versions
+
+  * Format options (HTML, PDF, ePub) for offline reading
+
+  * Language/translation selector (when i18n is implemented)
+
+  * Quick access to search
+
+* Support multiple positioning options (bottom-right, bottom-left, top-right, top-left)
+
+* Implement version comparison features:
+
+  * Visual diff highlighting between versions
+
+  * "What's new in this version" indicators
+
+  * Maintain scroll position when switching versions
+
+* Integrate with the build system to:
+
+  * Generate version metadata during build time
+
+  * Pre-render version-specific content or implement dynamic loading
+
+* Use JavaScript custom events for theme integration:
+
+```javascript
+
+document.addEventListener('version-selected', (event) => {
+  const { version, url } = event.detail;
+  // Handle version change
+});
+
+```
+
+* Create configuration options in a central config file:
+
+```yaml
+
+# flyout-config.yml
+
+position: bottom-right
+
+sort-method: semver
+
+default-version: latest
+
+show-special-versions-first: true
+
+available-formats: [html, pdf, epub]
+
+```
+
+* Ensure accessibility compliance with proper ARIA attributes and keyboard navigation
+
+8. **Git Commit:**
+
+```bash
+
+git add scripts/md-to-dita.ts src/lib/dita.ts config/keys.yml
+
+git commit -m "feat: Implement DITA feature integration"
+
+git push
+
+```
+
+  
+
+**Dependencies:** Phase 5, DITA-OT integration, understanding of DITA architecture, Markdown processing pipeline.
+
+  
+
+**Key Files/Folders:**
+
+* Updated `/scripts/md-to-dita.ts`
+
+* Enhanced `/src/lib/dita.ts`
+
+* New configuration files: `/config/keys.yml`, `/config/conditional-config.yml`
+
+* New plugins: `/plugins/dita-extensions/`
+
+* Documentation: `/docs/authoring/dita-features.md`
 
   
 
